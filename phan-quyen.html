@@ -1,0 +1,1038 @@
+<!doctype html><html lang="vi" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Datyso · Phân quyền RBAC & ABAC</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>
+
+
+/* ===== Datyso Design System v1.0 — token và component (chép nguyên từ bộ DS) ===== */
+/* =====================================================================
+   1. PRIMITIVE TOKENS — bảng màu gốc. Không dùng trực tiếp trong component.
+   ===================================================================== */
+:root{
+  --blue-10:#edf3fd; --blue-20:#d4e3fa; --blue-30:#a9c6f4; --blue-50:#3c7be0; --blue-60:#1f5fbf; --blue-70:#184c99; --blue-80:#123a75;
+  --gray-0:#ffffff; --gray-5:#f8f9fa; --gray-10:#f2f4f6; --gray-20:#e4e7eb; --gray-30:#d0d5dc; --gray-40:#b0b8c3;
+  --gray-50:#8a93a1; --gray-60:#636c78; --gray-70:#4d5560; --gray-80:#343a43; --gray-90:#1e232a; --gray-100:#13161b;
+  --green-10:#e7f5ec; --green-60:#1a7f3c; --green-70:#146330;
+  --amber-10:#fdf5dc; --amber-40:#f1c21b; --amber-70:#7a5200;
+  --red-10:#fdeced; --red-60:#c9252d; --red-70:#a11d24;
+  --teal-10:#e3f5f5; --teal-70:#0b6468;
+  --violet-10:#f1edfc; --violet-70:#5a3fb0;
+
+  --font-sans:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+
+  --space-0-5:2px; --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
+  --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px;
+
+  --radius-0:0; --radius-sm:2px; --radius-md:4px; --radius-lg:8px;
+
+  --shadow-overlay:0 2px 6px rgba(19,22,27,.10),0 8px 24px rgba(19,22,27,.12);
+  --shadow-modal:0 4px 12px rgba(19,22,27,.12),0 24px 56px rgba(19,22,27,.24);
+
+  --dur-fast:100ms; --dur-base:160ms; --dur-slow:240ms; --ease:cubic-bezier(.2,0,.38,.9);
+
+  /* component tokens — đổi theo mật độ */
+  --control-h:32px; --control-h-sm:24px; --control-h-lg:40px;
+  --row-h:40px; --cell-px:12px;
+}
+html[data-density="compact"]{ --control-h:28px; --control-h-lg:36px; --row-h:32px; --cell-px:10px; }
+
+/* =====================================================================
+   2. SEMANTIC TOKENS — component chỉ được dùng nhóm này.
+   ===================================================================== */
+:root{
+  color-scheme:light;
+  --bg-page:var(--gray-10); --bg-surface:var(--gray-0); --bg-subtle:var(--gray-5);
+  --bg-hover:#eef1f4; --bg-active:var(--gray-20); --bg-selected:var(--blue-10);
+  --bg-disabled:#eef0f2; --bg-inverse:var(--gray-90);
+  --border-subtle:var(--gray-20); --border:var(--gray-30); --border-control:var(--gray-50);
+  --text-primary:#161a1f; --text-secondary:var(--gray-70); --text-tertiary:var(--gray-60);
+  --text-disabled:#a3abb5; --text-on-color:#ffffff; --text-inverse:#f2f4f6; --text-link:var(--blue-60);
+  --interactive:var(--blue-60); --interactive-hover:var(--blue-70); --interactive-active:var(--blue-80);
+  --focus:var(--blue-60);
+  --danger:var(--red-60); --danger-hover:var(--red-70);
+  --status-success-fg:var(--green-70); --status-success-bg:var(--green-10); --status-success-solid:var(--green-60);
+  --status-warning-fg:var(--amber-70); --status-warning-bg:var(--amber-10); --status-warning-solid:var(--amber-40);
+  --status-danger-fg:var(--red-70);    --status-danger-bg:var(--red-10);    --status-danger-solid:var(--red-60);
+  --status-info-fg:var(--blue-70);     --status-info-bg:var(--blue-10);     --status-info-solid:var(--blue-60);
+  --status-neutral-fg:var(--gray-70);  --status-neutral-bg:#eef0f2;
+  --tag-teal-fg:var(--teal-70); --tag-teal-bg:var(--teal-10);
+  --tag-violet-fg:var(--violet-70); --tag-violet-bg:var(--violet-10);
+  --data-1:#1f5fbf; --data-2:#0b8a8f; --data-3:#8a5cd6; --data-4:#c96a12;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg-page:#13161b; --bg-surface:#1a1e24; --bg-subtle:#1f242b; --bg-hover:#252b33; --bg-active:#2d343d;
+  --bg-selected:#1b2b44; --bg-disabled:#22272e; --bg-inverse:#e8ebef;
+  --border-subtle:#2a3038; --border:#363e48; --border-control:#6f7986;
+  --text-primary:#e8ebef; --text-secondary:#b2bac4; --text-tertiary:#8f99a6; --text-disabled:#5b636e;
+  --text-on-color:#ffffff; --text-inverse:#161a1f; --text-link:#7aa8f0;
+  --interactive:#2f6fd6; --interactive-hover:#2862c2; --interactive-active:#234f9c; --focus:#7aa8f0;
+  --danger:#d0353c; --danger-hover:#b52a31;
+  --status-success-fg:#6fd08f; --status-success-bg:#15301f; --status-success-solid:#2f9e55;
+  --status-warning-fg:#f0c75e; --status-warning-bg:#33290f; --status-warning-solid:#f1c21b;
+  --status-danger-fg:#ff9a9a;  --status-danger-bg:#3a1a1c;  --status-danger-solid:#e04a51;
+  --status-info-fg:#8db6f3;    --status-info-bg:#18263d;    --status-info-solid:#4d8ae8;
+  --status-neutral-fg:#c3cad3; --status-neutral-bg:#2a3038;
+  --tag-teal-fg:#6fd3d6; --tag-teal-bg:#10302f; --tag-violet-fg:#b9a7f5; --tag-violet-bg:#2a2346;
+  --data-1:#5b95ec; --data-2:#3cc0c4; --data-3:#a888ec; --data-4:#e8913f;
+  --shadow-overlay:0 2px 6px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);
+  --shadow-modal:0 4px 12px rgba(0,0,0,.4),0 24px 56px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-page:#13161b; --bg-surface:#1a1e24; --bg-subtle:#1f242b; --bg-hover:#252b33; --bg-active:#2d343d;
+  --bg-selected:#1b2b44; --bg-disabled:#22272e; --bg-inverse:#e8ebef;
+  --border-subtle:#2a3038; --border:#363e48; --border-control:#6f7986;
+  --text-primary:#e8ebef; --text-secondary:#b2bac4; --text-tertiary:#8f99a6; --text-disabled:#5b636e;
+  --text-on-color:#ffffff; --text-inverse:#161a1f; --text-link:#7aa8f0;
+  --interactive:#2f6fd6; --interactive-hover:#2862c2; --interactive-active:#234f9c; --focus:#7aa8f0;
+  --danger:#d0353c; --danger-hover:#b52a31;
+  --status-success-fg:#6fd08f; --status-success-bg:#15301f; --status-success-solid:#2f9e55;
+  --status-warning-fg:#f0c75e; --status-warning-bg:#33290f; --status-warning-solid:#f1c21b;
+  --status-danger-fg:#ff9a9a;  --status-danger-bg:#3a1a1c;  --status-danger-solid:#e04a51;
+  --status-info-fg:#8db6f3;    --status-info-bg:#18263d;    --status-info-solid:#4d8ae8;
+  --status-neutral-fg:#c3cad3; --status-neutral-bg:#2a3038;
+  --tag-teal-fg:#6fd3d6; --tag-teal-bg:#10302f; --tag-violet-fg:#b9a7f5; --tag-violet-bg:#2a2346;
+  --data-1:#5b95ec; --data-2:#3cc0c4; --data-3:#a888ec; --data-4:#e8913f;
+  --shadow-overlay:0 2px 6px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);
+  --shadow-modal:0 4px 12px rgba(0,0,0,.4),0 24px 56px rgba(0,0,0,.6);
+}
+
+/* =====================================================================
+   3. BASE
+   ===================================================================== */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg-page);color:var(--text-primary);font:400 13px/20px var(--font-sans);
+  -webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono);font-size:12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{width:16px;height:16px;flex:none;display:block}
+.ic--sm{width:14px;height:14px}
+.spacer{flex:1}
+.row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:var(--space-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+
+/* =====================================================================
+   4. COMPONENTS
+   ===================================================================== */
+
+/* Button */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--control-h);padding:0 12px;
+  border:1px solid transparent;border-radius:var(--radius-md);font-weight:500;font-size:13px;line-height:1;cursor:pointer;
+  white-space:nowrap;transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);text-decoration:none}
+.btn:focus-visible,.btn.is-focus{outline:0;box-shadow:0 0 0 2px var(--bg-surface),0 0 0 4px var(--focus)}
+.btn--primary{background:var(--interactive);color:var(--text-on-color)}
+.btn--primary:hover,.btn--primary.is-hover{background:var(--interactive-hover)}
+.btn--primary:active,.btn--primary.is-active{background:var(--interactive-active)}
+.btn--secondary{background:var(--bg-surface);border-color:var(--border);color:var(--text-primary)}
+.btn--secondary:hover,.btn--secondary.is-hover{background:var(--bg-hover);border-color:var(--border-control)}
+.btn--secondary:active,.btn--secondary.is-active{background:var(--bg-active)}
+.btn--ghost{background:transparent;color:var(--text-link)}
+.btn--ghost:hover,.btn--ghost.is-hover{background:var(--bg-hover)}
+.btn--ghost:active,.btn--ghost.is-active{background:var(--bg-active)}
+.btn--danger{background:var(--danger);color:var(--text-on-color)}
+.btn--danger:hover,.btn--danger.is-hover{background:var(--danger-hover)}
+.btn--danger-ghost{background:transparent;color:var(--status-danger-fg)}
+.btn--danger-ghost:hover,.btn--danger-ghost.is-hover{background:var(--status-danger-bg)}
+.btn--sm{height:var(--control-h-sm);padding:0 8px;font-size:12px}
+.btn--lg{height:var(--control-h-lg);padding:0 16px;font-size:14px}
+.btn--icon{width:var(--control-h);padding:0}
+.btn--icon.btn--sm{width:var(--control-h-sm)}
+.btn--block{width:100%}
+.btn:disabled,.btn.is-disabled{background:var(--bg-disabled);border-color:transparent;color:var(--text-disabled);cursor:not-allowed}
+.btn--ghost:disabled,.btn--ghost.is-disabled{background:transparent}
+.btn.is-loading{cursor:progress}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;
+  animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-group{display:inline-flex}
+.btn-group .btn{border-radius:0;margin-left:-1px}
+.btn-group .btn:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md);margin-left:0}
+.btn-group .btn:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0}
+
+/* Field */
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field__label{font-size:12px;line-height:16px;font-weight:500;color:var(--text-secondary);display:flex;gap:4px;align-items:baseline}
+.field__req{color:var(--status-danger-fg)}
+.field__opt{font-weight:400;color:var(--text-tertiary)}
+.field__help{font-size:12px;line-height:16px;color:var(--text-tertiary)}
+.field__err{font-size:12px;line-height:16px;color:var(--status-danger-fg);display:flex;gap:4px;align-items:flex-start}
+.field__err .ic{width:14px;height:14px;margin-top:1px}
+.field__foot{display:flex;gap:8px}
+.field__foot .field__help{flex:1}
+.input{height:var(--control-h);width:100%;padding:0 10px;background:var(--bg-surface);border:1px solid var(--border-control);
+  border-radius:var(--radius-md);color:var(--text-primary);outline:0;transition:border-color var(--dur-fast) var(--ease)}
+textarea.input{height:auto;min-height:72px;padding:6px 10px;resize:vertical;line-height:20px}
+.input::placeholder{color:var(--text-tertiary)}
+.input:hover,.input.is-hover{border-color:var(--text-secondary)}
+.input:focus,.input.is-focus{border-color:var(--interactive);box-shadow:0 0 0 1px var(--interactive)}
+.input.is-error,.input[aria-invalid="true"]{border-color:var(--status-danger-solid)}
+.input.is-error:focus,.input[aria-invalid="true"]:focus{box-shadow:0 0 0 1px var(--status-danger-solid)}
+.input:disabled,.input.is-disabled{background:var(--bg-disabled);border-color:var(--border-subtle);color:var(--text-disabled);cursor:not-allowed}
+.input[readonly],.input.is-readonly{background:var(--bg-subtle);border-color:var(--border-subtle)}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap .input{padding-left:32px}
+.input-wrap > .ic{position:absolute;left:10px;color:var(--text-tertiary);pointer-events:none}
+.input-wrap--suffix .input{padding-left:10px;padding-right:36px;text-align:right}
+.input-wrap__suf{position:absolute;right:10px;color:var(--text-tertiary);font-size:12px;pointer-events:none}
+.input-wrap__btn{position:absolute;right:4px}
+.select{position:relative}
+.select select.input{appearance:none;-webkit-appearance:none;padding-right:30px;cursor:pointer}
+.select > .ic{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
+.date .input{padding-right:32px}
+.date > .ic{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-secondary)}
+.date{position:relative}
+
+/* Calendar */
+.cal{width:252px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-overlay);padding:8px}
+.cal__h{display:flex;align-items:center;gap:4px;padding:0 0 6px}
+.cal__h b{flex:1;text-align:center;font-weight:600}
+.cal__g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal__g span,.cal__g button{height:32px;display:grid;place-items:center;font-size:12px;border:0;background:none;border-radius:var(--radius-md)}
+.cal__g span{color:var(--text-tertiary);font-weight:500}
+.cal__g button{cursor:pointer;color:var(--text-primary)}
+.cal__g button:hover{background:var(--bg-hover)}
+.cal__g .mu{color:var(--text-disabled)}
+.cal__g .today{box-shadow:inset 0 0 0 1px var(--border-control);font-weight:600}
+.cal__g .sel{background:var(--interactive);color:var(--text-on-color)}
+.cal__g .sel:hover{background:var(--interactive-hover)}
+.cal__f{display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);margin-top:6px;padding-top:6px}
+
+/* Checkbox / Radio */
+.chk{display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;line-height:20px}
+.chk input{appearance:none;-webkit-appearance:none;margin:2px 0 0;width:16px;height:16px;flex:none;border:1px solid var(--border-control);
+  background:var(--bg-surface) center/12px no-repeat;border-radius:var(--radius-sm);cursor:pointer;transition:background-color var(--dur-fast)}
+.chk input[type="radio"]{border-radius:50%}
+.chk input:hover,.chk input.is-hover{border-color:var(--text-secondary)}
+.chk input:focus-visible,.chk input.is-focus{outline:0;box-shadow:0 0 0 2px var(--bg-surface),0 0 0 4px var(--focus)}
+.chk input[type="checkbox"]:checked,.chk input.is-checked{background-color:var(--interactive);border-color:var(--interactive);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3l2.3 2.2L9.5 3.6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.chk input[type="checkbox"]:indeterminate,.chk input.is-mixed{background-color:var(--interactive);border-color:var(--interactive);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6h6' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E")}
+.chk input[type="radio"]:checked{border-color:var(--interactive);box-shadow:inset 0 0 0 4px var(--bg-surface);background:var(--interactive)}
+.chk input[type="radio"]:checked:focus-visible{box-shadow:inset 0 0 0 4px var(--bg-surface),0 0 0 2px var(--bg-surface),0 0 0 4px var(--focus)}
+.chk input.is-error{border-color:var(--status-danger-solid)}
+.chk input:disabled,.chk input.is-disabled{background-color:var(--bg-disabled);border-color:var(--border);cursor:not-allowed}
+.chk input:disabled:checked{background-color:var(--text-disabled);border-color:var(--text-disabled)}
+.chk:has(input:disabled){color:var(--text-disabled);cursor:not-allowed}
+.chk small{display:block;color:var(--text-tertiary);font-size:12px;line-height:16px}
+
+/* Switch */
+.sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.sw__t{width:32px;height:18px;border-radius:9px;background:var(--border-control);position:relative;flex:none;transition:background var(--dur-base) var(--ease)}
+.sw__t::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;
+  transition:transform var(--dur-base) var(--ease)}
+.sw[aria-checked="true"] .sw__t{background:var(--interactive)}
+.sw[aria-checked="true"] .sw__t::after{transform:translateX(14px)}
+.sw:focus-visible{outline:0}
+.sw:focus-visible .sw__t{box-shadow:0 0 0 2px var(--bg-surface),0 0 0 4px var(--focus)}
+.sw:disabled{cursor:not-allowed;color:var(--text-disabled)}
+.sw:disabled .sw__t{background:var(--bg-active)}
+
+/* Segmented */
+.seg{display:inline-flex;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:2px;gap:2px}
+.seg button{border:0;background:none;height:calc(var(--control-h) - 6px);padding:0 10px;border-radius:2px;cursor:pointer;color:var(--text-secondary);font-size:12px}
+.seg button:hover{color:var(--text-primary);background:var(--bg-hover)}
+.seg button[aria-pressed="true"]{background:var(--bg-surface);color:var(--text-primary);font-weight:500;box-shadow:inset 0 0 0 1px var(--border)}
+
+/* Tag / Badge */
+.tag{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 8px;border-radius:var(--radius-sm);
+  font-size:12px;line-height:16px;font-weight:500;white-space:nowrap;background:var(--status-neutral-bg);color:var(--status-neutral-fg)}
+.tag--dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag--info{background:var(--status-info-bg);color:var(--status-info-fg)}
+.tag--success{background:var(--status-success-bg);color:var(--status-success-fg)}
+.tag--warning{background:var(--status-warning-bg);color:var(--status-warning-fg)}
+.tag--danger{background:var(--status-danger-bg);color:var(--status-danger-fg)}
+.tag--teal{background:var(--tag-teal-bg);color:var(--tag-teal-fg)}
+.tag--violet{background:var(--tag-violet-bg);color:var(--tag-violet-fg)}
+.tag--outline{background:transparent;box-shadow:inset 0 0 0 1px var(--border);color:var(--text-secondary)}
+.tag button{border:0;background:none;padding:0;margin-right:-4px;display:grid;place-items:center;width:16px;height:16px;
+  border-radius:2px;cursor:pointer;color:inherit}
+.tag button:hover{background:var(--bg-active)}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  font-size:11px;line-height:1;font-weight:600;background:var(--status-danger-solid);color:#fff;font-variant-numeric:tabular-nums}
+.badge--neutral{background:var(--bg-active);color:var(--text-secondary)}
+.badge--info{background:var(--status-info-solid);color:#fff}
+.dotmark{width:8px;height:8px;border-radius:50%;background:var(--status-danger-solid);display:inline-block}
+.avatar{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;font-weight:600;
+  background:var(--status-neutral-bg);color:var(--status-neutral-fg);flex:none}
+.avatar--a{background:var(--tag-teal-bg);color:var(--tag-teal-fg)}
+.avatar--b{background:var(--tag-violet-bg);color:var(--tag-violet-fg)}
+.avatar--c{background:var(--status-info-bg);color:var(--status-info-fg)}
+
+/* Tooltip */
+.tip{position:relative;display:inline-flex}
+.tip__b{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg-inverse);color:var(--text-inverse);
+  font-size:12px;line-height:16px;padding:6px 8px;border-radius:var(--radius-md);white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity var(--dur-fast) var(--ease);z-index:20}
+.tip:hover .tip__b,.tip:focus-within .tip__b,.tip.is-open .tip__b{opacity:1;transition-delay:300ms}
+.tip.is-open .tip__b{transition-delay:0s}
+
+/* Dropdown menu */
+.dd{position:relative;display:inline-block}
+.menu{min-width:200px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-overlay);padding:4px 0;z-index:30}
+.dd .menu{position:absolute;top:calc(100% + 4px);right:0}
+.menu__i{display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 12px;border:0;background:none;
+  text-align:left;cursor:pointer;color:var(--text-primary)}
+.menu__i:hover,.menu__i:focus-visible{background:var(--bg-hover);outline:0}
+.menu__i .ic{color:var(--text-secondary)}
+.menu__i kbd{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)}
+.menu__i--danger{color:var(--status-danger-fg)}
+.menu__i--danger .ic{color:var(--status-danger-fg)}
+.menu__i:disabled{color:var(--text-disabled);cursor:not-allowed;background:none}
+.menu__sep{height:1px;background:var(--border-subtle);margin:4px 0}
+.menu__lbl{padding:6px 12px 2px;font-size:12px;color:var(--text-tertiary);font-weight:500}
+
+/* Modal / Drawer */
+.scrim{position:fixed;inset:0;background:rgba(19,22,27,.48);z-index:80}
+.modal{position:fixed;z-index:81;left:50%;top:12vh;transform:translateX(-50%);width:min(560px,calc(100vw - 32px));
+  background:var(--bg-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-modal);display:flex;flex-direction:column;max-height:76vh}
+.modal--sm{width:min(420px,calc(100vw - 32px))}
+.modal__h{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 8px 20px}
+.modal__h h3{margin:0;font-size:16px;line-height:24px;font-weight:600;flex:1}
+.modal__b{padding:4px 20px 20px;overflow:auto;color:var(--text-secondary)}
+.modal__f{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border-subtle);background:var(--bg-subtle);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+.drawer{position:fixed;z-index:81;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--bg-surface);
+  box-shadow:var(--shadow-modal);display:flex;flex-direction:column}
+.drawer__h{display:flex;align-items:center;gap:8px;padding:12px 12px 12px 20px;border-bottom:1px solid var(--border-subtle)}
+.drawer__h h3{margin:0;font-size:16px;line-height:24px;font-weight:600;flex:1}
+.drawer__b{flex:1;overflow:auto;padding:16px 20px}
+.drawer__f{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border-subtle)}
+/* bản tĩnh để minh hoạ trong trang */
+.modal.is-static,.drawer.is-static{position:static;transform:none;max-height:none;box-shadow:var(--shadow-overlay)}
+.drawer.is-static{width:100%;height:340px;border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+
+/* Description list (chi tiết bản ghi) */
+.dl{display:grid;grid-template-columns:140px 1fr;gap:8px 16px;margin:0}
+.dl dt{color:var(--text-tertiary)}
+.dl dd{margin:0}
+
+/* Table */
+.tbl-box{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:720px}
+.tbl th{position:sticky;top:0;z-index:1;background:var(--bg-subtle);height:var(--row-h);padding:0 var(--cell-px);text-align:left;
+  font-size:12px;font-weight:500;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{height:var(--row-h);padding:0 var(--cell-px);border-bottom:1px solid var(--border-subtle);white-space:nowrap}
+.tbl tbody tr:hover td{background:var(--bg-hover)}
+.tbl tbody tr[aria-selected="true"] td{background:var(--bg-selected)}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums}
+.tbl .c{text-align:center}
+.tbl .w-chk{width:40px;padding-right:0}
+.tbl .chk input{margin:0}
+.tbl .muted{color:var(--text-tertiary)}
+.tbl a{color:var(--text-link);text-decoration:none}
+.tbl a:hover{text-decoration:underline}
+.th-sort{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer}
+.th-sort .ic{width:12px;height:12px;color:var(--text-tertiary)}
+.th-sort[aria-sort] {color:var(--text-primary)}
+.th-sort[aria-sort] .ic{color:var(--interactive)}
+.cell-2{display:flex;flex-direction:column;line-height:16px}
+.cell-2 small{color:var(--text-tertiary);font-size:12px}
+.cell-user{display:flex;align-items:center;gap:8px}
+.tbl tr.total td{font-weight:600;background:var(--bg-subtle);border-top:1px solid var(--border);border-bottom:0}
+.overdue{color:var(--status-danger-fg)}
+.bulk{display:flex;align-items:center;gap:4px;height:var(--control-h-lg);padding:0 8px 0 16px;background:var(--bg-inverse);color:var(--text-inverse);
+  border-radius:var(--radius-md) var(--radius-md) 0 0}
+.bulk .btn--ghost{color:var(--text-inverse)}
+.bulk .btn--ghost:hover{background:rgba(255,255,255,.12)}
+:root[data-theme="dark"] .bulk .btn--ghost:hover{background:rgba(0,0,0,.08)}
+.bulk + .tbl-box{border-top-left-radius:0;border-top-right-radius:0}
+
+/* Pagination */
+.pag{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;font-size:12px;color:var(--text-secondary)}
+.pag__pages{display:flex;gap:2px}
+.pag__pages button{min-width:28px;height:28px;border:0;background:none;border-radius:var(--radius-md);cursor:pointer;color:var(--text-primary);
+  font-variant-numeric:tabular-nums;font-size:12px}
+.pag__pages button:hover{background:var(--bg-hover)}
+.pag__pages button[aria-current="page"]{background:var(--bg-selected);color:var(--text-link);font-weight:600}
+.pag__pages span{min-width:20px;text-align:center;line-height:28px;color:var(--text-tertiary)}
+.pag .select select.input{height:28px;font-size:12px;width:auto}
+
+/* Card / KPI */
+.card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.card__h{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-subtle)}
+.card__h h4{margin:0;font-size:14px;line-height:20px;font-weight:600;flex:1}
+.card__b{padding:16px}
+.kpi{padding:16px}
+.kpi__l{font-size:12px;line-height:16px;color:var(--text-secondary);display:flex;gap:6px;align-items:center}
+.kpi__v{font-size:28px;line-height:36px;font-weight:600;letter-spacing:-.01em;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi__v small{font-size:14px;font-weight:500;color:var(--text-secondary);margin-left:4px}
+.kpi__meta{font-size:12px;line-height:16px;color:var(--text-tertiary);margin-top:8px;display:flex;justify-content:space-between;gap:8px}
+.prog{height:6px;background:var(--bg-active);border-radius:3px;position:relative;margin-top:8px}
+.prog i{position:absolute;left:0;top:0;bottom:0;background:var(--data-1);border-radius:3px}
+.prog b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text-primary)}
+.prog--sm{height:4px}
+.kpi-mini{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border-subtle)}
+.kpi-mini > div{padding:10px 16px;border-left:1px solid var(--border-subtle)}
+.kpi-mini > div:first-child{border-left:0}
+.kpi-mini b{display:block;font-size:16px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi-mini span{font-size:12px;color:var(--text-tertiary)}
+.trend-up,.kpi-mini .trend-up{color:var(--status-success-fg)} .trend-down,.kpi-mini .trend-down{color:var(--status-danger-fg)}
+.spark{display:block;width:100%;height:36px;margin-top:8px}
+
+/* Alert / Toast / Feedback */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:var(--radius-md);border:1px solid;
+  background:var(--status-info-bg);border-color:color-mix(in srgb,var(--status-info-solid) 35%,transparent);color:var(--text-primary)}
+.alert > .ic{margin-top:2px;color:var(--status-info-solid)}
+.alert__t{font-weight:600}
+.alert__d{color:var(--text-secondary)}
+.alert__a{margin-left:auto;display:flex;gap:4px;flex:none}
+.alert--success{background:var(--status-success-bg);border-color:color-mix(in srgb,var(--status-success-solid) 35%,transparent)}
+.alert--success > .ic{color:var(--status-success-solid)}
+.alert--warning{background:var(--status-warning-bg);border-color:color-mix(in srgb,var(--status-warning-solid) 55%,transparent)}
+.alert--warning > .ic{color:var(--status-warning-fg)}
+.alert--danger{background:var(--status-danger-bg);border-color:color-mix(in srgb,var(--status-danger-solid) 35%,transparent)}
+.alert--danger > .ic{color:var(--status-danger-solid)}
+.alert ul{margin:4px 0 0;padding-left:18px;color:var(--text-secondary)}
+.alert a{color:var(--text-link)}
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:90}
+.toast{display:flex;align-items:flex-start;gap:10px;width:360px;max-width:calc(100vw - 32px);padding:10px 8px 10px 12px;
+  background:var(--bg-inverse);color:var(--text-inverse);border-radius:var(--radius-md);box-shadow:var(--shadow-overlay);
+  animation:tin var(--dur-slow) var(--ease)}
+.toast > .ic{margin-top:2px}
+.toast--success > .ic{color:#6fd08f} .toast--error > .ic{color:#ff8f8f} .toast--info > .ic{color:#8db6f3}
+:root[data-theme="dark"] .toast--success > .ic{color:var(--green-60)}
+:root[data-theme="dark"] .toast--error > .ic{color:var(--red-60)}
+:root[data-theme="dark"] .toast--info > .ic{color:var(--blue-60)}
+.toast__m{flex:1}
+.toast__a{border:0;background:none;color:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0 4px}
+.toast__x{border:0;background:none;color:inherit;opacity:.7;cursor:pointer;padding:2px;border-radius:2px}
+.toast__x:hover{opacity:1}
+.toast.is-static{animation:none;position:static}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+.skel{background:linear-gradient(90deg,var(--bg-active) 0,var(--bg-hover) 40%,var(--bg-active) 80%);background-size:200% 100%;
+  animation:sh 1.4s linear infinite;border-radius:2px;height:12px}
+@keyframes sh{to{background-position:-200% 0}}
+.bar-load{height:2px;background:var(--bg-active);overflow:hidden;position:relative}
+.bar-load::after{content:"";position:absolute;inset:0;width:30%;background:var(--interactive);animation:bl 1.2s var(--ease) infinite}
+@keyframes bl{from{transform:translateX(-100%)}to{transform:translateX(340%)}}
+.state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 24px;gap:8px}
+.state__ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bg-active);color:var(--text-secondary)}
+.state__ic .ic{width:20px;height:20px}
+.state__ic--danger{background:var(--status-danger-bg);color:var(--status-danger-fg)}
+.state h4{margin:4px 0 0;font-size:14px;line-height:20px;font-weight:600}
+.state p{margin:0;color:var(--text-secondary);max-width:42ch}
+.state .row{margin-top:8px;justify-content:center}
+
+/* Navigation */
+.appbar{height:48px;display:flex;align-items:center;gap:12px;padding:0 8px 0 12px;background:var(--gray-90);color:#f2f4f6}
+:root[data-theme="dark"] .appbar{background:#0d1014}
+.appbar__mod{display:flex;align-items:center;gap:6px;height:32px;padding:0 8px;border:0;background:none;color:inherit;border-radius:var(--radius-md);cursor:pointer;font-weight:500}
+.appbar__mod:hover{background:rgba(255,255,255,.1)}
+.appbar__brand{font-weight:600;letter-spacing:.01em}
+.appbar__sep{width:1px;height:20px;background:rgba(255,255,255,.2)}
+.appbar__search{flex:1;max-width:420px;position:relative}
+.appbar__search input{width:100%;height:32px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;
+  border-radius:var(--radius-md);padding:0 10px 0 32px;outline:0}
+.appbar__search input::placeholder{color:rgba(255,255,255,.6)}
+.appbar__search input:focus{border-color:#7aa8f0;background:rgba(255,255,255,.12)}
+.appbar__search .ic{position:absolute;left:10px;top:8px;color:rgba(255,255,255,.65)}
+.appbar__search kbd{position:absolute;right:8px;top:7px;font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:0 4px}
+.appbar__ib{width:32px;height:32px;border:0;background:none;color:inherit;display:grid;place-items:center;border-radius:var(--radius-md);cursor:pointer;position:relative}
+.appbar__ib:hover{background:rgba(255,255,255,.1)}
+.appbar__ib .badge{position:absolute;top:2px;right:0;height:16px;min-width:16px;font-size:10px;box-shadow:0 0 0 2px var(--gray-90)}
+.sidenav{width:240px;background:var(--bg-surface);border-right:1px solid var(--border-subtle);padding:8px 0;font-size:13px}
+.sidenav__g{display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 12px;border:0;background:none;cursor:pointer;
+  font-weight:500;color:var(--text-primary);text-align:left}
+.sidenav__g:hover{background:var(--bg-hover)}
+.sidenav__g .ic:first-child{color:var(--text-secondary)}
+.sidenav__g .chev{margin-left:auto;color:var(--text-tertiary)}
+.sidenav__s{padding:8px 12px 2px 36px;font-size:12px;color:var(--text-tertiary)}
+.sidenav__i{display:flex;align-items:center;width:100%;height:30px;padding:0 12px 0 36px;border:0;background:none;cursor:pointer;
+  color:var(--text-secondary);text-align:left;position:relative}
+.sidenav__i:hover{background:var(--bg-hover);color:var(--text-primary)}
+.sidenav__i[aria-current="page"]{background:var(--bg-selected);color:var(--text-primary);font-weight:500}
+.sidenav__i[aria-current="page"]::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--interactive);border-radius:0 2px 2px 0}
+.sidenav__i .badge{margin-left:auto}
+.crumbs{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-tertiary);flex-wrap:wrap}
+.crumbs a{color:var(--text-link);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs .ic{width:12px;height:12px}
+.crumbs [aria-current]{color:var(--text-secondary)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tabs button{height:40px;padding:0 12px;border:0;background:none;cursor:pointer;color:var(--text-secondary);
+  border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tabs button:hover{color:var(--text-primary);background:var(--bg-hover)}
+.tabs button[aria-selected="true"]{color:var(--text-primary);font-weight:500;border-bottom-color:var(--interactive)}
+.tabs .cnt{font-size:12px;color:var(--text-tertiary);font-variant-numeric:tabular-nums}
+.steps{display:flex;gap:0;counter-reset:st;list-style:none;margin:0;padding:0}
+.steps li{flex:1;display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:3px solid var(--border);margin-right:4px;
+  font-size:12px;color:var(--text-tertiary)}
+.steps li b{font-size:13px;color:var(--text-secondary);font-weight:500}
+.steps li.done{border-top-color:var(--interactive)}
+.steps li.done b{color:var(--text-primary)}
+.steps li[aria-current="step"]{border-top-color:var(--interactive)}
+.steps li[aria-current="step"] b{color:var(--text-primary);font-weight:600}
+.steps li.err{border-top-color:var(--status-danger-solid)}
+.pagehead{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.pagehead h1{margin:2px 0 0;font-size:20px;line-height:28px;font-weight:600}
+.pagehead__l{flex:1;min-width:0}
+
+/* Filter chips */
+.fchips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fchip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 4px 0 8px;border-radius:var(--radius-sm);
+  background:var(--bg-selected);color:var(--text-primary);font-size:12px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--interactive) 30%,transparent)}
+.fchip span{color:var(--text-secondary)}
+.fchip button{border:0;background:none;width:18px;height:18px;display:grid;place-items:center;cursor:pointer;color:var(--text-secondary);border-radius:2px}
+.fchip button:hover{background:var(--bg-active);color:var(--text-primary)}
+
+/* Form layout */
+.form-sec{display:grid;grid-template-columns:220px 1fr;gap:24px;padding:20px 0;border-top:1px solid var(--border-subtle)}
+.form-sec:first-child{border-top:0;padding-top:0}
+.form-sec h4{margin:0;font-size:14px;line-height:20px;font-weight:600}
+.form-sec p{margin:4px 0 0;color:var(--text-tertiary);font-size:12px;line-height:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
+.form-grid .full{grid-column:1/-1}
+.actbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;background:var(--bg-surface);border-top:1px solid var(--border);
+  border-radius:0 0 var(--radius-md) var(--radius-md)}
+
+/* =====================================================================
+   BỐ CỤC ỨNG DỤNG — chỉ dùng token của DS, không thêm màu mới
+   ===================================================================== */
+html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+
+/* thanh công cụ của bản mẫu — tách khỏi giao diện thật */
+.docbar{flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 16px;background:var(--bg-subtle);
+  border-bottom:1px solid var(--border-subtle);font-size:12px;line-height:16px}
+.docbar__code{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1px 6px}
+.docbar__t{font-weight:600}
+.docbar__m{color:var(--text-tertiary)}
+.docbar__f{display:inline-flex;align-items:center;gap:6px;color:var(--text-tertiary)}
+.docbar .select select.input{height:24px;font-size:12px;width:auto;padding:0 26px 0 8px}
+.docbar .select > .ic{width:14px;height:14px}
+.docbar .seg{padding:1px}
+.docbar .seg button{height:20px;font-size:11px;padding:0 8px}
+
+.appbar{flex:none}
+.appbar__burger{display:none}
+.app-body{flex:1;display:flex;min-height:0}
+.sidenav{flex:none;overflow-y:auto;padding:8px 0 24px}
+.sidenav__g[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.sidenav__g .chev{transition:transform var(--dur-fast) var(--ease)}
+.navgrp[hidden]{display:none}
+.frame{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* page header */
+.ph__row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
+.ph__title{display:flex;align-items:center;gap:8px;min-width:0}
+.ph__meta{font-size:12px;line-height:16px;color:var(--text-tertiary);margin-top:2px}
+.ph__act{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chiprow{flex:none;padding:8px 24px;background:var(--bg-surface);border-bottom:1px solid var(--border-subtle)}
+
+.content{flex:1;overflow:auto;padding:20px 24px 40px}
+.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.note{font-size:12px;line-height:16px;color:var(--text-tertiary);margin:0}
+
+/* KPI chính */
+
+/* thanh ngang phân bổ */
+.prog i.is-behind{background:var(--status-danger-solid)}
+
+/* danh sách cảnh báo */
+.arow{display:grid;grid-template-columns:104px minmax(0,1fr) 56px 16px;gap:12px;align-items:center;width:100%;padding:10px 16px;
+  border:0;border-bottom:1px solid var(--border-subtle);background:none;text-align:left;color:var(--text-primary);font:inherit}
+button.arow{cursor:pointer}
+button.arow:hover{background:var(--bg-hover)}
+button.arow:hover .arow__go{color:var(--interactive)}
+
+/* phễu */
+.tbl tr.grp td{height:32px;background:var(--bg-subtle);font-size:12px;font-weight:500;color:var(--text-secondary)}
+.tbl tr.grp:hover td{background:var(--bg-subtle)}
+.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--text-link);cursor:pointer;text-align:left}
+.linkbtn:hover{text-decoration:underline}
+.lockcell{display:inline-flex;align-items:center;gap:4px}
+.lockcell .ic{width:12px;height:12px;color:var(--text-tertiary)}
+.tbl .w-act{width:1%;padding-right:8px}
+.tbl td .prog{margin:4px 0 0}
+.subt{display:block;font-size:12px;color:var(--text-tertiary);line-height:16px}
+.th-sort .is-asc{transform:rotate(180deg)}
+.seg button{white-space:nowrap}
+
+/* drill-down */
+
+/* popover chọn khoảng ngày */
+.pop{position:fixed;z-index:70;width:300px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-overlay)}
+.pop__b{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pop__b .field__err{grid-column:1/-1}
+.pop__f{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px;border-top:1px solid var(--border-subtle);background:var(--bg-subtle);border-radius:0 0 var(--radius-md) var(--radius-md)}
+.popscrim{position:fixed;inset:0;z-index:69}
+
+@media (max-width:1100px){
+}
+@media (max-width:900px){
+  .appbar__burger{display:grid}
+  .appbar__search,.appbar__mod .who{display:none}
+  .sidenav{position:fixed;left:0;bottom:0;top:var(--navtop,90px);z-index:60;transform:translateX(-100%);transition:transform var(--dur-base) var(--ease);box-shadow:var(--shadow-modal)}
+  body.nav-open .sidenav{transform:none}
+  .navback{position:fixed;inset:var(--navtop,90px) 0 0 0;z-index:59;background:rgba(19,22,27,.48)}
+  .content{padding:16px}
+  .ph__act{margin-left:0;width:100%}
+  .docbar__m,.docbar__code,.docbar__dens{display:none}
+  .ph__act .seg{max-width:100%;overflow-x:auto}
+}
+
+/* ===== Màn Kế hoạch: list–detail ===== */
+.ld{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);flex:1;min-height:0}
+.ld--wide{grid-template-columns:minmax(0,1fr) minmax(300px,340px)}
+.ld--wide .ld__l{background:var(--bg-page);padding:16px}
+.ld__l{border-right:1px solid var(--border-subtle);background:var(--bg-surface);overflow-y:auto;min-height:0}
+.ld__r{overflow-y:auto;min-height:0;background:var(--bg-page)}
+.ld__e{padding:48px 24px;text-align:center;color:var(--text-tertiary)}
+
+.lst{list-style:none;margin:0;padding:0}
+.lst li{border-bottom:1px solid var(--border-subtle)}
+.lrow{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 14px;cursor:pointer;
+ border-left:2px solid transparent;color:var(--text-primary);font:inherit}
+.lrow:hover{background:var(--bg-hover)}
+.lrow[aria-current="true"]{background:var(--bg-selected);border-left-color:var(--interactive)}
+.lrow__t{display:flex;align-items:center;gap:8px}
+.lrow__n{font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow__m{display:flex;gap:10px;margin-top:3px;font-size:12px;color:var(--text-tertiary)}
+.lrow__m b{color:var(--text-secondary);font-weight:500}
+
+.det{padding:16px;display:flex;flex-direction:column;gap:14px;max-width:1080px}
+.det__h{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.det__h h2{margin:0;font-size:18px;line-height:26px;font-weight:600}
+.det__h .mono{font-size:12px;color:var(--text-tertiary)}
+.det__act{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.sum__i{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px}
+.sum__l{font-size:12px;color:var(--text-tertiary)}
+.sum__v{font-size:20px;font-weight:600;line-height:1.2;margin-top:2px}
+.sum__d{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+
+/* dòng chỉ tiêu / phân bổ */
+.mline{display:flex;align-items:center;gap:10px}
+.mline__b{flex:1;min-width:70px}
+.mline__v{font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+.lockbar{display:flex;align-items:center;gap:8px}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text-tertiary)}
+
+/* ===== khôi phục từ vỏ app v0.4 + bổ sung cho màn Kế hoạch ===== */
+.ph{flex:none;background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);padding:12px 24px}
+.ph__row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
+.ph__title{display:flex;align-items:center;gap:8px;min-width:0}
+.ph h1{margin:0;font-size:20px;line-height:28px;font-weight:600;outline:0}
+.ph__meta{font-size:12px;line-height:16px;color:var(--text-tertiary);margin-top:2px}
+.ph__act{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.alert--info{background:var(--status-info-bg);border-color:color-mix(in srgb,var(--status-info-solid) 35%,transparent)}
+.alert--info > .ic{color:var(--status-info-solid)}
+.chiprow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chiprow__l{font-size:12px;color:var(--text-tertiary);font-weight:500}
+.tbl tr.tong td{background:var(--bg-subtle);border-top:1px solid var(--border);font-weight:600}
+.tbl tbody tr.tong:hover td{background:var(--bg-subtle)}
+
+/* màn này dùng list–detail tràn khung: bỏ padding của .content, hai panel cuộn riêng */
+.content{padding:0;display:flex;flex-direction:column;overflow:hidden}
+#main{flex:1;display:flex;flex-direction:column;min-height:0}
+@media (max-width:1100px){
+  .ld,.ld--wide{grid-template-columns:1fr}
+  .ld__l{border-right:0;border-bottom:1px solid var(--border-subtle);max-height:46vh}
+  .ld--wide .ld__l{max-height:none}
+  .det{padding:14px}
+}
+@media (max-width:900px){
+  .ph,.chiprow{padding-left:16px;padding-right:16px}
+  .ph__act{margin-left:0;width:100%}
+  .ph__act .seg{max-width:100%;overflow-x:auto}
+}
+@media (max-width:760px){
+  .ph{padding:10px 14px}
+  .ph__act{width:100%}
+  .ph__act .input-wrap{flex:1}
+  .cal__d{min-height:70px}
+}
+
+
+/* ===== Màn Chiến dịch ===== */
+.chk-list{list-style:none;margin:0;padding:0}
+.chk-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border-subtle)}
+.chk-list li:last-child{border-bottom:0}
+.chk-list__i{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:1px;
+ background:var(--bg-active);color:var(--text-tertiary)}
+.chk-list__i.ok{background:var(--status-success-bg);color:var(--status-success-fg)}
+.chk-list__b{flex:1;min-width:0}
+.chk-list__b small{display:block;color:var(--text-tertiary);font-size:12px;line-height:16px}
+.mcard{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:var(--border-subtle);
+ border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}
+.mcard > div{background:var(--bg-surface);padding:10px 12px}
+.mcard__l{font-size:12px;color:var(--text-tertiary)}
+.mcard__v{font-size:18px;line-height:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.mcard__d{font-size:12px;color:var(--text-tertiary)}
+.daybar{display:flex;align-items:flex-end;gap:2px;height:48px;margin-top:4px}
+.daybar i{flex:1;background:var(--data-1);border-radius:1px 1px 0 0;min-height:2px}
+.daybar i.hi{background:var(--status-danger-solid)}
+.pill-kenh{display:inline-flex;align-items:center;gap:4px}
+
+/* ===== Màn Nội dung và media ===== */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.asset{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+ overflow:hidden;text-align:left;padding:0;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column}
+.asset:hover{border-color:var(--border-control)}
+.asset[aria-current="true"]{border-color:var(--interactive);box-shadow:inset 0 0 0 1px var(--interactive)}
+.asset__t{height:104px;display:grid;place-items:center;background:var(--bg-active);color:var(--text-tertiary);position:relative}
+.asset__t .ic{width:26px;height:26px}
+.asset__q{position:absolute;top:6px;right:6px}
+.asset__b{padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.asset__n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset__m{font-size:12px;color:var(--text-tertiary)}
+.tagrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.sla{display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.sla--qh{color:var(--status-danger-fg);font-weight:500}
+.ver{border-left:2px solid var(--border);padding-left:12px;margin-left:6px}
+.ver__i{position:relative;padding-bottom:14px}
+.ver__i::before{content:"";position:absolute;left:-19px;top:3px;width:10px;height:10px;border-radius:50%;
+ background:var(--bg-surface);box-shadow:0 0 0 2px var(--border)}
+.ver__i.ok::before{background:var(--status-success-solid);box-shadow:0 0 0 2px var(--status-success-solid)}
+.ver__i.sua::before{background:var(--status-warning-solid);box-shadow:0 0 0 2px var(--status-warning-solid)}
+.ver__i.cho::before{background:var(--status-info-solid);box-shadow:0 0 0 2px var(--status-info-solid)}
+.ver__h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ver__d{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+.ver__q{margin-top:6px;padding:8px 10px;background:var(--bg-subtle);border-radius:var(--radius-md);font-size:12px}
+
+/* ===== Màn Các kênh và quảng cáo ===== */
+.conn{display:inline-flex;align-items:center;gap:6px}
+.conn__d{width:8px;height:8px;border-radius:50%;flex:none}
+.d-ok{background:var(--status-success-solid)}
+.d-loi{background:var(--status-danger-solid)}
+.d-chua{background:var(--text-disabled)}
+.kwbar{display:flex;align-items:center;gap:8px}
+.kwbar__t{flex:1;height:6px;background:var(--bg-active);border-radius:3px;overflow:hidden;min-width:60px}
+.kwbar__t i{display:block;height:100%;background:var(--data-2);border-radius:3px}
+.kwbar__v{min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.stack2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.pf{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-subtle)}
+.pf:last-child{border-bottom:0}
+.pf__n{flex:1;min-width:0}
+.pf__v{font-variant-numeric:tabular-nums;font-weight:500}
+
+/* ===== Màn Hội thoại và Lead ===== */
+.chatwrap{display:flex;flex-direction:column;height:100%;min-height:0}
+.chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg-page)}
+.msg{max-width:76%;padding:8px 12px;border-radius:var(--radius-lg);font-size:13px;line-height:20px}
+.msg__m{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+.msg--in{align-self:flex-start;background:var(--bg-surface);border:1px solid var(--border-subtle)}
+.msg--out{align-self:flex-end;background:var(--bg-selected);border:1px solid color-mix(in srgb,var(--interactive) 25%,transparent)}
+.msg--sys{align-self:center;background:var(--bg-active);color:var(--text-secondary);font-size:12px;border-radius:var(--radius-md)}
+.cfoot{flex:none;border-top:1px solid var(--border-subtle);background:var(--bg-surface);padding:10px 12px;
+ display:flex;gap:8px;align-items:flex-end}
+.cfoot textarea{flex:1;min-height:38px;max-height:120px}
+.chead{flex:none;border-bottom:1px solid var(--border-subtle);background:var(--bg-surface);padding:10px 14px;
+ display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chead__n{font-weight:600;flex:1;min-width:0}
+.tl{border-left:2px solid var(--border);padding-left:14px;margin-left:6px}
+.tl__i{position:relative;padding-bottom:14px}
+.tl__i::before{content:"";position:absolute;left:-21px;top:4px;width:10px;height:10px;border-radius:50%;
+ background:var(--bg-surface);box-shadow:0 0 0 2px var(--border)}
+.tl__i.hl::before{background:var(--interactive);box-shadow:0 0 0 2px var(--interactive)}
+.tl__h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl__d{font-size:12px;color:var(--text-tertiary);margin-top:1px}
+.slabar{display:flex;align-items:center;gap:8px;min-width:120px}
+.slabar__t{flex:1;height:5px;background:var(--bg-active);border-radius:3px;overflow:hidden}
+.slabar__t i{display:block;height:100%;background:var(--status-success-solid)}
+.slabar__t i.w{background:var(--status-warning-solid)}
+.slabar__t i.d{background:var(--status-danger-solid)}
+
+/* ===== Màn CRM ===== */
+.qbar{display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--bg-active);margin:6px 0}
+.qbar i{display:block;height:100%}
+.q-tot{background:var(--status-success-solid)} .q-tb{background:var(--status-info-solid)}
+.q-kem{background:var(--status-warning-solid)} .q-sai{background:var(--status-danger-solid)}
+.qleg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+.qleg span{display:inline-flex;align-items:center;gap:5px}
+.qleg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.kbstep{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+.kbstep:last-child{border-bottom:0}
+.kbstep__n{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;
+ background:var(--bg-selected);color:var(--text-link);font-size:12px;font-weight:600}
+.kbstep__b{flex:1;min-width:0}
+.kbstep__b small{display:block;color:var(--text-tertiary);font-size:12px;margin-top:2px}
+
+/* ===== Màn Chi phí ngân sách ===== */
+.lvl{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-subtle)}
+.lvl:last-child{border-bottom:0}
+.lvl__n{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:600;
+ background:var(--bg-active);color:var(--text-tertiary)}
+.lvl__n.ok{background:var(--status-success-bg);color:var(--status-success-fg)}
+.lvl__n.cur{background:var(--status-warning-bg);color:var(--status-warning-fg)}
+.lvl__b{flex:1;min-width:0}
+.lvl__b small{display:block;font-size:12px;color:var(--text-tertiary)}
+
+/* ===== Màn Báo cáo dữ liệu ===== */
+.fun{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:4px 0}
+.funr{display:block;width:100%;border:0;border-bottom:1px solid var(--border-subtle);background:none;
+ padding:12px 16px;text-align:left;color:var(--text-primary);font:inherit;cursor:pointer}
+.funr:last-child{border-bottom:0}
+.funr:hover{background:var(--bg-hover)}
+.funr__h{display:flex;align-items:baseline;gap:10px}
+.funr__h b{margin-left:auto;font-size:17px;font-variant-numeric:tabular-nums}
+.funr__h .pc{min-width:64px;text-align:right;font-weight:600;color:var(--text-link)}
+.funr__r{font-size:12px;color:var(--text-tertiary);margin-top:5px}
+.funhead{display:flex;gap:10px;padding:8px 16px 6px;border-bottom:1px solid var(--border);
+ font-size:12px;color:var(--text-tertiary);font-weight:500}
+.funhead b{margin-left:auto;font-weight:500}
+.funhead .pc{min-width:64px;text-align:right}
+.qrow{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--border-subtle);
+ background:none;padding:12px 16px;text-align:left;color:var(--text-primary);font:inherit;cursor:pointer}
+.qrow:last-child{border-bottom:0}
+.qrow:hover{background:var(--bg-hover)}
+.qrow__n{margin-left:auto;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
+.qrow__d{font-size:12px;color:var(--text-tertiary);margin-top:1px;display:block}
+.qrow--0 .qrow__n,.qrow--0 .arow__t{color:var(--text-tertiary);font-weight:400}
+
+.hint{margin:12px 0 0;font-size:12px;line-height:1.6;color:var(--text-tertiary)}
+.alist{display:flex;flex-direction:column;gap:8px}
+
+/* ===== Màn Công việc và KPI ===== */
+.vrow{display:flex;align-items:flex-start;gap:12px;width:100%;border:0;border-bottom:1px solid var(--border-subtle);
+ background:none;padding:12px 16px;text-align:left;color:var(--text-primary);font:inherit;cursor:pointer}
+.vrow:last-child{border-bottom:0}
+.vrow:hover{background:var(--bg-hover)}
+.vrow[aria-current="true"]{background:var(--bg-selected);box-shadow:inset 3px 0 0 var(--interactive)}
+.vrow__b{flex:1;min-width:0}
+.vrow__t{font-weight:500;display:block}
+.vrow__m{font-size:12px;color:var(--text-tertiary);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.vrow__r{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.up{width:4px;border-radius:2px;flex:none;align-self:stretch;background:var(--border)}
+.up--1{background:var(--status-info-solid)} .up--2{background:var(--status-warning-solid)}
+.up--3{background:var(--status-danger-solid)}
+.han--qh{color:var(--status-danger-fg);font-weight:500}
+.han--gan{color:var(--status-warning-fg);font-weight:500}
+
+.kpibar{display:flex;align-items:center;gap:10px}
+.kpibar__t{flex:1;min-width:70px;height:7px;border-radius:4px;background:var(--bg-active);overflow:hidden;position:relative}
+.kpibar__t i{display:block;height:100%;background:var(--status-success-solid)}
+.kpibar__t i.lo{background:var(--status-danger-solid)}
+.kpibar__t i.mid{background:var(--status-warning-solid)}
+.kpibar__t u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text-tertiary)}
+.kpibar__v{min-width:56px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.nodata{color:var(--text-tertiary);font-style:italic;font-size:12px}
+
+.score{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score__n{font-size:30px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.score__m{font-size:12px;color:var(--text-tertiary)}
+.wbar{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--bg-active);margin:8px 0 6px}
+.wbar i{display:block;height:100%;border-right:1px solid var(--bg-surface)}
+.wbar i:last-child{border-right:0}
+.wleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+.wleg span{display:inline-flex;align-items:center;gap:5px}
+.wleg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.w1{background:#2f6df6}.w2{background:#1f9d6b}.w3{background:#e0872b}.w4{background:#8457e0}.w5{background:#c0392b}
+.pbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.hd{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-subtle)}
+.hd:last-child{border-bottom:0}
+.hd__b{flex:1;min-width:0}
+.hd__b small{display:block;font-size:12px;color:var(--text-tertiary);margin-top:1px}
+.pfs{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:4px 16px}
+.pf__l{flex:none;width:150px;color:var(--text-tertiary);font-size:12px}
+.lnk{border:0;background:none;padding:0;font:inherit;color:var(--text-link);cursor:pointer;text-decoration:none}
+.lnk:hover{text-decoration:underline}
+.det__nut{display:flex;gap:8px;flex-wrap:wrap}
+.tag--neutral{background:var(--bg-active);color:var(--text-secondary)}
+.modal__d{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--text-secondary)}
+
+/* ===== Màn Thiết lập và quản trị ===== */
+.mtx{display:flex;align-items:center;gap:8px;justify-content:center}
+.mtx__d{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.sc-ca{background:var(--status-info-solid)} .sc-doi{background:var(--status-warning-solid)}
+.sc-het{background:var(--status-success-solid)} .sc-khong{background:var(--border)}
+.scleg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);margin-top:10px}
+.scleg span{display:inline-flex;align-items:center;gap:6px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px}
+.kv__i{min-width:0}
+.kv__l{font-size:12px;color:var(--text-tertiary);display:block}
+.kv__v{font-weight:500;overflow-wrap:anywhere}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.msg{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;
+ background:var(--bg-subtle);margin-bottom:8px;font-size:13px;line-height:1.6}
+.msg:last-child{margin-bottom:0}
+.msg__h{font-size:12px;color:var(--text-tertiary);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.ph-tok{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--bg-selected);
+ color:var(--text-link);font-family:var(--font-mono,monospace);font-size:12px}
+.cond{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border-subtle)}
+.cond:last-child{border-bottom:0}
+.cond__l{flex:none;width:140px;font-size:12px;color:var(--text-tertiary)}
+.cond__v{flex:1;min-width:0}
+.cond--any .cond__v{color:var(--text-tertiary);font-style:italic}
+
+
+/* ===== sửa chung v0.2 ===== */
+.prog{display:block}
+.mline__b{display:block;max-width:160px}
+.mline .prog{margin:0}
+td.r .mline{justify-content:flex-end}
+.ld--solo{grid-template-columns:minmax(0,1fr)!important}
+.ld--solo .ld__l{border-right:0;max-height:none!important;border-bottom:0}
+.ld__r h2:focus{outline:none}
+
+body{margin:0;overflow:auto;font:13px var(--font-sans);background:var(--bg-page);color:var(--text-primary)}button,input,select{font:inherit}button{cursor:pointer}header{height:56px;background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 24px;gap:28px}.brand{font-size:20px;font-weight:600;color:var(--interactive)}.header-nav{color:var(--text-secondary);display:flex;gap:24px}.header-nav strong{color:var(--interactive)}.avatar{background:var(--bg-selected);color:var(--interactive);border-radius:50%;padding:9px}.app{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:calc(100vh - 56px)}aside{background:var(--bg-surface);border-right:1px solid var(--border-subtle);padding:22px 12px}.nav-label{font-size:11px;letter-spacing:1px;color:var(--text-tertiary);padding:0 12px;margin:8px 0 12px}aside button{display:block;width:100%;text-align:left;padding:12px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);margin-bottom:4px}aside button.active{background:var(--bg-selected);color:var(--interactive);font-weight:600}.side-note{margin:28px 12px;padding-top:20px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);line-height:1.7}main{padding:24px 28px;min-width:0}.crumb{font-size:12px;color:var(--text-tertiary);margin-bottom:16px}.page-title{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}h1{font-size:24px;margin:0 0 6px;font-weight:600}h2{font-size:16px;margin:0}h3{font-size:14px;margin:0 0 12px}p{margin:6px 0;line-height:1.65;color:var(--text-secondary)}.muted{color:var(--text-tertiary)}.badge{display:inline-flex;padding:4px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;background:var(--status-info-bg);color:var(--status-info-fg)}.badge.green{background:var(--status-success-bg);color:var(--status-success-fg)}.badge.red{background:var(--status-danger-bg);color:var(--status-danger-fg)}.badge.amber{background:var(--status-warning-bg);color:var(--status-warning-fg)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.stat,.panel{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg)}.stat{padding:16px 20px}.stat strong{display:block;font-size:26px;margin:6px 0}.panel-head{padding:18px 20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;gap:12px}.toolbar{padding:14px 20px;display:flex;align-items:center;gap:12px;background:var(--bg-subtle);border-bottom:1px solid var(--border-subtle)}input:not([type=checkbox]):not([type=radio]),select{height:var(--control-h);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);padding:0 10px;min-width:0}input:focus,select:focus{outline:2px solid var(--focus);outline-offset:1px}input[type=checkbox]{accent-color:var(--interactive);width:16px;height:16px}.search{width:260px}.roles-layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:20px}.role-item{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px;text-align:left;border:0;border-bottom:1px solid var(--border-subtle);background:transparent;color:var(--text-primary)}.role-item.selected{background:var(--bg-selected);box-shadow:inset 3px 0 var(--interactive)}.role-item small{display:block;color:var(--text-tertiary);margin-top:5px}.tabs{display:flex;padding:0 20px;gap:24px;border-bottom:1px solid var(--border-subtle)}.tabs button{padding:14px 0;border:0;border-bottom:2px solid transparent;background:none;color:var(--text-secondary)}.tabs button.active{color:var(--interactive);border-bottom-color:var(--interactive);font-weight:600}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th{background:var(--bg-subtle);color:var(--text-secondary);font-weight:500;text-align:left;white-space:nowrap}th,td{height:var(--row-h);padding:8px var(--cell-px);border-bottom:1px solid var(--border-subtle)}td.center,th.center{text-align:center}tbody tr:hover{background:var(--bg-hover)}.group td{background:var(--bg-subtle);font-weight:600;color:var(--text-secondary)}.footer{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;color:var(--text-tertiary)}.info{margin:16px 20px;padding:12px 14px;background:var(--status-info-bg);color:var(--status-info-fg);border-radius:var(--radius-md);line-height:1.6}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}label.field{display:flex;flex-direction:column;gap:8px}.wide{grid-column:1/-1}.condition{display:grid;grid-template-columns:1.3fr 1fr 1.3fr auto;gap:10px;margin-top:10px}.policy-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,1fr);gap:20px}.policy-card{padding:20px;border-bottom:1px solid var(--border-subtle);cursor:pointer}.policy-card.selected{background:var(--bg-selected)}.policy-card .row{justify-content:space-between}.policy-meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.steps{padding:20px}.step{padding:14px 0 14px 32px;border-left:2px solid var(--border-subtle);position:relative;margin-left:9px}.step:before{content:'✓';position:absolute;left:-11px;top:15px;width:20px;height:20px;text-align:center;border-radius:50%;background:var(--status-success-bg);color:var(--status-success-fg)}.step.fail:before{content:'×';background:var(--status-danger-bg);color:var(--status-danger-fg)}.result{margin:0 20px 20px;padding:16px;background:var(--status-success-bg);border-radius:var(--radius-md);color:var(--status-success-fg)}.result.deny{background:var(--status-danger-bg);color:var(--status-danger-fg)}dialog{border:1px solid var(--border-subtle);border-radius:var(--radius-lg);background:var(--bg-surface);color:var(--text-primary);width:min(640px,90vw);padding:0;box-shadow:var(--shadow-modal)}dialog::backdrop{background:rgba(19,22,27,.45)}.dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--border-subtle)}.error{color:var(--status-danger-fg);margin:0 20px 12px}#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 20px;background:var(--bg-inverse);color:var(--text-inverse);border-radius:var(--radius-md);z-index:100}.empty{padding:40px;text-align:center;color:var(--text-tertiary)}@media(max-width:1000px){.app{grid-template-columns:180px minmax(0,1fr)}main{padding:20px}.roles-layout,.policy-layout{grid-template-columns:1fr}.roles-list{display:flex;overflow:auto}.role-item{min-width:190px}.header-nav{display:none}}@media(max-width:650px){.app{display:block}aside{padding:8px;display:flex;overflow:auto}aside button{white-space:nowrap;width:auto}.nav-label,.side-note{display:none}.stats{grid-template-columns:1fr 1fr}.page-title{align-items:flex-start;flex-direction:column}.toolbar{flex-wrap:wrap}.form-grid{grid-template-columns:1fr}.condition{grid-template-columns:1fr}.header-nav{display:none}main{padding:16px}h1{font-size:22px}}
+
+header{height:48px;padding:0 12px;gap:16px;background:var(--gray-90);color:var(--text-inverse)}
+:root[data-theme="dark"] header{background:#0d1014;color:#f2f4f6}
+.brand{font-size:15px;color:#f2f4f6;letter-spacing:.01em}.header-nav{align-self:stretch;align-items:center;font-size:13px;gap:20px;color:rgba(255,255,255,.82)}.header-nav strong{height:100%;display:flex;align-items:center;position:relative;color:#fff;font-weight:500}.header-nav strong:after{content:'';height:2px;background:#fff;position:absolute;bottom:0;left:0;right:0}
+header #theme{background:none;color:inherit;border-color:rgba(255,255,255,.2);height:28px;font-size:12px}.avatar{width:28px;height:28px;padding:0;display:grid;place-items:center;font-size:11px;background:rgba(255,255,255,.12);color:#fff}
+.app{display:block;min-height:calc(100vh - 48px)}aside{display:flex;align-items:stretch;gap:4px;padding:0 24px;border-right:0;border-bottom:1px solid var(--border-subtle);overflow:auto}aside button{width:auto;white-space:nowrap;height:40px;margin:0;padding:0 12px;border-radius:0;border-bottom:2px solid transparent;font-weight:400}aside button.active{color:var(--text-primary);font-weight:500;background:transparent;border-bottom-color:var(--interactive)}aside button:hover{background:var(--bg-hover)}
+main{padding:20px 24px 40px;max-width:1600px;margin:auto}.crumb{margin-bottom:8px}.page-title{margin-bottom:16px;align-items:center}h1{font-size:20px;line-height:28px;margin:0;font-weight:600}h2{font-size:14px;line-height:20px}h3{font-size:13px}.panel{border-radius:var(--radius-md)}.panel-head{padding:12px 16px}.roles-layout{grid-template-columns:224px minmax(0,1fr);gap:16px}.role-item{padding:12px 16px;min-height:48px;font-size:13px}.role-item.selected{color:var(--text-primary);font-weight:500}.role-item small{font-size:11px}.toolbar{padding:8px 16px;background:var(--bg-surface)}.tabs{padding:0 4px;gap:4px;border-bottom-color:var(--border)}.tabs button{height:40px;padding:0 12px}.tabs button.active{color:var(--text-primary);font-weight:500}.tabs button:hover{background:var(--bg-hover)}th,td{height:var(--row-h);padding:0 var(--cell-px);font-size:13px}td select{margin:4px 0;max-width:170px}.group td{height:32px;font-size:12px;font-weight:500}.badge{border-radius:var(--radius-sm)}.footer{padding:8px 16px;font-size:12px}.policy-layout{gap:16px}.policy-card{padding:16px}.form-grid{padding:16px;gap:16px}.dialog-foot{padding:12px 16px}.panel-head p{font-size:12px;margin-top:4px}.steps{display:block}.search{width:240px}
+@media(max-width:1000px){.roles-layout{grid-template-columns:1fr}.header-nav{display:flex}.roles-list{display:flex}.role-item{min-width:185px}}@media(max-width:650px){main{padding:16px}.header-nav{display:none}aside{padding:0 8px}.page-title{align-items:flex-start}.toolbar{flex-wrap:wrap}h1{font-size:20px}}
+input[type=radio]{width:16px;height:16px;margin:0;accent-color:var(--interactive)} .tabs{overflow-x:auto;overflow-y:hidden;min-height:40px;align-items:stretch}.tabs button{box-sizing:border-box;flex-shrink:0;margin-bottom:0;line-height:20px}.action-options{display:flex;flex-wrap:wrap;gap:10px 20px}.action-options label{display:flex;align-items:center;gap:8px;min-width:140px;min-height:28px}.scope-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:8px 20px}.scope-options label{display:flex;align-items:center;justify-content:space-between;gap:8px}.scope-options select{width:150px}</style></head><body><header><span class="brand">DATYSO</span><span class="header-nav"><span>Không gian làm việc</span><span>Marketing</span><strong>Thiết lập</strong></span><span class="spacer"></span><button class="btn btn--secondary" id="theme">Sáng / Tối</button><span class="avatar">HA</span></header><div class="app"><aside><button data-view="roles" class="active">Vai trò & quyền</button><button data-view="users">Người dùng</button><button data-view="history">Lịch sử thay đổi</button></aside><main><div class="crumb">Thiết lập &nbsp; / &nbsp; Phân quyền</div><div id="content"></div></main></div><dialog id="dialog" aria-labelledby="dialog-title"></dialog><div id="toast" role="status" hidden></div>
+<script>
+const roles=[{name:'Chuyên viên Marketing',code:'MKT_STAFF',users:12},{name:'Trưởng nhóm Marketing',code:'MKT_LEADER',users:3},{name:'Trưởng/Phó phòng',code:'MKT_MANAGER',users:2},{name:'Ban giám đốc',code:'DIRECTOR',users:2},{name:'Sale',code:'SALES',users:18},{name:'Quản trị hệ thống',code:'SYS_ADMIN',users:1}];
+const functions=[['Bảng điều khiển','Tổng quan ngày'],['Bảng điều khiển','Phễu và hiệu quả'],['Bảng điều khiển','Hiệu suất đội nhóm'],['Kế hoạch','Kế hoạch Marketing'],['Kế hoạch','Phân bổ ngân sách'],['Kế hoạch','Chỉ tiêu theo sản phẩm'],['Kế hoạch','Chỉ tiêu theo kênh'],['Chiến dịch','Hồ sơ chiến dịch'],['Nội dung & media','Yêu cầu nội dung'],['Chi phí','Đề xuất chi'],['Chi phí','Thanh toán'],['CRM','Đơn hàng liên kết']];
+const actions=['Xem','Tạo','Sửa','Xóa','Gửi duyệt','Duyệt','Xuất'];
+const scopes=['Của mình','Được giao / tham gia','Đội mình','Toàn phòng','Toàn tổ chức'];
+let selectedRole=1,tab='functions',view='roles',dirty=false,search='',permissions={},historyRows=[],policyIndex=0;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const get=(r,i)=>permissions[r+'-'+i] ||= {values:actions.map((_,a)=>r>=5?false:r===4?(i===11&&a===0):a===0||((i>=3&&i!==10)&&a<3)||(r===1&&i>=3&&i!==10&&a===4)||(r>1&&r<4&&i>=3&&a===5)),scope:r===0?'Của mình':r===1?'Đội mình':r===3?'Toàn tổ chức':r===4?'Được giao / tham gia':r>=5?'Của mình':'Toàn phòng'};
+const fields=['Tiến độ / trạng thái','Thông tin liên hệ','Giá bán / thành tiền','Giá vốn','Lợi nhuận'];
+let fieldGrants={},userRoles={'Nguyễn Minh Anh':[0],'Trần Khánh Hòa':[1],'Lê Hoàng Nam':[4]},policies=[{name:'Sale xem tiến độ đơn được giao',code:'AB13',type:'Cho phép có điều kiện',role:'Sale',resource:'Đơn hàng',action:'Xem tiến độ',attribute:'Người phụ trách cơ hội',operator:'Bằng',value:'Người dùng hiện tại',active:true},{name:'Không tự duyệt đề xuất của mình',code:'AB10',type:'Từ chối',role:'Mọi vai trò',resource:'Đề xuất chi',action:'Duyệt',attribute:'Người lập',operator:'Bằng',value:'Người dùng hiện tại',active:true},{name:'Giới hạn trường giá của Sale',code:'AB14',type:'Giới hạn trường',role:'Sale',resource:'Đơn hàng',action:'Xem / Xuất',attribute:'Quyền xem giá',operator:'Bằng',value:'Chưa được cấp',active:true}];
+function toast(t){const el=document.querySelector('#toast');el.textContent=t;el.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.hidden=true,2800)}
+function log(t){historyRows.unshift({time:new Date().toLocaleString('vi-VN'),action:t});}
+function title(h,p,buttons=''){return '<div class="page-title"><div><h1>'+h+'</h1><p>'+p+'</p></div><div class="row">'+buttons+'</div></div>'}
+function stats(){return '<div class="stats">'+[[roles.length,'Vai trò'],[Object.keys(userRoles).length,'Người dùng mẫu'],[functions.length,'Chức năng mẫu'],[policies.filter(p=>p.active).length,'Chính sách hiệu lực']].map(x=>'<div class="stat"><span class="muted">'+x[1]+'</span><strong>'+x[0]+'</strong><span class="muted">Phân hệ Marketing</span></div>').join('')+'</div>'}
+function render(){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelector('#content').innerHTML=view==='roles'?renderRoles():view==='policies'?renderPolicies():view==='simulate'?renderSimulation():view==='users'?renderUsers():renderHistory();bind();}
+function renderRoles(){const role=roles[selectedRole];return title('Vai trò & phân quyền','Cấp quyền chức năng, phạm vi dữ liệu và trường được phép xem.','<button class="btn btn--secondary" data-do="new-role">＋ Tạo vai trò</button><button class="btn btn--primary" data-do="save">Lưu thay đổi</button>')+stats()+'<div class="roles-layout"><section class="panel"><div class="panel-head"><h2>Vai trò</h2><span class="badge">'+roles.length+'</span></div><div class="roles-list">'+roles.map((r,i)=>'<button class="role-item '+(i===selectedRole?'selected':'')+'" data-role="'+i+'"><span>'+esc(r.name)+'<small>'+esc(r.code)+'</small></span><span class="muted">'+r.users+'</span></button>').join('')+'</div></section><section class="panel"><div class="panel-head"><div><h2>'+esc(role.name)+'</h2><p>'+esc(role.code)+' · '+role.users+' người dùng</p></div><span class="badge '+(dirty?'amber':'green')+'">'+(dirty?'Chưa lưu':'Cấu hình mẫu')+'</span></div><div class="tabs">'+[['functions','Quyền chức năng'],['data','Phạm vi dữ liệu'],['fields','Trường dữ liệu']].map(t=>'<button data-tab="'+t[0]+'" class="'+(tab===t[0]?'active':'')+'">'+t[1]+'</button>').join('')+'</div><div class="toolbar"><input class="search" id="search" aria-label="Tìm chức năng" placeholder="Tìm chức năng…" value="'+esc(search)+'"><span class="spacer"></span><span class="muted">Quyền được cấp tường minh</span></div>'+roleTable()+'<div class="info">'+(tab==='functions'?'Quyền Duyệt chỉ có hiệu lực khi đúng bước được phân công. Chính sách ABAC tiếp tục kiểm tra điều kiện.':tab==='data'?'Mỗi thao tác có phạm vi riêng. Quyền Xem toàn phòng không mở rộng quyền Sửa của mình.':'Trường bị hạn chế được loại khỏi màn hình, API và tệp xuất dữ liệu.')+'</div><div class="footer"><span>'+functions.filter(f=>f[1].toLowerCase().includes(search.toLowerCase())).length+' chức năng · Dữ liệu minh họa</span><button class="btn btn--ghost" data-do="simulate-role">Kiểm tra quyền vai trò →</button></div></section></div>'}
+function roleTable(){let last='';const filtered=functions.map((f,i)=>({f,i})).filter(x=>x.f[1].toLowerCase().includes(search.toLowerCase()));let rows=filtered.map(({f,i})=>{let g='';if(f[0]!==last){last=f[0];g='<tr class="group"><td colspan="'+(tab==='functions'?8:tab==='data'?5:6)+'">'+f[0]+'</td></tr>'}const grant=get(selectedRole,i);return g+'<tr><td>'+f[1]+'</td>'+(tab==='functions'?actions.map((a,k)=>'<td class="center"><input type="checkbox" aria-label="'+a+' '+f[1]+'" data-permission="'+i+','+k+'" '+(grant.values[k]?'checked':'')+'></td>').join(''):tab==='data'?['Xem','Sửa','Duyệt','Xuất'].map(a=>'<td><select aria-label="Phạm vi '+a+' '+f[1]+'" data-scope="'+i+','+a+'">'+scopes.map(s=>'<option '+((grant[a]||grant.scope)===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>').join(''):fields.map((a,k)=>{const key=selectedRole+'-'+i+'-'+k;const checked=fieldGrants[key]??(selectedRole<5&&(selectedRole===4?k<2:selectedRole===0?k<3:true));return '<td class="center"><input type="checkbox" aria-label="Xem '+a+' '+f[1]+'" data-field="'+key+'" '+(checked?'checked':'')+'></td>'}).join(''))+'</tr>'}).join('');return '<div class="table-scroll"><table><thead><tr><th>Chức năng</th>'+(tab==='functions'?actions:tab==='data'?['Xem','Sửa','Duyệt','Xuất']:fields).map(a=>'<th class="'+(tab==='data'?'':'center')+'">'+a+'</th>').join('')+'</tr></thead><tbody>'+ (rows||'<tr><td colspan="8" class="empty">Không tìm thấy chức năng</td></tr>')+'</tbody></table></div>'}
+function renderPolicies(){const p=policies[policyIndex];return title('Chính sách ABAC','Giới hạn quyền theo người dùng, bản ghi và điều kiện nghiệp vụ.','<button class="btn btn--primary" data-do="new-policy">＋ Tạo chính sách</button>')+'<div class="policy-layout"><section class="panel"><div class="panel-head"><h2>Danh sách chính sách</h2><span class="badge">'+policies.length+' chính sách</span></div>'+policies.map((p,i)=>'<div class="policy-card '+(i===policyIndex?'selected':'')+'" role="button" tabindex="0" data-policy="'+i+'"><div class="row"><h3>'+esc(p.name)+'</h3><span class="badge '+(p.active?'green':'amber')+'">'+(p.active?'Hiệu lực':'Ngừng')+'</span></div><p>'+esc(p.code)+' · '+esc(p.resource)+' · '+esc(p.action)+'</p><div class="policy-meta"><span class="badge '+(p.type==='Từ chối'?'red':'')+'">'+esc(p.type)+'</span><span class="badge">'+esc(p.role)+'</span></div></div>').join('')+'<div class="footer">Chính sách từ chối khớp được ưu tiên</div></section><section class="panel"><div class="panel-head"><h2>Chi tiết chính sách</h2><button class="btn btn--secondary" data-do="edit-policy">Chỉnh sửa</button></div><div class="form-grid"><label class="field wide">Tên chính sách<strong>'+esc(p.name)+'</strong></label><label class="field">Vai trò<strong>'+esc(p.role)+'</strong></label><label class="field">Kết quả<strong>'+esc(p.type)+'</strong></label><label class="field">Đối tượng<strong>'+esc(p.resource)+'</strong></label><label class="field">Thao tác<strong>'+esc(p.action)+'</strong></label><div class="wide"><h3>Điều kiện áp dụng</h3><div class="info" style="margin:0">'+(p.conditions||[p]).map(c=>esc(c.attribute)+' <strong>'+esc(c.operator.toLowerCase())+'</strong><br>'+esc(c.value)).join('<hr>AND<br>')+'</div></div></div><div class="info">Chính sách chỉ giới hạn quyền đã được RBAC cấp. Không tự cấp thêm quyền chức năng.</div><div class="footer"><span>Phiên bản mẫu · v1</span><button class="btn btn--secondary" data-do="toggle-policy">'+(p.active?'Ngừng hiệu lực':'Kích hoạt')+'</button></div></section></div>'}
+function renderSimulation(){return title('Kiểm tra quyền','Mô phỏng quyết định quyền trước khi áp dụng cấu hình.')+'<div class="policy-layout"><section class="panel"><div class="panel-head"><h2>Thông tin kiểm tra</h2><span class="badge">Mô phỏng</span></div><div class="form-grid"><label class="field wide">Vai trò<select id="sim-role">'+roles.map((r,i)=>'<option value="'+i+'" '+(i===4?'selected':'')+'>'+esc(r.name)+'</option>').join('')+'</select></label><label class="field">Chức năng<select id="sim-object"><option>Đơn hàng liên kết</option><option>Kế hoạch Marketing</option><option>Đề xuất chi</option></select></label><label class="field">Thao tác<select id="sim-action"><option>Xem tiến độ</option><option>Xem giá</option><option>Duyệt</option></select></label><label class="field">Phạm vi bản ghi<select id="sim-scope"><option>Được giao / đội mình</option><option>Ngoài phạm vi</option></select></label><label class="field">Người lập<select id="sim-owner"><option>Người khác</option><option>Chính mình</option></select></label><div class="wide"><p>Dữ liệu giả lập; không thay đổi phiếu hay chữ ký duyệt.</p></div></div><div class="dialog-foot"><button class="btn btn--primary" data-do="run-simulation">▷ Chạy kiểm tra</button></div></section><section class="panel"><div class="panel-head"><h2>Kết quả kiểm tra</h2></div><div id="simulation-result" class="empty">Chọn tình huống và bấm Chạy kiểm tra<br>để xem quyền và chính sách áp dụng.</div></section></div>'}
+function renderUsers(){return title('Gán vai trò người dùng','Một người dùng có thể được gán nhiều vai trò.','')+'<section class="panel"><div class="panel-head"><h2>Người dùng mẫu</h2><span class="badge">Marketing & Sale</span></div><div class="table-scroll"><table><thead><tr><th>Người dùng</th><th>Vai trò đang được gán</th><th>Thao tác</th></tr></thead><tbody>'+Object.entries(userRoles).map(([n,rs])=>'<tr><td>'+esc(n)+'</td><td>'+rs.map(i=>'<span class="badge">'+esc(roles[i].name)+'</span> ').join('')+'</td><td><button class="btn btn--ghost" data-user="'+esc(n)+'">Chỉnh sửa vai trò</button></td></tr>').join('')+'</tbody></table></div><div class="info">Hợp nhất các quyền hợp lệ, giữ phạm vi của từng quyền. Chính sách từ chối vẫn được ưu tiên.</div></section>'}
+function renderHistory(){return title('Lịch sử thay đổi','Theo dõi thay đổi quyền và chính sách trong phiên demo.')+'<section class="panel"><div class="panel-head"><h2>Nhật ký cấu hình</h2></div><table><thead><tr><th>Thời gian</th><th>Người thực hiện</th><th>Thay đổi</th></tr></thead><tbody>'+historyRows.map(h=>'<tr><td>'+esc(h.time)+'</td><td>Hoàng Anh · Admin</td><td>'+esc(h.action)+'</td></tr>').join('')+'</tbody></table>'+(!historyRows.length?'<div class="empty">Chưa có thay đổi trong phiên demo.</div>':'')+'</section>'}
+function openDialog(title,body,save){const d=document.querySelector('#dialog');d.innerHTML='<div class="panel-head"><h2 id="dialog-title">'+title+'</h2><button class="btn btn--ghost" data-close aria-label="Đóng">×</button></div><form id="modal-form">'+body+'<p id="modal-error" class="error" role="alert"></p><div class="dialog-foot"><button type="button" class="btn btn--secondary" data-close>Hủy</button><button class="btn btn--primary" type="submit">Lưu</button></div></form>';d.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>d.close());d.querySelector('form').onsubmit=e=>{e.preventDefault();save(d)};d.showModal()}
+function policyDialog(edit){const p=edit?policies[policyIndex]:{name:'',role:'Sale',type:'Cho phép có điều kiện',resource:'Đơn hàng',action:'Xem tiến độ',attribute:'Người phụ trách cơ hội',operator:'Bằng',value:'Người dùng hiện tại'};openDialog(edit?'Chỉnh sửa chính sách':'Tạo chính sách ABAC','<div class="form-grid"><label class="field wide">Tên chính sách<input name="name" required value="'+esc(p.name)+'" placeholder="Ví dụ: Sale xem đơn được giao"></label><label class="field">Vai trò<select name="role">'+['Mọi vai trò',...roles.map(r=>r.name)].map(x=>'<option '+(x===p.role?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label><label class="field">Kết quả<select name="type">'+['Cho phép có điều kiện','Từ chối','Giới hạn trường'].map(x=>'<option '+(x===p.type?'selected':'')+'>'+x+'</option>').join('')+'</select></label><label class="field">Đối tượng<select name="resource">'+['Đơn hàng','Kế hoạch','Đề xuất chi'].map(x=>'<option '+(x===p.resource?'selected':'')+'>'+x+'</option>').join('')+'</select></label><label class="field">Thao tác<select name="action">'+['Xem tiến độ','Xem / Xuất','Duyệt','Sửa'].map(x=>'<option '+(x===p.action?'selected':'')+'>'+x+'</option>').join('')+'</select></label><div class="wide"><h3>Điều kiện · tất cả phải thỏa (AND)</h3><div id="conditions">'+conditionRow(p)+'</div><button type="button" class="btn btn--ghost" id="add-condition">＋ Thêm điều kiện</button></div></div>',d=>{const f=new FormData(d.querySelector('form'));if(!f.get('name').trim()){d.querySelector('#modal-error').textContent='Nhập tên chính sách.';return}const rows=[...d.querySelectorAll('.condition')].map(row=>({attribute:row.children[0].value,operator:row.children[1].value,value:row.children[2].value}));const next={...Object.fromEntries(f),...rows[0],conditions:rows,code:edit?p.code:'AB'+(policies.length+21),active:edit?p.active:false};if(edit)policies[policyIndex]=next;else{policies.push(next);policyIndex=policies.length-1}log((edit?'Sửa':'Tạo')+' chính sách '+next.name);d.close();render();toast('Đã lưu chính sách'+(edit?'':' ở trạng thái ngừng hiệu lực'))});const d=document.querySelector('#dialog');d.querySelector('#add-condition').onclick=()=>{d.querySelector('#conditions').insertAdjacentHTML('beforeend',conditionRow(p));bindRemove()};function bindRemove(){d.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{if(d.querySelectorAll('.condition').length>1)b.parentElement.remove()})}bindRemove()}
+function conditionRow(p){return '<div class="condition"><select aria-label="Thuộc tính">'+['Người phụ trách cơ hội','Người lập','Đội bản ghi','Trạng thái','Quyền xem giá'].map(x=>'<option '+(x===p.attribute?'selected':'')+'>'+x+'</option>').join('')+'</select><select aria-label="Toán tử"><option>Bằng</option><option>Khác</option><option>Thuộc tập</option></select><select aria-label="Giá trị"><option>Người dùng hiện tại</option><option>Đội người dùng</option><option>Chờ duyệt</option><option '+(p.value==='Chưa được cấp'?'selected':'')+'>Chưa được cấp</option></select><button type="button" class="btn btn--ghost" data-remove aria-label="Xóa điều kiện">×</button></div>'}
+function runSimulation(){const r=+document.querySelector('#sim-role').value,a=document.querySelector('#sim-action').value,o=document.querySelector('#sim-object').value,out=document.querySelector('#sim-scope').value==='Ngoài phạm vi',self=document.querySelector('#sim-owner').value==='Chính mình';const grants=get(r,o==='Kế hoạch Marketing'?3:o==='Đề xuất chi'?9:11);const price=Object.entries(fieldGrants).some(([k,v])=>k.startsWith(r+'-11-')&&+k.split('-')[2]>=2&&v);let reason='',code='',rbac=true;if(a==='Duyệt'&&!grants.values[5]){reason='Vai trò chưa được cấp quyền Duyệt chức năng này.';rbac=false}else if(a!=='Duyệt'&&!grants.values[0]){reason='Vai trò chưa được cấp quyền Xem.';rbac=false}else if(out){reason='Bản ghi nằm ngoài phạm vi được cấp.';code='AB03'}else if(a==='Duyệt'&&self&&policies.some(p=>p.code==='AB10'&&p.active)){reason='Người lập không được tự duyệt phiếu của mình.';code='AB10'}else if(a==='Xem giá'&&r===4&&!price){reason='Chỉ được xem tiến độ; chưa được cấp quyền xem giá.';code='AB14'}const denied=!!reason;document.querySelector('#simulation-result').className='';document.querySelector('#simulation-result').innerHTML='<div class="steps">'+[['Quyền vai trò',rbac?'Có quyền '+a:reason,!rbac],['Phạm vi bản ghi',out?'Ngoài phạm vi':'Bản ghi được giao / thuộc đội',out],['Điều kiện chính sách',code?code+' · '+reason:'Không có chính sách từ chối khớp',!!code]].map(x=>'<div class="step '+(x[2]?'fail':'')+'"><h3>'+x[0]+'</h3><p>'+esc(x[1])+'</p></div>').join('')+'</div><div class="result '+(denied?'deny':'')+'"><strong>'+(denied?'Từ chối':'Cho phép')+'</strong><p>'+(denied?esc(reason):a==='Xem tiến độ'?'Được xem mã đơn và trạng thái. Không bao gồm giá.':'Thao tác được phép trong tình huống giả lập.')+'</p></div><div class="info">Mô phỏng các tình huống mẫu; chưa kết nối bộ máy kiểm quyền thực tế.</div>'}
+function bind(){document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{selectedRole=+b.dataset.role;search='';render()});document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});document.querySelector('#search')?.addEventListener('input',e=>{search=e.target.value;const pos=e.target.selectionStart;render();const s=document.querySelector('#search');s.focus();s.setSelectionRange(pos,pos)});document.querySelectorAll('[data-permission]').forEach(c=>c.onchange=()=>{const [i,k]=c.dataset.permission.split(',').map(Number);get(selectedRole,i).values[k]=c.checked;dirty=true});document.querySelectorAll('[data-scope]').forEach(c=>c.onchange=()=>{const [i,a]=c.dataset.scope.split(',');get(selectedRole,i)[a]=c.value;dirty=true});document.querySelectorAll('[data-field]').forEach(c=>c.onchange=()=>{fieldGrants[c.dataset.field]=c.checked;dirty=true});document.querySelectorAll('[data-policy]').forEach(c=>{c.onclick=()=>{policyIndex=+c.dataset.policy;render()};c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click()}}});document.querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>openDialog('Gán vai trò · '+esc(b.dataset.user),'<div class="form-grid">'+roles.map((r,i)=>'<label class="row"><input type="checkbox" name="roles" value="'+i+'" '+(userRoles[b.dataset.user].includes(i)?'checked':'')+'>'+esc(r.name)+'</label>').join('')+'</div>',d=>{userRoles[b.dataset.user]=[...d.querySelectorAll('input:checked')].map(c=>+c.value);log('Cập nhật vai trò của '+b.dataset.user);d.close();render();toast('Đã cập nhật vai trò')}));document.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>{const a=b.dataset.do;if(a==='save'){dirty=false;log('Lưu quyền vai trò '+roles[selectedRole].name);render();toast('Đã lưu thay đổi trong phiên demo')}if(a==='new-role')openDialog('Tạo vai trò','<div class="form-grid"><label class="field wide">Tên vai trò<input name="name" required placeholder="Nhập tên vai trò"></label><label class="field wide">Mã vai trò<input name="code" required pattern="[A-Z0-9_]+" placeholder="Ví dụ: MKT_CONTENT" title="Chữ hoa, số và dấu gạch dưới"></label></div>',d=>{const f=new FormData(d.querySelector('form')),name=f.get('name').trim(),code=f.get('code').trim();if(!name||roles.some(r=>r.code===code)){d.querySelector('#modal-error').textContent='Tên không được trống và mã vai trò phải duy nhất.';return}roles.push({name,code,users:0});selectedRole=roles.length-1;functions.forEach((_,i)=>permissions[selectedRole+'-'+i]={values:actions.map(()=>false),scope:'Của mình'});log('Tạo vai trò '+name);d.close();render();toast('Đã tạo vai trò chưa được cấp quyền')});if(a==='new-policy')policyDialog(false);if(a==='edit-policy')policyDialog(true);if(a==='toggle-policy'){policies[policyIndex].active=!policies[policyIndex].active;log((policies[policyIndex].active?'Kích hoạt':'Ngừng')+' '+policies[policyIndex].name);render()}if(a==='simulate-role'){view='simulate';render();document.querySelector('#sim-role').value=selectedRole}if(a==='run-simulation')runSimulation()})}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});document.querySelector('#theme').onclick=()=>document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';render();
+
+// Product screens show configuration and decisions, without review notes.
+function cleanScreen(h){return h
+ .replace(/<div class="stats">[\s\S]*?<\/div><div class="roles-layout">/,'<div class="roles-layout">')
+ .replace(/<div class="info">[\s\S]*?<\/div>/g,'')
+ .replace(/<span class="badge green">Cấu hình mẫu<\/span>/g,'')
+ .replace(/<span class="muted">Quyền được cấp tường minh<\/span>/g,'')
+ .replace(/<span>\d+ chức năng · Dữ liệu minh họa<\/span>/g,'')
+ .replace(/<div class="footer">Chính sách từ chối khớp được ưu tiên<\/div>/g,'')
+ .replace(/<span>Phiên bản mẫu · v1<\/span>/g,'')
+ .replace(/<div class="wide"><p>Dữ liệu giả lập; không thay đổi phiếu hay chữ ký duyệt.<\/p><\/div>/g,'')
+ .replace(/<small>[A-Z0-9_]+<\/small>/g,'')
+ .replace(/<p>[A-Z0-9_]+ · (\d+ người dùng)<\/p>/g,'<p>$1</p>')
+ .replace(/Người dùng mẫu/g,'Người dùng').replace(/Marketing & Sale/g,'Đang hoạt động')
+ .replace(/trong phiên demo/g,'').replace(/Mô phỏng quyết định quyền trước khi áp dụng cấu hình\./g,'')}
+const originalTitle=title;title=(h,p,buttons='')=>originalTitle(h,'',buttons).replace('<p></p>','');
+const originalStats=stats;stats=()=>'';
+const originalRoles=renderRoles;renderRoles=()=>cleanScreen(originalRoles());
+const originalTable=roleTable;roleTable=()=>{
+ if(tab==='functions'||tab==='data')return featurePermissionTable();
+ let h=originalTable();
+ if(tab==='fields'){
+  const applicable={0:[0,2,4],1:[0,2,3,4],2:[0,2,4],3:[0,2],4:[2],5:[2],6:[2,3,4],7:[0,2],8:[0],9:[0,2],10:[0,2],11:[0,1,2,3,4]};
+  h=h.replace(/<td class="center"><input type="checkbox" aria-label="[^"]*" data-field="(\d+)-(\d+)-(\d+)"[^>]*><\/td>/g,(cell,r,i,k)=>(applicable[i]||[]).includes(+k)?cell:'<td class="center muted">—</td>');
+ }
+ if(tab==='data')h=h.replace(/<select aria-label="([^"]*)" data-scope="(\d+),([^"]*)">/g,(cell,label,i,a)=>get(selectedRole,+i).values[actions.indexOf(a)]?cell:cell.replace('>',' disabled title="Thao tác chưa được cấp quyền">'));
+ return h;
+};
+const featureActions=[
+ ['Xem','Xem chi tiết nguồn','Xuất dữ liệu'],
+ ['Xem','Xem chi tiết nguồn','Xuất dữ liệu'],
+ ['Xem','Xem chi tiết nguồn','Xuất dữ liệu'],
+ ['Xem','Tạo','Sửa','Xóa','Gửi duyệt','Rút yêu cầu','Duyệt','Từ chối','Rút về nháp','Sinh chỉ tiêu','Xuất dữ liệu'],
+ ['Xem','Tạo','Sửa','Xóa','Gửi duyệt','Duyệt','Từ chối','Về nháp','Khóa','Mở khóa','Đóng kỳ','Xuất dữ liệu'],
+ ['Xem','Tạo tay','Sửa chỉ tiêu tạo tay','Xóa chỉ tiêu tạo tay','Xuất dữ liệu'],
+ ['Xem','Tạo tay','Sửa chỉ tiêu tạo tay','Xóa chỉ tiêu tạo tay','Xuất dữ liệu'],
+ ['Xem','Tạo','Sửa','Xóa','Gửi duyệt','Rút yêu cầu','Duyệt nội dung','Duyệt ngân sách','Từ chối','Yêu cầu sửa'],
+ ['Xem','Tạo','Sửa','Xóa','Phân công','Hủy','Khôi phục','Xuất dữ liệu'],
+ ['Xem','Tạo','Sửa','Xóa','Gửi duyệt','Rút yêu cầu','Duyệt','Từ chối'],
+ ['Xem','Ghi nhận thanh toán','Tải chứng từ'],
+ ['Xem','Xem nguồn và điểm chạm']
+];
+let featureGrants={};
+function featureGranted(i,a){const key=selectedRole+'-'+i+'-'+a;if(key in featureGrants)return featureGrants[key];const base=actions.indexOf(a==='Xuất dữ liệu'?'Xuất':a);return base>=0?get(selectedRole,i).values[base]:false}
+function featurePermissionTable(){let group='';const rows=functions.map((f,i)=>({f,i})).filter(x=>x.f[1].toLowerCase().includes(search.toLowerCase())).map(({f,i})=>{let heading='';if(group!==f[0]){group=f[0];heading='<tr class="group"><td colspan="2">'+esc(group)+'</td></tr>'}return heading+'<tr><td style="width:240px;vertical-align:top;padding-top:12px">'+esc(f[1])+'</td><td style="padding:10px 12px">'+(tab==='functions'?'<div class="action-options">'+featureActions[i].map(a=>'<label><input type="checkbox" data-feature-action="'+i+'" data-action-label="'+esc(a)+'" '+(featureGranted(i,a)?'checked':'')+'>'+esc(a)+'</label>').join('')+'</div>':'<div class="scope-options">'+featureActions[i].map(a=>'<label><span>'+esc(a)+'</span><select aria-label="Phạm vi '+esc(a)+' '+esc(f[1])+'" data-feature-scope="'+i+'" data-action-label="'+esc(a)+'" '+(!featureGranted(i,a)?'disabled title="Thao tác chưa được cấp quyền"':'')+'>'+scopes.map(s=>'<option '+((get(selectedRole,i)[a]||get(selectedRole,i).scope)===s?'selected':'')+'>'+s+'</option>').join('')+'</select></label>').join('')+'</div>')+'</td></tr>'}).join('');return '<div class="table-scroll"><table><thead><tr><th>Chức năng</th><th>'+(tab==='functions'?'Thao tác được cấp quyền':'Phạm vi theo thao tác')+'</th></tr></thead><tbody>'+(rows||'<tr><td colspan="2" class="empty">Không tìm thấy chức năng</td></tr>')+'</tbody></table></div>'}
+const originalPolicies=renderPolicies;renderPolicies=()=>cleanScreen(originalPolicies());
+const originalSimulation=renderSimulation;renderSimulation=()=>cleanScreen(originalSimulation());
+const originalUsers=renderUsers;renderUsers=()=>cleanScreen(originalUsers());
+const originalHistory=renderHistory;renderHistory=()=>cleanScreen(originalHistory());
+const originalRun=runSimulation;runSimulation=()=>{originalRun();const e=document.querySelector('#simulation-result');e.innerHTML=cleanScreen(e.innerHTML)};
+const originalToast=toast;toast=t=>originalToast(t.replace(' trong phiên demo',''));
+const userDetails={
+ 'Nguyễn Minh Anh':{email:'minhanh@datyso.vn',active:true},
+ 'Trần Khánh Hòa':{email:'khanhhoa@datyso.vn',active:true},
+ 'Lê Hoàng Nam':{email:'hoangnam@datyso.vn',active:true}
+};
+renderUsers=()=>title('Người dùng','', '<button class="btn btn--primary" id="create-user">＋ Tạo người dùng</button>')+
+ '<section class="panel"><div class="toolbar"><input id="user-search" class="search" placeholder="Tìm tên hoặc email…" aria-label="Tìm người dùng"></div><div class="table-scroll"><table><thead><tr><th>Người dùng</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="user-rows">'+userRows('')+'</tbody></table></div></section>';
+function userRows(search){return Object.entries(userRoles).filter(([name])=>(name+' '+(userDetails[name]?.email||'')).toLowerCase().includes(search.toLowerCase())).map(([name,rs])=>'<tr><td><button class="btn btn--ghost" data-user-detail="'+esc(name)+'">'+esc(name)+'</button></td><td>'+esc(userDetails[name]?.email||'—')+'</td><td>'+rs.map(i=>'<span class="badge">'+esc(roles[i].name)+'</span> ').join('')+'</td><td><span class="badge '+(userDetails[name]?.active?'green':'amber')+'">'+(userDetails[name]?.active?'Đang hoạt động':'Ngừng hoạt động')+'</span></td><td><div class="row"><button class="btn btn--ghost" data-user-edit="'+esc(name)+'">Sửa</button><button class="btn btn--ghost" data-user-delete="'+esc(name)+'">Xóa</button></div></td></tr>').join('')||'<tr><td colspan="5" class="empty">Không tìm thấy người dùng</td></tr>'}
+function editUser(name){const exists=!!name,info=userDetails[name]||{email:'',active:true},rs=userRoles[name]||[];openDialog(exists?'Sửa người dùng':'Tạo người dùng','<div class="form-grid"><label class="field">Họ tên<input name="name" required value="'+esc(name||'')+'"></label><label class="field">Email<input name="email" type="email" required value="'+esc(info.email)+'"></label><label class="field wide">Trạng thái<select name="active"><option value="yes" '+(info.active?'selected':'')+'>Đang hoạt động</option><option value="no" '+(!info.active?'selected':'')+'>Ngừng hoạt động</option></select></label><div class="wide"><h3>Vai trò</h3>'+roles.map((r,i)=>'<label class="row" style="margin:10px 0"><input type="checkbox" name="role" value="'+i+'" '+(rs.includes(i)?'checked':'')+'>'+esc(r.name)+'</label>').join('')+'</div></div>',d=>{const f=new FormData(d.querySelector('form')),next=f.get('name').trim(),email=f.get('email').trim();if(!next||(next!==name&&userRoles[next])||Object.entries(userDetails).some(([n,x])=>n!==name&&x.email.toLowerCase()===email.toLowerCase())){d.querySelector('#modal-error').textContent='Tên và email phải duy nhất.';return}if(exists){delete userRoles[name];delete userDetails[name]}userRoles[next]=f.getAll('role').map(Number);userDetails[next]={email,active:f.get('active')==='yes'};log((exists?'Sửa':'Tạo')+' người dùng '+next);d.close();render();toast('Đã lưu người dùng')})}
+function bindUsers(){document.querySelector('#create-user')?.addEventListener('click',()=>editUser());document.querySelector('#user-search')?.addEventListener('input',e=>{document.querySelector('#user-rows').innerHTML=userRows(e.target.value);bindUserRows()});bindUserRows()}
+function bindUserRows(){document.querySelectorAll('[data-user-edit]').forEach(b=>b.onclick=()=>editUser(b.dataset.userEdit));document.querySelectorAll('[data-user-detail]').forEach(b=>b.onclick=()=>{const n=b.dataset.userDetail,x=userDetails[n];openDialog('Thông tin người dùng','<div class="form-grid"><label class="field">Họ tên<strong>'+esc(n)+'</strong></label><label class="field">Email<strong>'+esc(x.email)+'</strong></label><label class="field">Trạng thái<strong>'+(x.active?'Đang hoạt động':'Ngừng hoạt động')+'</strong></label><div class="wide"><h3>Vai trò</h3>'+userRoles[n].map(i=>'<span class="badge">'+esc(roles[i].name)+'</span> ').join('')+'</div></div>',d=>d.close());document.querySelector('#dialog button[type="submit"]').textContent='Đóng'});document.querySelectorAll('[data-user-delete]').forEach(b=>b.onclick=()=>{const name=b.dataset.userDelete;openDialog('Xóa người dùng','<div style="padding:16px"><p>Xóa <strong>'+esc(name)+'</strong> khỏi danh sách người dùng?</p></div>',d=>{delete userRoles[name];delete userDetails[name];log('Xóa người dùng '+name);d.close();render();toast('Đã xóa người dùng')});document.querySelector('#dialog button[type="submit"]').textContent='Xóa';document.querySelector('#dialog button[type="submit"]').className='btn btn--danger'})}
+const beforePolicyHelp=renderPolicies;renderPolicies=()=>beforePolicyHelp()
+ .replace('<h1>Chính sách ABAC</h1>','<h1>Chính sách quyền</h1><p>Đặt điều kiện giới hạn quyền đã cấp cho vai trò, ví dụ chỉ xem đơn được giao hoặc không tự duyệt.</p>')
+ .replace(/AB\d+ · /g,'').replace('Điều kiện áp dụng','Khi nào áp dụng?').replace('Kết quả<strong>','Cách xử lý<strong>');
+const beforeSimHelp=renderSimulation;renderSimulation=()=>beforeSimHelp()
+ .replace('<h1>Kiểm tra quyền</h1>','<h1>Kiểm tra quyền</h1><p>Chọn vai trò và tình huống để xem thao tác được cho phép hay bị từ chối, cùng lý do.</p>')
+ .replace('<option>Xem tiến độ</option><option>Xem giá</option><option>Duyệt</option>','<option>Xem tiến độ</option><option>Xem giá</option><option>Duyệt</option>');
+const extraUsers=[
+ ['Phạm Ngọc Linh','ngoclinh',0,true],['Vũ Thu Trang','thutrang',0,true],['Đỗ Đức Minh','ducminh',0,true],['Bùi Hải Yến','haiyen',0,true],['Lê Quang Huy','quanghuy',0,true],['Trần Mai Phương','maiphuong',0,true],['Nguyễn Tuấn Kiệt','tuankiet',0,true],['Hoàng Bảo Ngọc','baongoc',0,true],['Phan Thanh Tâm','thanhtam',0,true],['Đặng Minh Châu','minhchau',0,true],['Võ Anh Thư','anhthu',0,false],
+ ['Nguyễn Hoài Nam','hoainam',1,true],['Đào Thùy Dương','thuyduong',1,true],['Lưu Đức Anh','ducanh',1,false],
+ ['Trần Quốc Bảo','quocbao',2,true],['Nguyễn Thanh Hà','thanhha',2,true],['Phạm Minh Tuấn','minhtuan',2,false],
+ ['Lê Anh Dũng','anhdung',3,true],['Nguyễn Hồng Nhung','hongnhung',3,true],
+ ['Phạm Gia Hưng','giahung',4,true],['Trần Ngọc Ánh','ngocanh',4,true],['Đỗ Thành Đạt','thanhdat',4,true],['Nguyễn Thu Hương','thuhuong',4,true],['Bùi Khánh Ly','khanhly',4,true],['Vũ Minh Đức','minhduc',4,true],['Hoàng Việt Anh','vietanh',4,true],['Đặng Hải Đăng','haidang',4,true],['Lê Nhật Minh','nhatminh',4,true],['Phan Thảo My','thaomy',4,false],['Trịnh Quốc Huy','quochuy',4,false],
+ ['Nguyễn Hoàng Anh','hoanganh',5,true],['Trần Trung Kiên','trungkien',5,true],['Đỗ Việt Phong','vietphong',5,false]
+];
+extraUsers.forEach(([name,email,role,active])=>{userRoles[name]=[role];userDetails[name]={email:email+'@datyso.vn',active}});
+function syncRoleCounts(){roles.forEach((r,i)=>r.users=Object.values(userRoles).filter(rs=>rs[0]===i).length)}
+syncRoleCounts();
+const renderWithActualCounts=render;render=()=>{syncRoleCounts();renderWithActualCounts()};
+let userFilters={search:'',role:'all',status:'all'};
+const usersWithoutFilters=renderUsers;
+renderUsers=()=>usersWithoutFilters().replace('<input id="user-search" class="search" placeholder="Tìm tên hoặc email…" aria-label="Tìm người dùng">',
+ '<input id="user-search" class="search" placeholder="Tìm tên hoặc email…" aria-label="Tìm người dùng" value="'+esc(userFilters.search)+'">'+
+ '<select id="user-role-filter" aria-label="Lọc theo vai trò"><option value="all">Tất cả vai trò</option>'+roles.map((r,i)=>'<option value="'+i+'" '+(userFilters.role===String(i)?'selected':'')+'>'+esc(r.name)+'</option>').join('')+'</select>'+
+ '<select id="user-status-filter" aria-label="Lọc theo trạng thái"><option value="all">Tất cả trạng thái</option><option value="active" '+(userFilters.status==='active'?'selected':'')+'>Đang hoạt động</option><option value="inactive" '+(userFilters.status==='inactive'?'selected':'')+'>Ngừng hoạt động</option></select>');
+const userRowsWithoutFilters=userRows;
+userRows=search=>{
+ const original=userRowsWithoutFilters(search);
+ return original.replace(/<tr><td><button class="btn btn--ghost" data-user-detail="([^"]*)">[\s\S]*?<\/tr>/g,(row,encoded)=>{
+  const name=Object.keys(userRoles).find(n=>esc(n)===encoded);
+  const roleMatch=userFilters.role==='all'||userRoles[name]?.includes(+userFilters.role);
+  const statusMatch=userFilters.status==='all'||(userFilters.status==='active'?userDetails[name]?.active:!userDetails[name]?.active);
+  return roleMatch&&statusMatch?row:'';
+ })||'<tr><td colspan="5" class="empty">Không tìm thấy người dùng phù hợp</td></tr>';
+};
+const beforeBind=bind;bind=()=>{beforeBind();if(view==='users'){
+ bindUsers();
+ const update=()=>{document.querySelector('#user-rows').innerHTML=userRows(userFilters.search);bindUserRows()};
+ document.querySelector('#user-search').addEventListener('input',e=>{userFilters.search=e.target.value;update()});
+ document.querySelector('#user-role-filter').addEventListener('change',e=>{userFilters.role=e.target.value;update()});
+ document.querySelector('#user-status-filter').addEventListener('change',e=>{userFilters.status=e.target.value;update()});
+ update();
+}if(view==='simulate'){
+ const obj=document.querySelector('#sim-object'),act=document.querySelector('#sim-action');
+ obj.addEventListener('change',()=>{act.innerHTML=obj.value==='Đơn hàng liên kết'?'<option>Xem tiến độ</option><option>Xem giá</option>':'<option>Duyệt</option>';document.querySelector('#simulation-result').innerHTML='<div class="empty">Bấm Chạy kiểm tra để xem kết quả.</div>'});
+ act.innerHTML='<option>Xem tiến độ</option><option>Xem giá</option>';
+}};
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('.crumb').textContent='Thiết lập / Phân quyền / '+b.textContent.trim()}));
+render();
+
+const roleScreenWithoutInspection=renderRoles;
+renderRoles=()=>roleScreenWithoutInspection().replace(/<button class="btn btn--ghost" data-do="simulate-role">[\s\S]*?<\/button>/g,'').replace(/<div class="footer"><\/div>/g,'');
+const originalOpenDialog=openDialog;
+openDialog=(heading,body,save)=>{
+ if(heading==='Tạo người dùng'||heading==='Sửa người dùng'){
+  body=body.replace(/<input type="checkbox" name="role"/g,'<input type="radio" required name="role"');
+  if(!body.includes('name="role" value="0" checked')&&!/name="role" value="\d+" checked/.test(body))body=body.replace('name="role" value="0"','name="role" value="0" checked');
+ }
+ originalOpenDialog(heading,body,save);
+};
+const bindFeatureActions=bind;bind=()=>{bindFeatureActions();document.querySelectorAll('[data-feature-action]').forEach(c=>c.onchange=()=>{const i=+c.dataset.featureAction,a=c.dataset.actionLabel;featureGrants[selectedRole+'-'+i+'-'+a]=c.checked;const base=actions.indexOf(a==='Xuất dữ liệu'?'Xuất':a);if(base>=0)get(selectedRole,i).values[base]=c.checked;dirty=true});document.querySelectorAll('[data-feature-scope]').forEach(c=>c.onchange=()=>{get(selectedRole,+c.dataset.featureScope)[c.dataset.actionLabel]=c.value;dirty=true})};
+render();
+</script></body></html>
