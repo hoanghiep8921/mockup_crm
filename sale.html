@@ -979,7 +979,7 @@ function pick(arr,i){return arr[((i%arr.length)+arr.length)%arr.length]}
 function hash(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}
 
 /* ---------- trạng thái ---------- */
-var GRP=["Bảng điều khiển","Báo cáo","Cơ hội","Kho data KD thị trường","Tuyến và địa bàn","Hồ sơ và chứng từ","Thực thi cuộc gặp"];
+var GRP=["Bảng điều khiển","Báo cáo","Cơ hội","Kho data KD thị trường","Tuyến và địa bàn","Thực thi cuộc gặp"];
 var PH={online:"Sale online",thitruong:"Sale thị trường",duan:"Sale dự án"};
 var SH={online:"Online",thitruong:"Thị trường",duan:"Dự án"};
 var KY={homnay:{l:"Hôm nay",f:1,so:"hôm qua"},homqua:{l:"Hôm qua",f:.93,so:"hôm kia"},"7ngay":{l:"7 ngày",f:6.2,so:"7 ngày trước đó"},
@@ -1672,102 +1672,6 @@ H.reg({
 });
 })();
 
-/* Màn 7. Hợp đồng và chứng từ. Excel chỉ ghi "Đề nghị bổ sung", nội dung là đề xuất chờ PO xác nhận */
-(function(){
-var H=SALE,D=SALE.D;
-var LOAI=["Hợp đồng bán hàng","Phụ lục hợp đồng","Biên bản nghiệm thu","Biên bản bàn giao","Chứng từ thanh toán","Chứng từ khác"];
-var TT=[["Nháp","neutral"],["Chờ ký","warning"],["Đã ký","success"],["Đã thanh lý","info"]];
-var DATA={},F={q:"",loai:"",tt:""};
-function seed(ph){
-  var r=H.rng(H.hash("hd"+ph)),o=[];
-  var kh=D.KHACH;
-  for(var i=0;i<14;i++){
-    var l=LOAI[ph==="duan"?(i%5===4?4:i%3):(i%4===3?4:i%4===2?5:0)];
-    var tt=TT[(i*7+3)%4];
-    var link=ph==="duan"?"DA-2610-"+("00"+(24-i)).slice(-3):"SO-2610-"+("0000"+(1490-i*6)).slice(-4);
-    o.push({id:"HD-2610-"+("000"+(48-i)).slice(-4),loai:l,kh:kh[(i*5+2)%kh.length],link:link,ngay:("0"+(22-i)).slice(-2)+"/10/2026",
-      gt:Math.round((ph==="duan"?280e6+r()*900e6:36e6+r()*170e6)/1e6)*1e6,tt:tt,nguoi:D.sales(ph)[i%D.sales(ph).length],
-      files:[{n:"HD-2610-"+("000"+(48-i)).slice(-4)+".pdf",s:Math.round(180+r()*900)+" KB"}].concat(i%3===0?[{n:"Phu-luc-"+(i+1)+".pdf",s:Math.round(90+r()*300)+" KB"}]:[]),
-      ghichu:i%4===0?"Khách yêu cầu giao hàng làm hai đợt":""});
-  }
-  return o;
-}
-function rows(ph){if(!DATA[ph])DATA[ph]=seed(ph);return DATA[ph]}
-function ds(ph){
-  return rows(ph).filter(function(x){var t=(x.id+" "+x.kh+" "+x.link+" "+x.loai).toLowerCase();return (!F.q||t.indexOf(F.q.toLowerCase())>=0)&&(!F.loai||x.loai===F.loai)&&(!F.tt||x.tt[0]===F.tt)});
-}
-function table(c){
-  var lk=c.ph==="duan"?"Dự án":"Đơn hàng";
-  var list=ds(c.ph);
-  if(!list.length)return '<div class="state"><h4>Chưa có hợp đồng hoặc chứng từ khớp bộ lọc</h4><p>Bỏ bớt điều kiện lọc hoặc tải lên hợp đồng, chứng từ mới</p></div>';
-  var head=["Số hiệu","Loại","Khách hàng",lk,"Ngày",{t:"Giá trị",r:1},"Trạng thái","Tệp","Người tạo"];
-  var body=list.map(function(x,i){return {tr:'data-i="'+rows(c.ph).indexOf(x)+'" tabindex="0" style="cursor:pointer"',c:['<span class="mono">'+x.id+'</span>',x.loai,x.kh,'<span class="mono">'+x.link+'</span>',x.ngay,H.vnd(x.gt),H.tag(x.tt[0],x.tt[1],1),
-    '<span class="cell-user">'+H.ic("clip","ic--sm")+x.files.length+'</span>',H.user(x.nguoi)]}});
-  return H.tbl(head,body,{min:980});
-}
-function formBody(c){
-  var lk=c.ph==="duan"?"Dự án liên kết":"Đơn hàng liên kết";
-  return '<div class="form-grid">'+
-    H.select("nLoai","Loại",LOAI,LOAI[0])+H.input("nSo","Số hiệu","HD-2610-0049",{req:1})+
-    H.select("nKh","Khách hàng",D.KHACH.slice(0,12),D.KHACH[0])+H.input("nLink",lk,c.ph==="duan"?"DA-2610-025":"SO-2610-1496",{})+
-    H.input("nNgay","Ngày ký","2026-10-22",{type:"date",num:1})+H.input("nGt","Giá trị (₫)","",{num:1,ph:"Ví dụ 120000000"})+
-    H.select("nTt","Trạng thái",TT.map(function(t){return t[0]}),"Nháp")+
-    '<div class="field"><label class="field__label">Tệp đính kèm</label><div class="sale-drop" id="nDrop" tabindex="0">'+H.ic("upload")+'<span>Kéo thả hoặc <button type="button" class="linkbtn" id="nPick">chọn tệp</button></span><span class="note" id="nFiles">Chưa chọn tệp. Hỗ trợ PDF, Word, Excel, hình ảnh</span></div></div>'+
-    '<div class="field full"><label class="field__label" for="nGhi">Ghi chú</label><textarea class="input" id="nGhi" rows="2" style="height:auto;padding:8px 10px"></textarea></div></div>';
-}
-H.reg({
-  id:"hopdong",grp:"Hồ sơ và chứng từ",t:"Hợp đồng và chứng từ",ph:["online","thitruong","duan"],tag:"Mới",xuat:true,
-  excel:[["online",47,"Quản lý hồ sơ khách hàng > Hợp đồng và chứng từ","DTS phản hồi: Đề nghị bổ sung. Excel chưa mô tả chi tiết"],
-         ["duan",18,"Quản lý danh sách dự án > Hợp đồng và chứng từ","DTS phản hồi: Đề nghị bổ sung"],
-         ["thitruong",31,"Báo giá, chốt > Hợp đồng và chứng từ","DTS phản hồi: Bổ sung thêm"]],
-  hientrang:"Chưa có menu hay màn riêng. Chỉ có ngưỡng duyệt hợp đồng trên đơn hàng",
-  nguon:"datyso_flows/views/sale_order_views.xml (ngưỡng duyệt hợp đồng)",
-  acts:function(c){return '<button class="btn btn--primary" id="hdNew" type="button">'+H.ic("upload")+'Tải lên hợp đồng, chứng từ</button>'},
-  render:function(c){
-    var all=rows(c.ph),ky=all.filter(function(x){return x.tt[0]==="Đã ký"}).length,cho=all.filter(function(x){return x.tt[0]==="Chờ ký"}).length;
-    var pos=c.ph==="duan"?"Quản lý danh sách dự án":c.ph==="thitruong"?"Báo giá, chốt":"Quản lý hồ sơ khách hàng";
-    return '<div class="stack" style="gap:var(--space-4)">'+
-      H.kpiRow([H.kpi({l:"Tổng hợp đồng và chứng từ",v:H.so(all.length),meta:"Của phạm vi đang xem"}),H.kpi({l:"Đã ký",v:H.so(ky),meta:"Hợp đồng có hiệu lực"}),H.kpi({l:"Chờ ký",v:H.so(cho),meta:"Cần theo dõi"})]).replace('class="kpis"','class="kpis kpis--3"')+
-      '<div class="card"><div class="card__b toolbar-row">'+
-        '<div class="field" style="flex:1 1 240px"><label class="field__label" for="hdQ">Tìm kiếm</label><input class="input" id="hdQ" type="search" placeholder="Số hiệu, khách hàng, '+(c.ph==="duan"?"dự án":"đơn hàng")+'…" value="'+H.esc(F.q)+'"></div>'+
-        H.select("hdLoai","Loại",[{v:"",t:"Tất cả loại"}].concat(LOAI.map(function(l){return {v:l,t:l}})),F.loai)+
-        H.select("hdTt","Trạng thái",[{v:"",t:"Tất cả trạng thái"}].concat(TT.map(function(t){return {v:t[0],t:t[0]}})),F.tt)+'</div></div>'+
-      '<div id="hdTbl">'+table(c)+'</div></div>';
-  },
-  bind:function(root,c){
-    function redraw(){root.querySelector("#hdTbl").innerHTML=table(c)}
-    root.addEventListener("input",function(e){if(e.target.id==="hdQ"){F.q=e.target.value;redraw()}});
-    root.addEventListener("change",function(e){if(e.target.id==="hdLoai"){F.loai=e.target.value;redraw()}if(e.target.id==="hdTt"){F.tt=e.target.value;redraw()}});
-    function detail(x){
-      H.drawer({t:'<span class="mono">'+x.id+'</span>',sub:H.esc(x.loai),w:"min(560px,100vw)",
-        body:'<div class="stack" style="gap:16px"><div>'+H.tag(x.tt[0],x.tt[1],1)+'</div><dl class="dl"><dt>Khách hàng</dt><dd>'+H.esc(x.kh)+'</dd><dt>'+(c.ph==="duan"?"Dự án":"Đơn hàng")+'</dt><dd class="mono">'+x.link+'</dd><dt>Ngày</dt><dd>'+x.ngay+'</dd><dt>Giá trị</dt><dd>'+H.vnd(x.gt)+'</dd><dt>Người tạo</dt><dd>'+H.user(x.nguoi)+'</dd><dt>Ghi chú</dt><dd>'+(x.ghichu?H.esc(x.ghichu):H.NV)+'</dd></dl>'+
-        '<div><h4 style="margin:0 0 8px;font-size:13px">Tệp đính kèm ('+x.files.length+')</h4>'+x.files.map(function(f){return '<div class="sale-file">'+H.ic("file")+'<span style="flex:1">'+H.esc(f.n)+'<span class="note"> '+f.s+'</span></span><button class="btn btn--secondary btn--sm" data-toast="Đã tải '+H.esc(f.n)+'">'+H.ic("download","ic--sm")+'Tải về</button></div>'}).join("")+'</div></div>',
-        foot:'<button class="btn btn--secondary" data-toast="Đã mở bản in">In</button><button class="btn btn--primary" data-toast="Đã lưu thay đổi">Lưu</button>'});
-    }
-    root.addEventListener("click",function(e){var tr=e.target.closest("tr[data-i]");if(tr)detail(rows(c.ph)[+tr.dataset.i])});
-    root.addEventListener("keydown",function(e){if(e.key==="Enter"){var tr=e.target.closest&&e.target.closest("tr[data-i]");if(tr)tr.click()}});
-    function upload(){
-      var picked=[];
-      var L=H.modal({t:"Tải lên hợp đồng, chứng từ",w:"min(680px,calc(100vw - 32px))",body:formBody(c),
-        foot:'<button class="btn btn--ghost" data-close2 type="button">Huỷ</button><button class="btn btn--primary" id="nSave" type="button">Lưu</button>',
-        bind:function(el,Lh){
-          el.querySelector("[data-close2]").onclick=Lh.close;
-          el.querySelector("#nPick").onclick=function(){picked=[{n:"Hop-dong-ky-ten.pdf",s:"412 KB"},{n:"Bien-ban-ban-giao.jpg",s:"1,2 MB"}];el.querySelector("#nFiles").textContent=picked.map(function(f){return f.n}).join(", ")};
-          el.querySelector("#nSave").onclick=function(){
-            var so=el.querySelector("#nSo"),er=el.querySelector("#nSoErr");
-            if(!so.value.trim()){so.classList.add("is-error");er.hidden=false;er.innerHTML=H.ic("err","ic--sm")+"Nhập số hiệu hợp đồng hoặc chứng từ";so.focus();return}
-            var gt=parseInt(el.querySelector("#nGt").value,10)||0;
-            rows(c.ph).unshift({id:so.value.trim(),loai:el.querySelector("#nLoai").value,kh:el.querySelector("#nKh").value,link:el.querySelector("#nLink").value||H.NV,ngay:H.ngayVN(el.querySelector("#nNgay").value),gt:gt,
-              tt:TT.filter(function(t){return t[0]===el.querySelector("#nTt").value})[0],nguoi:"Nguyễn Minh Tâm",files:picked.length?picked:[],ghichu:el.querySelector("#nGhi").value});
-            Lh.close();H.redraw();H.toast("Đã lưu <b>"+H.esc(so.value.trim())+"</b>","success");
-          };
-        }});
-    }
-    var b=document.getElementById("hdNew");if(b)b.onclick=upload;
-  }
-});
-})();
-
 /* Màn 8 và 9. Quản lý tuyến địa bàn (Miền → Tỉnh/TP) và Gán tuyến cho nhân sự, đội nhóm. Dùng chung dữ liệu qua SALE.T */
 (function(){
 var H=SALE,D=SALE.D;
@@ -2221,19 +2125,54 @@ H.reg({
 });
 })();
 
-/* Màn 12. Chi tiết cơ hội: thêm tab "Thông tin cuộc gặp" (Sale online khi có gặp trực tiếp). Các tab khác giữ nguyên như hệ thống hiện tại */
+/* Màn 12. Chi tiết cơ hội: thêm tab "Hợp đồng và chứng từ" (cả 3 phân hệ) và tab "Thông tin cuộc gặp" (Sale online) */
 (function(){
-var H=SALE;
-var TABS=[["gt","Lịch sử giao tiếp",0],["cd","Chân dung khách hàng",0],["gap","Thông tin cuộc gặp",1],["lh","Thông tin liên hệ",0],["gc","Thông tin ghi chú",0],["mk","Thông tin marketing",0],["ls","Lịch sử chia / quay vòng",0],["bg","Báo giá / Đơn hàng",0],["sp","Sản phẩm quan tâm",0],["tk","Ticket hỗ trợ",0]];
+var H=SALE,D=SALE.D;
+var TABS=[["gt","Lịch sử giao tiếp",""],["cd","Chân dung khách hàng",""],["gap","Thông tin cuộc gặp","online"],["lh","Thông tin liên hệ",""],["gc","Thông tin ghi chú",""],["mk","Thông tin marketing",""],["ls","Lịch sử chia / quay vòng",""],["bg","Báo giá / Đơn hàng",""],["hd","Hợp đồng và chứng từ",""],["sp","Sản phẩm quan tâm",""],["tk","Ticket hỗ trợ",""]];
 var ST={hen:["Đã hẹn","info"],gap:["Đã gặp","success"],khong:["Không gặp được","danger"],huy:["Đã huỷ","neutral"]};
 var G=[
  {ma:"CG-2610-0003",ngay:"2026-10-28T09:30",dd:"Xưởng khách, KCN Quế Võ, Bắc Ninh",st:"hen",tl:0,nd:"",files:[],gc:"Mang theo mẫu khắc inox 304 và bảng giá Laser Fiber 30W"},
  {ma:"CG-2610-0002",ngay:"2026-10-19T14:00",dd:"Showroom Datyso, 25 Cầu Giấy, Hà Nội",st:"gap",tl:75,nd:"Khách xem demo máy khắc Laser Fiber 30W trên inox và nhôm. Quan tâm model có bàn xoay khắc trụ. Hẹn gửi báo giá hai cấu hình trước 22/10. Khách hỏi chính sách bảo hành 24 tháng",files:[{n:"Anh-demo-khac-inox.jpg",s:"1,8 MB"},{n:"Video-demo-ban-xoay.mp4",s:"14,2 MB"},{n:"Thong-so-LaserFiber30W.pdf",s:"620 KB"}],gc:"Người quyết định là chị Lan (giám đốc)"},
  {ma:"CG-2610-0001",ngay:"2026-10-12T10:00",dd:"Văn phòng khách, Hoàng Mai, Hà Nội",st:"khong",tl:0,nd:"",files:[],gc:"",ly:"Khách bận họp đột xuất, hẹn lại"},
  {ma:"CG-2609-0007",ngay:"2026-09-30T15:30",dd:"Xưởng khách, Đông Anh, Hà Nội",st:"gap",tl:50,nd:"Khảo sát nhu cầu khắc logo trên dụng cụ cơ khí, sản lượng khoảng 500 chi tiết mỗi ngày",files:[{n:"Mau-chi-tiet-khach.jpg",s:"2,1 MB"}],gc:""}];
-var S12={tab:"gap",sel:null};
+
+/* cơ hội mẫu của từng phân hệ */
+var OPP={
+ online:{ma:"CH-2610-1462",ten:"Công ty CP Sao Mai",done:4,tags:[["Tiềm năng 1","info"],["Ưu tiên cao","warning"],["Laser Fiber","neutral"]],
+   dl:[["Người liên hệ","Chị Lan, 0987 *** 321"],["Tỉnh/Thành phố","Hà Nội"],["Sale phụ trách","Nguyễn Minh Tâm"],["Nguồn","Tin nhắn Fanpage"]],link:"Đơn hàng",lkMa:"SO-2610-1488"},
+ thitruong:{ma:"CH-2610-1455",ten:"Xưởng cơ khí Tân Phát",done:4,tags:[["Tiềm năng 2","info"],["Ưu tiên cao","warning"],["Kinh doanh thị trường","teal"]],
+   dl:[["Người liên hệ","Chú Phát, 0912 *** 678"],["Tỉnh/Thành phố","Bắc Ninh"],["Sale phụ trách","Vũ Hoàng Nam"],["Nguồn","Nhập tay"]],link:"Đơn hàng",lkMa:"SO-2610-1479"},
+ duan:{ma:"CH-2610-1420",ten:"HTX Cơ khí Đông Anh",done:4,tags:[["Dự án DA-2610-024","info"],["Ưu tiên rất cao","danger"],["Laser Fiber","neutral"]],
+   dl:[["Người liên hệ","Anh Hùng, 0903 *** 245"],["Tỉnh/Thành phố","Hà Nội"],["Sale phụ trách","Nguyễn Minh Tâm"],["Nguồn","Giới thiệu"]],link:"Dự án",lkMa:"DA-2610-024"}
+};
+var LOAI=["Hợp đồng bán hàng","Phụ lục hợp đồng","Biên bản nghiệm thu","Biên bản bàn giao","Chứng từ thanh toán","Chứng từ khác"];
+var TT_HD=[["Nháp","neutral"],["Chờ ký","warning"],["Đã ký","success"],["Đã thanh lý","info"]];
+var TT_CT=[["Đã nhận","success"],["Chờ bổ sung","warning"]];
+function laChungTu(l){return l==="Chứng từ thanh toán"||l==="Chứng từ khác"}
+function ttOf(l){return laChungTu(l)?TT_CT:TT_HD}
+function ttFind(l,name){return ttOf(l).filter(function(t){return t[0]===name})[0]||ttOf(l)[0]}
+var HD={
+ online:[
+  {id:"HD-2610-0041",loai:"Hợp đồng bán hàng",link:"SO-2610-1488",ngay:"21/10/2026",gt:168e6,tt:"Chờ ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"HD-2610-0041.pdf",s:"512 KB"}],ghichu:"Khách yêu cầu giao hàng làm hai đợt"},
+  {id:"PL-2610-0009",loai:"Phụ lục hợp đồng",link:"SO-2610-1488",ngay:"21/10/2026",gt:0,tt:"Nháp",nguoi:"Nguyễn Minh Tâm",files:[{n:"Phu-luc-bao-hanh-24-thang.pdf",s:"214 KB"}],ghichu:""},
+  {id:"UNC-0212",loai:"Chứng từ thanh toán",link:"SO-2610-1488",ngay:"22/10/2026",gt:50.4e6,tt:"Đã nhận",nguoi:"Đỗ Thị Mai",files:[{n:"Uy-nhiem-chi-dat-coc-30pct.jpg",s:"1,1 MB"}],ghichu:"Đặt cọc 30% giá trị hợp đồng"}],
+ thitruong:[
+  {id:"HD-2610-0037",loai:"Hợp đồng bán hàng",link:"SO-2610-1479",ngay:"19/10/2026",gt:96e6,tt:"Đã ký",nguoi:"Vũ Hoàng Nam",files:[{n:"HD-2610-0037.pdf",s:"498 KB"},{n:"Phu-luc-giao-hang.pdf",s:"156 KB"}],ghichu:""},
+  {id:"BB-2610-0015",loai:"Biên bản bàn giao",link:"SO-2610-1479",ngay:"22/10/2026",gt:0,tt:"Nháp",nguoi:"Vũ Hoàng Nam",files:[],ghichu:"Chờ lắp đặt xong tại xưởng khách"},
+  {id:"UNC-0198",loai:"Chứng từ thanh toán",link:"SO-2610-1479",ngay:"20/10/2026",gt:48e6,tt:"Đã nhận",nguoi:"Vũ Hoàng Nam",files:[{n:"Uy-nhiem-chi-dot-1.jpg",s:"980 KB"}],ghichu:""}],
+ duan:[
+  {id:"HD-2610-0033",loai:"Hợp đồng bán hàng",link:"DA-2610-024",ngay:"09/10/2026",gt:850e6,tt:"Đã ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"HD-2610-0033-day-chuyen-laser.pdf",s:"1,4 MB"}],ghichu:"Cung cấp và lắp đặt dây chuyền khắc laser"},
+  {id:"PL-2610-0006",loai:"Phụ lục hợp đồng",link:"DA-2610-024",ngay:"15/10/2026",gt:60e6,tt:"Chờ ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"Phu-luc-1-bo-sung-ban-xoay.pdf",s:"260 KB"}],ghichu:""},
+  {id:"BB-2610-0011",loai:"Biên bản nghiệm thu",link:"DA-2610-024",ngay:"20/10/2026",gt:0,tt:"Đã ký",nguoi:"Phan Văn Khôi",files:[{n:"BBNT-giai-doan-1.pdf",s:"380 KB"},{n:"Anh-nghiem-thu-1.jpg",s:"2,2 MB"}],ghichu:"Nghiệm thu giai đoạn khảo sát và lắp đặt"}]
+};
+var S12={tab:{},fq:"",floai:"",ftt:""};
+function curTab(ph){return S12.tab[ph]||(ph==="online"?"gap":"hd")}
+function tabsOf(ph){return TABS.filter(function(t){return !t[2]||t[2]===ph})}
 function fmt(s){var d=new Date(s);return ("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+d.getFullYear()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
 function nGap(){return G.filter(function(x){return x.st==="gap"}).length}
+var CTX=null;
+
+/* ----- tab Thông tin cuộc gặp ----- */
 function tabGap(){
   var sapToi=G.filter(function(x){return x.st==="hen"}).length;
   var rows=G.map(function(x,i){return {tr:'data-i="'+i+'" tabindex="0" style="cursor:pointer"',c:['<span class="mono">'+x.ma+'</span>',fmt(x.ngay),'<span style="white-space:normal;display:inline-block;min-width:200px">'+H.esc(x.dd)+'</span>',H.tag(ST[x.st][0],ST[x.st][1],1),x.tl?x.tl+" phút":H.NV,
@@ -2244,20 +2183,81 @@ function tabGap(){
     '<div class="card"><div class="card__h"><h4>Lịch hẹn và cuộc gặp</h4><button class="btn btn--primary btn--sm" id="gAdd" type="button">'+H.ic("plus","ic--sm")+'Thêm lịch hẹn gặp</button></div>'+
       (rows.length?H.tbl(["Mã","Ngày giờ","Địa điểm","Trạng thái","Thời lượng","Nội dung trao đổi","Tư liệu"],rows,{min:960,cls:"tbl-flat"}):'<div class="state"><h4>Chưa có lịch hẹn gặp</h4><p>Thêm lịch hẹn khi khách đồng ý gặp trực tiếp</p></div>')+'</div></div>';
 }
-function formHtml(c){
-  var ten="Công ty CP Sao Mai";
-  var tabs='<div class="tabs" role="tablist" style="flex-wrap:wrap">'+TABS.map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S12.tab===t[0])+'" type="button">'+t[1]+'</button>'}).join("")+'</div>';
-  var body=S12.tab==="gap"?tabGap():'<div class="state"><h4>Chưa có dữ liệu</h4></div>';
+
+/* ----- tab Hợp đồng và chứng từ ----- */
+function hdList(ph){
+  return HD[ph].filter(function(x){var t=(x.id+" "+x.loai+" "+x.link).toLowerCase();return (!S12.fq||t.indexOf(S12.fq.toLowerCase())>=0)&&(!S12.floai||x.loai===S12.floai)&&(!S12.ftt||x.tt===S12.ftt)});
+}
+function hdTable(ph){
+  var o=OPP[ph],list=hdList(ph);
+  if(!list.length)return '<div class="state"><h4>Chưa có hợp đồng hoặc chứng từ</h4><p>Tải lên hợp đồng, chứng từ gắn với cơ hội này</p></div>';
+  var head=["Số hiệu","Loại",o.link,"Ngày",{t:"Giá trị",r:1},"Trạng thái","Tệp","Người tạo"];
+  var body=list.map(function(x){return {tr:'data-hd="'+HD[ph].indexOf(x)+'" tabindex="0" style="cursor:pointer"',c:['<span class="mono">'+x.id+'</span>',x.loai,'<span class="mono">'+x.link+'</span>',x.ngay,x.gt?H.vnd(x.gt):H.NV,H.tag(x.tt,ttFind(x.loai,x.tt)[1],1),
+    x.files.length?'<span class="cell-user">'+H.ic("clip","ic--sm")+x.files.length+'</span>':H.NV,H.user(x.nguoi)]}});
+  return H.tbl(head,body,{min:900,cls:"tbl-flat"});
+}
+function tabHd(ph){
+  var all=HD[ph],ky=all.filter(function(x){return x.tt==="Đã ký"}).length,cho=all.filter(function(x){return x.tt==="Chờ ký"}).length;
+  return '<div class="stack" style="gap:var(--space-4)">'+
+    H.kpiRow([H.kpi({l:"Hợp đồng và chứng từ",v:H.so(all.length),meta:"Của cơ hội này"}),H.kpi({l:"Đã ký",v:H.so(ky),meta:"Hợp đồng có hiệu lực"}),H.kpi({l:"Chờ ký",v:H.so(cho),meta:"Cần theo dõi"})]).replace('class="kpis"','class="kpis kpis--3"')+
+    '<div class="card"><div class="card__h"><h4>Danh sách hợp đồng và chứng từ</h4><button class="btn btn--primary btn--sm" id="hdNew" type="button">'+H.ic("upload","ic--sm")+'Tải lên</button></div>'+
+      '<div class="card__b toolbar-row" style="border-bottom:1px solid var(--border-subtle)">'+
+        '<div class="field" style="flex:1 1 220px"><label class="field__label" for="hdQ">Tìm kiếm</label><input class="input" id="hdQ" type="search" placeholder="Số hiệu, loại, '+(ph==="duan"?"dự án":"đơn hàng")+'…" value="'+H.esc(S12.fq)+'"></div>'+
+        H.select("hdLoai","Loại",[{v:"",t:"Tất cả loại"}].concat(LOAI.map(function(l){return {v:l,t:l}})),S12.floai)+
+        H.select("hdTt","Trạng thái",[{v:"",t:"Tất cả trạng thái"}].concat(["Nháp","Chờ ký","Đã ký","Đã thanh lý","Đã nhận","Chờ bổ sung"].map(function(t){return {v:t,t:t}})),S12.ftt)+'</div>'+
+      '<div id="hdTbl">'+hdTable(ph)+'</div></div></div>';
+}
+function hdForm(ph){
+  var o=OPP[ph],l0=LOAI[0];
+  return '<div class="form-grid">'+
+    H.select("nLoai","Loại",LOAI,l0)+H.input("nSo","Số hiệu","",{req:1,ph:"Ví dụ HD-2610-0050"})+
+    H.input("nLink",o.link+" liên kết",o.lkMa,{})+H.input("nNgay","Ngày","2026-10-22",{type:"date",num:1})+
+    H.input("nGt","Giá trị (₫)","",{num:1,ph:"Ví dụ 120000000"})+H.select("nTt","Trạng thái",TT_HD.map(function(t){return t[0]}),"Nháp")+
+    '<div class="field full"><label class="field__label">Tệp đính kèm</label><div class="sale-drop" tabindex="0">'+H.ic("upload")+'<span>Kéo thả hoặc <button type="button" class="linkbtn" id="nPick">chọn tệp</button></span><span class="note" id="nFiles">Chưa chọn tệp</span></div></div>'+
+    '<div class="field full"><label class="field__label" for="nGhi">Ghi chú</label><textarea class="input" id="nGhi" rows="2" style="height:auto;padding:8px 10px"></textarea></div></div>';
+}
+function hdDetail(ph,x){
+  var o=OPP[ph];
+  H.drawer({t:'<span class="mono">'+x.id+'</span>',sub:H.esc(x.loai),w:"min(560px,100vw)",
+    body:'<div class="stack" style="gap:16px"><div>'+H.tag(x.tt,ttFind(x.loai,x.tt)[1],1)+'</div><dl class="dl"><dt>Cơ hội</dt><dd><span class="mono">'+o.ma+'</span> '+H.esc(o.ten)+'</dd><dt>'+o.link+'</dt><dd class="mono">'+x.link+'</dd><dt>Ngày</dt><dd>'+x.ngay+'</dd><dt>Giá trị</dt><dd>'+(x.gt?H.vnd(x.gt):H.NV)+'</dd><dt>Người tạo</dt><dd>'+H.user(x.nguoi)+'</dd><dt>Ghi chú</dt><dd>'+(x.ghichu?H.esc(x.ghichu):H.NV)+'</dd></dl>'+
+      '<div><h4 style="margin:0 0 8px;font-size:13px">Tệp đính kèm ('+x.files.length+')</h4>'+(x.files.length?x.files.map(function(f){return '<div class="sale-file">'+H.ic("file")+'<span style="flex:1">'+H.esc(f.n)+'<span class="note"> '+f.s+'</span></span><button class="btn btn--secondary btn--sm" data-toast="Đã tải '+H.esc(f.n)+'">'+H.ic("download","ic--sm")+'Tải về</button></div>'}).join(""):'<div class="note">Chưa có tệp</div>')+'</div></div>',
+    foot:'<button class="btn btn--secondary" data-toast="Đã mở bản in">In</button><button class="btn btn--primary" data-toast="Đã lưu thay đổi">Lưu</button>'});
+}
+function hdUpload(ph){
+  var picked=[];
+  H.modal({t:"Tải lên hợp đồng, chứng từ",w:"min(680px,calc(100vw - 32px))",body:hdForm(ph),
+    foot:'<button class="btn btn--ghost" data-x type="button">Huỷ</button><button class="btn btn--primary" id="nSave" type="button">Lưu</button>',
+    bind:function(el,L){
+      el.querySelector("[data-x]").onclick=L.close;
+      el.querySelector("#nLoai").onchange=function(){var l=this.value,s=el.querySelector("#nTt");s.innerHTML=ttOf(l).map(function(t){return '<option>'+t[0]+'</option>'}).join("")};
+      el.querySelector("#nPick").onclick=function(){picked=[{n:"Hop-dong-ky-ten.pdf",s:"412 KB"},{n:"Bien-ban-ban-giao.jpg",s:"1,2 MB"}];el.querySelector("#nFiles").textContent=picked.map(function(f){return f.n}).join(", ")};
+      el.querySelector("#nSave").onclick=function(){
+        var so=el.querySelector("#nSo"),er=el.querySelector("#nSoErr");
+        if(!so.value.trim()){so.classList.add("is-error");er.hidden=false;er.innerHTML=H.ic("err","ic--sm")+"Nhập số hiệu hợp đồng hoặc chứng từ";so.focus();return}
+        if(HD[ph].some(function(x){return x.id.toLowerCase()===so.value.trim().toLowerCase()})){so.classList.add("is-error");er.hidden=false;er.innerHTML=H.ic("err","ic--sm")+"Số hiệu này đã tồn tại";so.focus();return}
+        var l=el.querySelector("#nLoai").value;
+        HD[ph].unshift({id:so.value.trim(),loai:l,link:el.querySelector("#nLink").value||OPP[ph].lkMa,ngay:H.ngayVN(el.querySelector("#nNgay").value),gt:parseInt(el.querySelector("#nGt").value,10)||0,tt:el.querySelector("#nTt").value,nguoi:"Nguyễn Minh Tâm",files:picked,ghichu:el.querySelector("#nGhi").value});
+        L.close();render();H.toast("Đã lưu <b>"+H.esc(so.value.trim())+"</b>","success");
+      };
+    }});
+}
+
+/* ----- khung form cơ hội ----- */
+function formHtml(){
+  var ph=CTX.ph,o=OPP[ph],cur=curTab(ph);
+  var tabs='<div class="tabs" role="tablist" style="flex-wrap:wrap">'+tabsOf(ph).map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(cur===t[0])+'" type="button">'+t[1]+'</button>'}).join("")+'</div>';
+  var body=cur==="gap"?tabGap():cur==="hd"?tabHd(ph):'<div class="state"><h4>Chưa có dữ liệu</h4></div>';
+  var steps=["Tiếp nhận","Khảo sát hiện trạng","Hẹn gặp","Lập báo giá","Thương lượng"];
   return '<div class="card sale-form"><div class="sale-form__bar"><div class="row" style="gap:8px;flex-wrap:wrap">'+
       ['Gọi khách','Thêm ghi chú','Chuyển giao / Trả về kho','Tạo báo giá','Tạo ticket','Đóng cơ hội'].map(function(b){return '<button class="btn btn--secondary btn--sm" type="button">'+b+'</button>'}).join("")+'</div></div>'+
-    '<div class="sale-form__steps"><ol class="steps"><li class="done"><b>Tiếp nhận</b></li><li class="done"><b>Khảo sát hiện trạng</b></li><li class="done"><b>Hẹn gặp</b></li><li><b>Lập báo giá</b></li><li><b>Thương lượng</b></li></ol></div>'+
-    '<div class="sale-form__head"><div><div class="note">Cơ hội CH-2610-1462</div><h2 style="margin:2px 0 6px;font-size:20px;line-height:28px;font-weight:600">'+ten+'</h2><div class="row" style="gap:8px;flex-wrap:wrap">'+H.tag("Tiềm năng 1","info",1)+H.tag("Ưu tiên cao","warning",1)+H.tag("Laser Fiber","neutral")+'</div></div>'+
-    '<dl class="dl sale-form__dl"><dt>Người liên hệ</dt><dd>Chị Lan, 0987 *** 321</dd><dt>Tỉnh/Thành phố</dt><dd>Hà Nội</dd><dt>Sale phụ trách</dt><dd>'+H.user("Nguyễn Minh Tâm")+'</dd><dt>Nguồn</dt><dd>Tin nhắn Fanpage</dd></dl></div>'+
+    '<div class="sale-form__steps"><ol class="steps">'+steps.map(function(s,i){return '<li'+(i<o.done?' class="done"':"")+'><b>'+s+'</b></li>'}).join("")+'</ol></div>'+
+    '<div class="sale-form__head"><div><div class="note">Cơ hội '+o.ma+'</div><h2 style="margin:2px 0 6px;font-size:20px;line-height:28px;font-weight:600">'+H.esc(o.ten)+'</h2><div class="row" style="gap:8px;flex-wrap:wrap">'+o.tags.map(function(t){return H.tag(H.esc(t[0]),t[1],t[1]!=="neutral"&&t[1]!=="teal")}).join("")+'</div></div>'+
+    '<dl class="dl sale-form__dl">'+o.dl.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+(r[0]==="Sale phụ trách"?H.user(r[1]):H.esc(r[1]))+'</dd>'}).join("")+'</dl></div>'+
     '<div class="sale-form__tabs">'+tabs+'<div id="fBody">'+body+'</div></div></div>';
 }
 function detail(x,i){
   var fl=x.files.map(function(f){return '<div class="sale-file">'+H.ic(/\.mp4$/.test(f.n)?"doc":/\.jpg$/.test(f.n)?"eye":"file")+'<span style="flex:1">'+H.esc(f.n)+'<span class="note"> '+f.s+'</span></span><button class="btn btn--secondary btn--sm" data-toast="Đã tải '+H.esc(f.n)+'">Tải về</button></div>'}).join("");
-  var L=H.drawer({t:'<span class="mono">'+x.ma+'</span>',sub:H.esc(ST[x.st][0]),w:"min(600px,100vw)",
+  H.drawer({t:'<span class="mono">'+x.ma+'</span>',sub:H.esc(ST[x.st][0]),w:"min(600px,100vw)",
     body:'<div class="stack" style="gap:16px"><dl class="dl"><dt>Lịch hẹn</dt><dd>'+fmt(x.ngay)+'</dd><dt>Địa điểm</dt><dd>'+H.esc(x.dd)+'</dd><dt>Trạng thái</dt><dd>'+H.tag(ST[x.st][0],ST[x.st][1],1)+'</dd><dt>Thời lượng</dt><dd>'+(x.tl?x.tl+" phút":H.NV)+'</dd>'+(x.ly?'<dt>Lý do không gặp được</dt><dd>'+H.esc(x.ly)+'</dd>':"")+'</dl>'+
       '<div class="field"><label class="field__label" for="dND">Nội dung trao đổi</label><textarea class="input" id="dND" rows="5" placeholder="Ghi nội dung đã trao đổi với khách">'+H.esc(x.nd)+'</textarea></div>'+
       '<div><span class="field__label">Tư liệu thu thập (hình ảnh, video, tài liệu)</span><div id="dFiles">'+(fl||'<div class="note">Chưa có tư liệu</div>')+'</div><div class="sale-drop" style="margin-top:8px">'+H.ic("upload")+'<span>Kéo thả hoặc <button type="button" class="linkbtn" id="dPick">chọn tệp</button></span></div></div>'+
@@ -2266,9 +2266,11 @@ function detail(x,i){
     bind:function(el,Lh){
       function save(){x.nd=el.querySelector("#dND").value;x.gc=el.querySelector("#dGC").value}
       el.addEventListener("click",function(e){
-        if(e.target.closest("#dPick")){x.files.push({n:"Anh-hien-truong-"+(x.files.length+1)+".jpg",s:"1,4 MB"});save();Lh.close();detail(x,i);H.redraw&&0;return}
+        if(e.target.closest("#dPick")){x.files.push({n:"Anh-hien-truong-"+(x.files.length+1)+".jpg",s:"1,4 MB"});save();Lh.close();detail(x,i);return}
         if(e.target.closest("#dLuu")){save();Lh.close();render();H.toast("Đã lưu thông tin cuộc gặp","success");return}
-        if(e.target.closest("#dGap")){save();if(!x.nd.trim()){var t=el.querySelector("#dND");t.classList.add("is-error");t.focus();H.toast("Nhập nội dung trao đổi trước khi đánh dấu Đã gặp","warning");return}x.st="gap";x.tl=x.tl||60;Lh.close();render();H.toast("Đã ghi nhận cuộc gặp, số cuộc gặp đã thực hiện tăng lên "+nGap(),"success");return}
+        if(e.target.closest("#dGap")){save();if(!x.nd.trim()){var t=el.querySelector("#dND");t.classList.add("is-error");t.focus();H.toast("Nhập nội dung trao đổi trước khi đánh dấu Đã gặp","warning");return}
+          if(new Date(x.ngay)>new Date(2026,9,22,16,30)){H.toast("Lịch hẹn chưa đến ngày giờ hẹn, chưa thể đánh dấu Đã gặp","warning");return}
+          x.st="gap";x.tl=x.tl||60;Lh.close();render();H.toast("Đã ghi nhận cuộc gặp, số cuộc gặp đã thực hiện tăng lên "+nGap(),"success");return}
         if(e.target.closest("#dKhong")){save();Lh.close();H.modal({t:"Không gặp được khách",sm:1,body:'<div class="field"><label class="field__label" for="zL">Lý do <span class="field__req">*</span></label><input class="input" id="zL" placeholder="Ví dụ khách bận, hẹn lại"><div class="field__err" id="zLErr" hidden></div></div>',foot:'<button class="btn btn--ghost" data-x type="button">Huỷ</button><button class="btn btn--primary" data-ok type="button">Lưu</button>',
           bind:function(m,Lm){m.querySelector("[data-x]").onclick=Lm.close;m.querySelector("[data-ok]").onclick=function(){var v=m.querySelector("#zL").value.trim();if(!v){m.querySelector("#zL").classList.add("is-error");var er=m.querySelector("#zLErr");er.hidden=false;er.textContent="Nhập lý do";return}x.st="khong";x.ly=v;Lm.close();render()}}});return}
         if(e.target.closest("#dHuy")){Lh.close();x.st="huy";render();H.toast("Đã huỷ lịch hẹn "+x.ma,"info");return}
@@ -2277,15 +2279,16 @@ function detail(x,i){
 }
 function render(){document.getElementById("fWrap").innerHTML=formHtml()}
 H.reg({
-  id:"cohoi_gap",grp:"Cơ hội",t:"Chi tiết cơ hội: Thông tin cuộc gặp",ph:["online"],tag:"Cập nhật",
-  excel:[["online",41,"Màn hình chi tiết cơ hội > Thông tin cuộc gặp","Lịch hẹn gặp (ngày giờ, địa điểm), số cuộc gặp đã thực hiện, nội dung trao đổi, tư liệu, ghi chú. DTS: vẫn triển khai như yêu cầu"]],
-  hientrang:"Một phần. Cuộc gặp nằm trong tab Lịch sử giao tiếp và nút thống kê Cuộc gặp, chưa có tab riêng",
-  nguon:"datyso_cohoi/models/cuocgap.py, datyso_cohoi/views/cuocgap_views.xml",
-  render:function(c){return '<div class="stack" style="gap:var(--space-3)">'+'<div id="fWrap">'+formHtml()+'</div></div>'},
+  id:"cohoi",grp:"Cơ hội",t:"Chi tiết cơ hội",ph:["online","thitruong","duan"],
+  excel:[["online",41,"Màn hình chi tiết cơ hội > Thông tin cuộc gặp","Tab Thông tin cuộc gặp"],["online",47,"Hợp đồng và chứng từ","Chuyển vào tab của Chi tiết cơ hội"],["duan",18,"Hợp đồng và chứng từ","Chuyển vào tab của Chi tiết cơ hội"],["thitruong",31,"Hợp đồng và chứng từ","Chuyển vào tab của Chi tiết cơ hội"]],
+  render:function(c){CTX=c;return '<div class="stack" style="gap:var(--space-3)"><div id="fWrap">'+formHtml()+'</div></div>'},
   bind:function(root,c){
+    CTX=c;
     root.addEventListener("click",function(e){
-      var tb=e.target.closest('[role="tab"]');if(tb){S12.tab=tb.dataset.tab;render();return}
+      var tb=e.target.closest('[role="tab"]');if(tb){S12.tab[CTX.ph]=tb.dataset.tab;render();return}
       var tr=e.target.closest("tr[data-i]");if(tr){detail(G[+tr.dataset.i],+tr.dataset.i);return}
+      var hr=e.target.closest("tr[data-hd]");if(hr){hdDetail(CTX.ph,HD[CTX.ph][+hr.dataset.hd]);return}
+      if(e.target.closest("#hdNew")){hdUpload(CTX.ph);return}
       if(e.target.closest("#gAdd")){
         H.modal({t:"Thêm lịch hẹn gặp",body:'<div class="form-grid">'+H.input("aNgay","Ngày giờ hẹn","2026-10-30T09:00",{type:"datetime-local",req:1,num:1})+H.input("aDd","Địa điểm gặp","",{req:1,ph:"Địa chỉ xưởng, văn phòng hoặc showroom"})+
           '<div class="field full"><label class="field__label" for="aGc">Ghi chú</label><textarea class="input" id="aGc" rows="2" placeholder="Tài liệu cần mang theo, người cần gặp"></textarea></div></div>',
@@ -2299,7 +2302,9 @@ H.reg({
             L.close();render();H.toast("Đã thêm lịch hẹn gặp","success")}}});
       }
     });
-    root.addEventListener("keydown",function(e){if(e.key==="Enter"){var tr=e.target.closest&&e.target.closest("tr[data-i]");if(tr)tr.click()}});
+    root.addEventListener("input",function(e){if(e.target.id==="hdQ"){S12.fq=e.target.value;root.querySelector("#hdTbl").innerHTML=hdTable(CTX.ph)}});
+    root.addEventListener("change",function(e){if(e.target.id==="hdLoai"){S12.floai=e.target.value;root.querySelector("#hdTbl").innerHTML=hdTable(CTX.ph)}if(e.target.id==="hdTt"){S12.ftt=e.target.value;root.querySelector("#hdTbl").innerHTML=hdTable(CTX.ph)}});
+    root.addEventListener("keydown",function(e){if(e.key==="Enter"){var tr=e.target.closest&&e.target.closest("tr[data-i],tr[data-hd]");if(tr)tr.click()}});
   }
 });
 })();
