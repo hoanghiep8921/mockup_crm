@@ -982,8 +982,8 @@ function hash(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0
 var GRP=["Bảng điều khiển","Báo cáo","Cơ hội","Kho data KD thị trường","Tuyến và địa bàn","Thực thi cuộc gặp"];
 var PH={online:"Sale online",thitruong:"Sale thị trường",duan:"Sale dự án"};
 var SH={online:"Online",thitruong:"Thị trường",duan:"Dự án"};
-var KY={homnay:{l:"Hôm nay",f:1,so:"hôm qua"},homqua:{l:"Hôm qua",f:.93,so:"hôm kia"},"7ngay":{l:"7 ngày",f:6.2,so:"7 ngày trước đó"},
-        thang:{l:"Tháng này",f:17.5,so:"cùng kỳ tháng trước"},tuychon:{l:"Tuỳ chọn",f:11,so:"kỳ liền trước"}};
+var KY={homnay:{l:"Hôm nay",f:1,p:.93,so:"hôm qua"},homqua:{l:"Hôm qua",f:.93,p:.97,so:"hôm kia"},"7ngay":{l:"7 ngày",f:6.2,p:5.9,so:"7 ngày trước đó"},
+        thang:{l:"Tháng này",f:17.5,p:16.4,so:"cùng kỳ tháng trước"},tuychon:{l:"Tuỳ chọn",f:17.5,p:16.4,so:"kỳ liền trước"}};
 var SCOPE={canhan:{l:"Cá nhân",f:.12},nhom:{l:"Nhóm",f:.36},phong:{l:"Phòng",f:1},hethong:{l:"Toàn hệ thống",f:1.7}};
 var SCREENS=[], S={ph:"online",id:null,ky:"homnay",scope:"phong",tu:"2026-10-01",den:"2026-10-22"};
 var NOW=new Date(2026,9,22,16,30);
@@ -991,7 +991,7 @@ var NOW=new Date(2026,9,22,16,30);
 function reg(d){SCREENS.push(d)}
 function byId(id){for(var i=0;i<SCREENS.length;i++)if(SCREENS[i].id===id)return SCREENS[i]}
 function vis(){return SCREENS.filter(function(s){return s.ph.indexOf(S.ph)>=0})}
-function ctx(){var k=KY[S.ky];return {ph:S.ph,phL:PH[S.ph],ky:S.ky,kyL:S.ky==="tuychon"?ngayVN(S.tu)+" - "+ngayVN(S.den):k.l,kyF:k.f,kySo:k.so,scope:S.scope,scopeL:SCOPE[S.scope].l,scopeF:SCOPE[S.scope].f}}
+function ctx(){var k=KY[S.ky];return {ph:S.ph,phL:PH[S.ph],ky:S.ky,kyL:S.ky==="tuychon"?ngayVN(S.tu)+" - "+ngayVN(S.den):k.l,kyF:k.f,kyFp:k.p,kySo:k.so,tu:S.tu,den:S.den,scope:S.scope,scopeL:SCOPE[S.scope].l,scopeF:SCOPE[S.scope].f}}
 function ngayVN(iso){var p=String(iso).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:iso}
 
 /* ---------- thành phần dùng chung ---------- */
@@ -1107,8 +1107,9 @@ function draw(){
   $("h1").innerHTML=esc(sc.t);
   $("phMeta").innerHTML=(sc.meta?sc.meta(c):esc(PH[S.ph])+" · Cập nhật lúc 16:30 ngày 22/10/2026")+(sc.kySeg?" · kỳ <b>"+esc(c.kyL)+"</b>, so với "+esc(c.kySo):"");
   $("phAct").innerHTML=actsHtml(sc,c);
-  $("main").innerHTML=sc.render(c);
-  if(sc.bind)sc.bind($("main"),c);
+  var mo=$("main"),mn=mo.cloneNode(false);mo.parentNode.replaceChild(mn,mo);   /* bỏ mọi trình nghe cũ, tránh mở nhiều bảng chồng nhau sau mỗi lần vẽ lại */
+  mn.innerHTML=sc.render(c);
+  if(sc.bind)sc.bind(mn,c);
   setHash();
   $("scroller").scrollTop=0;
 }
@@ -1150,7 +1151,7 @@ function moPop(o){
 $("popCancel").onclick=function(){moPop(false)};$("popScrim").onclick=function(){moPop(false)};
 $("popApply").onclick=function(){
   var a=$("dTu").value,b=$("dDen").value;if(!a||!b||a>b){$("popErr").hidden=false;return}
-  S.tu=a;S.den=b;var d=(new Date(b)-new Date(a))/864e5+1;KY.tuychon.f=Math.max(1,d*.78);S.ky="tuychon";moPop(false);draw();
+  S.tu=a;S.den=b;var d=(new Date(b)-new Date(a))/864e5+1;KY.tuychon.f=Math.max(.8,Math.round(d*.795*10)/10);KY.tuychon.p=Math.max(.7,Math.round(d*.795*.94*10)/10);S.ky="tuychon";moPop(false);draw();
 };
 function toi(){var t=root.dataset.theme;if(t)return t==="dark";return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches}
 function veTheme(){var d=toi();$("themeBtn").innerHTML=ic(d?"sun":"moon","ic--sm")+(d?"Giao diện sáng":"Giao diện tối")}
@@ -1166,9 +1167,13 @@ return {reg:reg,go:go,start:start,esc:esc,ic:ic,so:so,vnd:vnd,tien:tien,pt:pt,dl
   select:select,input:input,seg:seg,alertBox:alertBox,toast:toast,drawer:drawer,modal:modal,drillAttr:drillAttr,ngay:ngay,ngayVN:ngayVN,NV:NV,ctx:ctx,state:S,PH:PH,KY:KY,SCOPE:SCOPE,NOW:NOW,redraw:draw,screens:SCREENS,byId:byId};
 })();
 
-/* Dữ liệu mẫu dùng chung. Đồng hồ mẫu 22/10/2026 16:30 */
+/* Nguồn số liệu mẫu DUY NHẤT cho mọi màn. Đồng hồ mẫu 22/10/2026 16:30.
+   Mô hình: mỗi chỉ số có số lượng theo TỪNG NHÂN VIÊN (chia theo phương pháp phần dư lớn nhất để tổng khớp tuyệt đối).
+   Tổng theo phạm vi = tổng nhân viên trong phạm vi, nên Cá nhân, Nhóm, Phòng, Toàn hệ thống luôn khớp nhau.
+   Mọi bảng chi tiết, báo cáo, thẻ chỉ số đều đọc từ đây, không tự sinh số riêng. */
 SALE.D=(function(){
 var H=SALE;
+function R(s){return H.rng(H.hash(s))}
 var TEN=["Nguyễn Minh Tâm","Phan Văn Khôi","Lê Quang Huy","Đỗ Thị Mai","Vũ Hoàng Nam","Bùi Anh Tuấn","Hoàng Thị Lan","Trần Đức Thịnh","Ngô Thanh Hằng","Đặng Quốc Việt"];
 var KHACH=["Xưởng cơ khí Tân Phát","Công ty TNHH Việt Thanh","HTX Cơ khí Đông Anh","Nội thất Hoàng Gia","Cơ khí Phú Mỹ","Inox Thành Đạt","Công ty CP Sao Mai","Xưởng quảng cáo Ánh Dương","Đặng Văn Hòa","Lý Gia Bảo","Phạm Quang Huy","Trần Bích Ngọc","Nguyễn Hữu Tài","Cơ khí Hải Long","Công ty TNHH An Phát","Xưởng biển hiệu Minh Đức","Vũ Đình Hoàng","Lê Đình Kiên","Hoàng Trung Kiên","Phan Thị Kim Yến","Công ty TNHH Nhựa Tiến Đạt","Gốm sứ Bát Tràng Hưng Thịnh","Trang sức Kim Ngọc","Cơ khí Bắc Hà"];
 var SP=["Máy khắc Laser Fiber 30W","Máy khắc Laser UV 5W","Máy hàn Laser cầm tay 1500W","Máy cắt Laser CO2 1390","Máy cắt Laser Fiber 3015","Máy đánh dấu Laser MOPA 60W"];
@@ -1180,136 +1185,264 @@ var MIEN=[
  {id:"MN",t:"Miền Nam",tinh:["TP Hồ Chí Minh","Đồng Nai","Tây Ninh","Cần Thơ","An Giang","Vĩnh Long"]}];
 var TINH=[];MIEN.forEach(function(m){m.tinh.forEach(function(t){TINH.push({t:t,mien:m.t,mid:m.id})})});
 
-/* quy mô một ngày của cả phòng, theo phân hệ. Số theo kỳ nhân với hệ số kỳ, số "tại thời điểm" giữ nguyên */
+/* quy mô MỘT NGÀY của cả phòng, theo phân hệ */
 var BASE={
- online:{dt:420e6,khm:26,don:5,cv:{tong:78,xong:46},cxl:32,dxl:46,khut:14,khqh:9,chmoi:34,chxl:61,chqh:7,chnc:12,goi:238,hen:19,gap:4,bg:14,cs:151,pt:2.4e9,ptqh:5.2e8,
-   team:["Đội Online 1","Đội Online 2"]},
- thitruong:{dt:310e6,khm:11,don:3,cv:{tong:64,xong:39},cxl:25,dxl:39,khut:12,khqh:8,chmoi:15,chxl:44,chqh:6,chnc:9,goi:104,hen:17,gap:13,bg:9,cs:84,pt:1.9e9,ptqh:3.7e8,
-   team:["Đội Miền Bắc","Đội Miền Trung","Đội Miền Nam"]},
- duan:{dt:760e6,khm:3,don:1,cv:{tong:41,xong:22},cxl:19,dxl:22,khut:9,khqh:5,chmoi:5,chxl:23,chqh:3,chnc:4,goi:41,hen:8,gap:7,bg:8,cs:33,pt:4.6e9,ptqh:9.4e8,
-   team:["Đội Dự án 1","Đội Dự án 2"]}
+ online:{don:5,avg:84e6,khm:26,cv:78,cvx:46,cxl:32,dxl:46,khut:14,khqh:9,chmoi:34,chxl:61,chqh:7,chnc:12,goi:238,hen:19,gap:15,bg:12,cs:151,ptn:48,ptqhn:11,data:210,tiep:150,hd:1840,tn:4200,mat:2},
+ thitruong:{don:3,avg:103e6,khm:11,cv:64,cvx:39,cxl:25,dxl:39,khut:12,khqh:8,chmoi:15,chxl:44,chqh:6,chnc:9,goi:104,hen:17,gap:13,bg:9,cs:84,ptn:36,ptqhn:8,data:64,tiep:55,hd:960,tn:2300,mat:1},
+ duan:{don:1,avg:640e6,khm:3,cv:41,cvx:22,cxl:19,dxl:22,khut:9,khqh:5,chmoi:5,chxl:23,chqh:3,chnc:4,goi:41,hen:8,gap:7,bg:5,cs:33,ptn:14,ptqhn:3,data:18,tiep:14,hd:310,tn:540,mat:.3}
 };
-/* các chỉ số tại thời điểm hiện tại, không đổi theo kỳ */
-var TAI_THOI_DIEM={cxl:1,khut:1,khqh:1,chxl:1,chqh:1,chnc:1,pt:1,ptqh:1};
-function tinhSo(ph,key,c){
-  var b=BASE[ph][key];if(key==="cv"){return Math.max(1,Math.round(b.tong*c.scopeF))}
-  var f=TAI_THOI_DIEM[key]?c.scopeF:c.scopeF*c.kyF;
-  if(key==="dt"||key==="pt"||key==="ptqh")return b*f;
-  return Math.max(0,Math.round(b*f));
+/* chỉ số tại một thời điểm (tồn), không nhân theo kỳ */
+var TAI={cxl:1,khut:1,khqh:1,chxl:1,chqh:1,chnc:1,ptn:1,ptqhn:1,hd:1,tn:1,cv:1,cvx:1};
+
+/* ---- nhân sự và đội ---- */
+function people(ph){return ph==="thitruong"?TEN.slice(2,8):ph==="duan"?TEN.slice(0,5):TEN.slice(0,7)}
+function teams(ph){
+  var p=people(ph);
+  if(ph==="thitruong")return [{t:"Đội Miền Bắc",m:[0,1,2,3]},{t:"Đội Miền Trung",m:[4]},{t:"Đội Miền Nam",m:[5]}];
+  if(ph==="duan")return [{t:"Đội Dự án 1",m:[0,1,2]},{t:"Đội Dự án 2",m:[3,4]}];
+  return [{t:"Đội Online 1",m:[0,1,2,3]},{t:"Đội Online 2",m:[4,5,6]}];
 }
-return {TEN:TEN,KHACH:KHACH,SP:SP,NHAN:NHAN,NGUON:NGUON,MIEN:MIEN,TINH:TINH,BASE:BASE,TAI_THOI_DIEM:TAI_THOI_DIEM,tinhSo:tinhSo,
-  sales:function(ph){return ph==="duan"?TEN.slice(0,5):ph==="thitruong"?TEN.slice(2,9):TEN.slice(0,7)}};
+var wc={};
+function weights(ph,salt){
+  var id=ph+"|"+salt;if(wc[id])return wc[id];
+  var raw=people(ph).map(function(p){return (0.8+0.4*R("w"+ph+p)())*(salt?(0.88+0.24*R(salt+ph+p)()):1)});
+  var s=raw.reduce(function(a,b){return a+b},0);return wc[id]=raw.map(function(v){return v/s});
+}
+function alloc(total,w){
+  var ex=w.map(function(x){return total*x}),fl=ex.map(Math.floor),left=total-fl.reduce(function(a,b){return a+b},0);
+  var ord=ex.map(function(x,i){return {i:i,r:x-Math.floor(x)}}).sort(function(a,b){return b.r-a.r||a.i-b.i});
+  for(var k=0;k<left;k++)fl[ord[k].i]++;
+  return fl;
+}
+/* phạm vi: chỉ số nhân viên thuộc phạm vi */
+function idx(ph,c){var n=people(ph).length;return c.scope==="canhan"?[0]:c.scope==="nhom"?[0,1,2].filter(function(i){return i<n}):people(ph).map(function(_,i){return i})}
+function colTot(ph,key,c){return Math.round(BASE[ph][key]*(TAI[key]?1:c.kyF)*(c.scope==="hethong"?1.7:1))}
+var cc={};
+function col(ph,key,c){
+  var id=ph+"|"+key+"|"+c.kyF+"|"+(c.scope==="hethong");if(cc[id])return cc[id];
+  var a;
+  if(key==="tm"){a=col(ph,"don",c).map(function(v){return Math.round(v*.3)})}
+  else{
+    a=alloc(colTot(ph,key,c),weights(ph,key==="don"||key==="bg"||key==="gap"||key==="tiep"||key==="data"?"pheu":key));
+    var up={bg:"don",gap:"bg",tiep:"gap",data:"tiep"}[key];
+    if(up){var u=col(ph,up,c);a=a.map(function(v,i){return Math.max(v,u[i])})}   /* phễu không tăng khi đi xuống */
+    if(key==="cvx"){var cv=col(ph,"cv",c);a=a.map(function(v,i){return Math.min(v,cv[i])})}
+    if(key==="ptqhn"){var pn=col(ph,"ptn",c);a=a.map(function(v,i){return Math.min(v,pn[i])})}
+  }
+  return cc[id]=a;
+}
+function tot(ph,key,c){var a=col(ph,key,c);return idx(ph,c).reduce(function(s,i){return s+a[i]},0)}
+
+/* ---- đơn hàng: mỗi đơn có giá trị, đã thu đủ hay chưa, sản phẩm. Đơn thứ k của nhân viên i luôn như nhau ở mọi màn ---- */
+function ov(ph,i,k){return Math.round(BASE[ph].avg*(0.55+1.05*R("o"+ph+i+"_"+k)())/1e5)*1e5}
+function opaid(ph,i,k){return R("p"+ph+i+"_"+k)()<.8}
+function opart(ph,i,k){return opaid(ph,i,k)?1:Math.round(R("pp"+ph+i+"_"+k)()*60)/100}   /* tỷ lệ đã thu */
+function oqty(ph,i,k){return R("q"+ph+i+"_"+k)()<.3?2:1}
+function oprod(ph,i,k){return Math.floor(R("sp"+ph+i+"_"+k)()*SP.length)}
+function ocode(ph,i,k){return 1000+i*97+k}
+function custOf(n){return KHACH[(n*7+3)%KHACH.length]}   /* một mã luôn ứng với một khách */
+function money(ph,c){
+  var d=col(ph,"don",c);
+  return d.map(function(n,i){var r={n:n,ds:0,th:0,thu:0,sl:0};for(var k=0;k<n;k++){var v=ov(ph,i,k);r.ds+=v;r.sl+=oqty(ph,i,k);r.thu+=Math.round(v*opart(ph,i,k)/1e5)*1e5;if(opaid(ph,i,k))r.th+=v}return r});
+}
+/* chỉ tiêu kỳ của từng người: cho ra đủ Đạt, Gần đạt, Chưa đạt */
+function chiTieu(ph,i,c){var exp=BASE[ph].don*BASE[ph].avg*c.kyF*weights(ph,"pheu")[i];return Math.max(5e6,Math.round(exp*(0.75+0.7*R("ct"+ph+i)())/5e6)*5e6)}
+function chiTieuGap(ph,i,c){var exp=BASE[ph].gap*c.kyF*weights(ph,"pheu")[i];return Math.max(1,Math.round(exp*(0.8+0.5*R("cg"+ph+i)())))}
+
+/* ---- công nợ: phiếu phải thu thứ k của nhân viên i ---- */
+function rem(ph,i,k){return Math.round(ov(ph,i,200+k)*(0.25+0.6*R("rm"+ph+i+"_"+k)())/1e5)*1e5}
+function lateDays(ph,i,k){return 1+Math.floor(R("ld"+ph+i+"_"+k)()*27)}
+function aheadDays(ph,i,k){return 1+Math.floor(R("ah"+ph+i+"_"+k)()*24)}
+function sumRem(ph,c,keyN){var a=col(ph,keyN,c);return idx(ph,c).reduce(function(s,i){var t=0;for(var k=0;k<a[i];k++)t+=rem(ph,i,k);return s+t},0)}
+
+/* tổng thẻ chỉ số: số đếm lấy từ cột nhân viên, tiền lấy từ chính các đơn, phiếu */
+function tinhSo(ph,key,c){
+  if(key==="dt")return thucDat(ph,c);
+  if(key==="ds")return doanhSo(ph,c);
+  if(key==="pt")return sumRem(ph,c,"ptn");
+  if(key==="ptqh")return sumRem(ph,c,"ptqhn");
+  return tot(ph,key,c);
+}
+function doanhSo(ph,c){var m=money(ph,c);return idx(ph,c).reduce(function(s,i){return s+m[i].ds},0)}
+function thucDat(ph,c){var m=money(ph,c);return idx(ph,c).reduce(function(s,i){return s+m[i].th},0)}
+
+/* chỉ số kỳ liền trước dùng đúng cùng hàm với hệ số kỳ trước */
+function prevCtx(c){return Object.assign({},c,{kyF:c.kyFp})}
+
+return {TEN:TEN,KHACH:KHACH,SP:SP,NHAN:NHAN,NGUON:NGUON,MIEN:MIEN,TINH:TINH,BASE:BASE,TAI:TAI,TAI_THOI_DIEM:TAI,
+  people:people,sales:people,teams:teams,weights:weights,alloc:alloc,idx:idx,col:col,tot:tot,colTot:colTot,tinhSo:tinhSo,money:money,doanhSo:doanhSo,thucDat:thucDat,
+  ov:ov,opaid:opaid,opart:opart,oqty:oqty,oprod:oprod,ocode:ocode,custOf:custOf,chiTieu:chiTieu,chiTieuGap:chiTieuGap,rem:rem,lateDays:lateDays,aheadDays:aheadDays,prevCtx:prevCtx,R:R};
 })();
 
-/* Bảng chi tiết khi bấm vào một chỉ số (yêu cầu DTS: "click vào chỉ số hiện ra bảng chi tiết"). Dùng chung cho dashboard và báo cáo */
+/* Bảng chi tiết khi bấm vào một chỉ số. Mọi dòng được dựng từ CÙNG số liệu nhân viên ở data.js,
+   nên số dòng và tổng tiền luôn khớp với thẻ chỉ số và báo cáo. */
 (function(){
 var H=SALE,D=SALE.D,SPEC={};
-function r(seed){return H.rng(H.hash(seed))}
-function sale(i,c){var s=D.sales(c.ph);return s[(i*3+1)%s.length]}
-function kh(i,k){return D.KHACH[(i*7+(k||0)+3)%D.KHACH.length]}
-function hh(i){return ("0"+(8+(i*5)%10)).slice(-2)+":"+("0"+((i*13)%60)).slice(-2)}
-function when(i,c){
-  if(c.ky==="homnay"||c.ky==="homqua"){return hh(i)}
-  return ("0"+(1+(i*3)%22)).slice(-2)+"/10 "+hh(i)}
-function ma(p,i){return p+"-2610-"+("000"+(1480-i*3)).slice(-4)}
-function gia(i,c,lo,hi){var x=r("g"+i+c.ph)();return Math.round((lo+x*(hi-lo))/1e6)*1e6}
-function kind(i,arr){return arr[i%arr.length]}
-var TT={xong:H.tag("Đã xử lý","success",1),can:H.tag("Cần xử lý","warning",1),qh:H.tag("Quá hạn","danger",1)};
+var NOW=H.NOW,DAY=864e5;
+var COMBO=(function(){var P=["Xưởng cơ khí","Công ty TNHH","Cơ khí","Inox","Xưởng quảng cáo","Nội thất","Gốm sứ","Trang sức"],N=["Tân Phát","Việt Thanh","Hoàng Gia","Phú Mỹ","Thành Đạt","Sao Mai","Ánh Dương","Hải Long","An Phát","Minh Đức","Tiến Đạt","Hưng Thịnh","Kim Ngọc","Bắc Hà","Đông Anh","Nam Việt","Hòa Bình","Thăng Long","Đại Phát","Quang Minh"],o=[];
+  P.forEach(function(p,i){N.forEach(function(n,j){o.push(p+" "+n)})});return o})();
+var DEMO={1461:"Công ty CP Sao Mai",1467:"Xưởng cơ khí Tân Phát",1457:"HTX Cơ khí Đông Anh"};
+var PERSON=["Đặng Văn Hòa","Lý Gia Bảo","Phạm Quang Huy","Trần Bích Ngọc","Nguyễn Hữu Tài","Vũ Đình Hoàng","Lê Đình Kiên","Hoàng Trung Kiên","Phan Thị Kim Yến","Bùi Văn Long","Ngô Thị Hương","Đỗ Mạnh Cường"];
+/* một mã luôn ứng với đúng một khách ở mọi bảng */
+function cust(n){if(DEMO[n])return DEMO[n];var m=(n*13+5)%(COMBO.length+PERSON.length);return m<COMBO.length?COMBO[m]:PERSON[m-COMBO.length]}
+D.custOf=cust;
 
-function S(k,t,cols,row,n){SPEC[k]={t:t,cols:cols,row:row,n:n}}
-S("don","Đơn hàng",["Số đơn","Khách hàng","Sản phẩm","Giá trị",{t:"Sale",w:"1%"},"Thời điểm"],
-  function(i,c){return [ '<span class="mono">'+ma("SO",i)+'</span>',kh(i),D.SP[i%D.SP.length],{r:1,v:H.vnd(c.ph==="duan"?gia(i,c,320e6,980e6):gia(i,c,46e6,185e6))},H.user(sale(i,c)),when(i,c)]},
-  function(c){return D.tinhSo(c.ph,"don",c)});
-S("khm","Khách hàng mới",["Khách hàng","Nguồn","Tỉnh/Thành phố","Sale phụ trách","Ngày tạo"],
-  function(i,c){return [kh(i,2),kind(i,D.NGUON),kind(i*2,D.TINH).t,H.user(sale(i,c)),when(i,c)]},
-  function(c){return D.tinhSo(c.ph,"khm",c)});
-S("cvngay","Công việc trong ngày",["Khách hàng","Hoạt động","Giờ","Sale","Trạng thái"],
-  function(i,c){return [kh(i),kind(i,["Gọi tư vấn","Hẹn gặp","Gửi báo giá","Nhắn Zalo","Theo dõi sau báo giá"]),hh(i),H.user(sale(i,c)),i%7<4?TT.xong:TT.can]},
-  function(c){return D.tinhSo(c.ph,"cv",c)});
-S("cxl","Hoạt động cần xử lý",["Khách hàng","Hoạt động","Hạn","Trễ","Sale"],
-  function(i,c){var tre=i%5===0?0:(i%4)+1;return [kh(i),kind(i,["Gọi lại","Gửi báo giá","Hẹn gặp","Nhắn Zalo"]),("0"+(1+i%22)).slice(-2)+"/10 "+hh(i),tre?'<span class="overdue">Trễ '+tre+' ngày</span>':'Hôm nay',H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"cxl",c)});
-S("dxl","Hoạt động đã xử lý",["Khách hàng","Hoạt động","Hoàn thành lúc","Kết quả","Sale"],
-  function(i,c){return [kh(i),kind(i,["Gọi tư vấn","Hẹn gặp","Gửi báo giá","Nhắn Zalo"]),when(i,c),kind(i,["Khách quan tâm","Hẹn lại","Đồng ý hẹn gặp","Chờ phản hồi"]),H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"dxl",c)});
-S("khut","Khách hàng ưu tiên",["Khách hàng","Mức ưu tiên","Giai đoạn","Chăm sóc gần nhất","Sale"],
-  function(i,c){var m=["Rất cao","Cao","Ưu tiên"][i%3];return [kh(i),H.tag(m,i%3===0?"danger":i%3===1?"warning":"info",1),kind(i,["Thương lượng và duyệt giá","Lập báo giá","Khảo sát hiện trạng"]),("0"+(15+i%7)).slice(-2)+"/10",H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"khut",c)});
-S("khqh","Khách hàng quá hạn chăm sóc",["Khách hàng","Hạn chăm sóc","Quá hạn","Bậc chăm sóc","Sale"],
-  function(i,c){return [kh(i,1),("0"+(10+i%10)).slice(-2)+"/10",'<span class="overdue">'+(1+i%9)+' ngày</span>',kind(i,["Tiềm năng 1","Tiềm năng 2","Tiềm năng 3","Recare"]),H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"khqh",c)});
-S("chmoi","Cơ hội mới",["Mã cơ hội","Khách hàng","Nhãn sản phẩm","Nguồn","Sale","Thời điểm nhận"],
-  function(i,c){return ['<span class="mono">'+ma("CH",i)+'</span>',kh(i,4),kind(i,D.NHAN),kind(i,D.NGUON),H.user(sale(i,c)),when(i,c)]},
-  function(c){return D.tinhSo(c.ph,"chmoi",c)});
-S("chxl","Cơ hội đang xử lý",["Mã cơ hội","Khách hàng","Trạng thái","Thao tác gần nhất","Sale","Lúc"],
-  function(i,c){return ['<span class="mono">'+ma("CH",i+9)+'</span>',kh(i,5),H.tag(kind(i,["Đang tư vấn","Đã báo giá","Hẹn gặp"]),"info",1),kind(i,["Cập nhật thông tin","Hẹn gọi lại","Ghi chú","Gọi khách"]),H.user(sale(i,c)),when(i,c)]},
-  function(c){return D.tinhSo(c.ph,"chxl",c)});
-S("chqh","Cơ hội quá hạn (đã hẹn lịch, Sale chưa thực hiện)",["Mã cơ hội","Khách hàng","Lịch hẹn","Quá hạn","Sale"],
-  function(i,c){return ['<span class="mono">'+ma("CH",i+21)+'</span>',kh(i,6),("0"+(14+i%8)).slice(-2)+"/10 "+hh(i),'<span class="overdue">'+(i%3+1)+' ngày</span>',H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"chqh",c)});
-S("chnc","Cơ hội có nguy cơ mất",["Mã cơ hội","Khách hàng","Loại data","SLA còn lại","Hạn xử lý","Sale"],
-  function(i,c){var lanh=i%2===0;return ['<span class="mono">'+ma("CH",i+33)+'</span>',kh(i,7),H.tag(lanh?"Lạnh":"Cũ",lanh?"info":"neutral",1),
-    '<span class="overdue">'+(lanh?(1+i%2)+" giờ":"1 ngày")+'</span>',lanh?"Sau "+(1+i%2)+" giờ (SLA 24 giờ)":"Sau 1 ngày (SLA 7 ngày)",H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"chnc",c)});
-S("goi","Cuộc gọi",["Giờ","Khách hàng","Thời lượng","Kết quả","Sale"],
-  function(i,c){var m=(i*37)%420;return [when(i,c),kh(i),Math.floor(m/60)+"p "+("0"+(m%60)).slice(-2)+"s",H.tag(kind(i,["Kết nối","Kết nối","Không nghe máy","Kết nối"]),i%4===2?"neutral":"success",1),H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"goi",c)});
-S("hen","Lịch hẹn",["Giờ hẹn","Khách hàng","Địa điểm / hình thức","Sale","Trạng thái"],
-  function(i,c){return [when(i+2,c),kh(i),kind(i,["Tại xưởng khách","Văn phòng Datyso","Gọi video","Showroom Cầu Giấy"]),H.user(sale(i,c)),H.tag(kind(i,["Đã xác nhận","Chờ xác nhận","Đã xác nhận"]),i%3===1?"warning":"success",1)]},
-  function(c){return D.tinhSo(c.ph,"hen",c)});
-S("gap","Cuộc gặp",["Giờ","Khách hàng","Địa điểm","Kết quả","Sale"],
-  function(i,c){return [when(i,c),kh(i),kind(i,["Xưởng khách, Bắc Ninh","Văn phòng khách, Hà Nội","Showroom Datyso","Xưởng khách, Hải Phòng"]),kind(i,["Khách quan tâm, hẹn báo giá","Chốt demo máy","Cần thêm thông số","Chưa gặp được"]),H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"gap",c)});
-S("bg","Báo giá",["Số báo giá","Khách hàng","Sản phẩm","Giá trị","Trạng thái","Sale"],
-  function(i,c){return ['<span class="mono">'+ma("BG",i)+'</span>',kh(i),D.SP[i%D.SP.length],H.vnd(c.ph==="duan"?gia(i,c,320e6,980e6):gia(i,c,46e6,185e6)),H.tag(kind(i,["Đã gửi","Khách đang xem","Đã gửi","Chờ duyệt giá"]),"info",1),H.user(sale(i,c))]},
-  function(c){return D.tinhSo(c.ph,"bg",c)});
-S("cs","Lượt chăm sóc",["Khách hàng","Hoạt động trong ngày","Tính thành","Sale","Ngày"],
-  function(i,c){var n=1+i%4;return [kh(i),n+" hoạt động (gọi, nhắn tin, hẹn gặp)",H.tag("1 lượt","success"),H.user(sale(i,c)),("0"+(1+(i*3)%22)).slice(-2)+"/10"]},
-  function(c){return D.tinhSo(c.ph,"cs",c)});
-S("pt","Công nợ phải thu trong kỳ",["Số đơn","Khách hàng","Hạn thanh toán","Còn phải thu","Tình trạng","Sale"],
-  function(i,c){var qh=i%4===0;return ['<span class="mono">'+ma("SO",i+40)+'</span>',kh(i,3),("0"+(5+i%25)).slice(-2)+"/"+(i%4===0?"10":"11"),H.vnd(gia(i,c,12e6,c.ph==="duan"?420e6:96e6)),qh?H.tag("Quá hạn","danger",1):H.tag("Trong hạn","success",1),H.user(sale(i,c))]},
-  function(c){return Math.round(40*c.scopeF*1.2)+8});
-S("ptqh","Công nợ quá hạn trong kỳ",["Số đơn","Khách hàng","Hạn thanh toán","Còn phải thu","Quá hạn","Sale"],
-  function(i,c){return ['<span class="mono">'+ma("SO",i+60)+'</span>',kh(i,3),("0"+(1+i%20)).slice(-2)+"/10",H.vnd(gia(i,c,12e6,c.ph==="duan"?420e6:96e6)),'<span class="overdue">'+(2+i%27)+' ngày</span>',H.user(sale(i,c))]},
-  function(c){return Math.round(11*c.scopeF*1.2)+3});
-/* tầng phễu và nhóm khách hàng dùng chung dạng danh sách cơ hội và danh sách khách */
+function today0(){return new Date(2026,9,22,0,0)}
+function range(c){
+  var t0=today0(),a,b;
+  if(c.ky==="homnay"){a=t0;b=NOW}
+  else if(c.ky==="homqua"){a=new Date(t0-DAY);b=new Date(t0-1)}
+  else if(c.ky==="7ngay"){a=new Date(t0-6*DAY);b=NOW}
+  else if(c.ky==="thang"){a=new Date(2026,9,1);b=NOW}
+  else{a=new Date(c.tu+"T00:00:00");b=new Date(c.den+"T23:59:00");if(b>NOW)b=NOW}
+  return {a:a,b:b,one:c.ky==="homnay"||c.ky==="homqua"||(c.ky==="tuychon"&&c.tu===c.den)};
+}
+function pad(n){return ("0"+n).slice(-2)}
+function fD(d){return pad(d.getDate())+"/"+pad(d.getMonth()+1)}
+function fT(d){return pad(d.getHours())+":"+pad(d.getMinutes())}
+function fDT(d){return fD(d)+" "+fT(d)}
+/* mốc thời gian của một sự kiện đã xảy ra trong kỳ, không bao giờ sau thời điểm hiện tại 16:30 */
+function evt(c,seed){
+  var rg=range(c),r=D.R(seed),days=Math.max(1,Math.round((rg.b-rg.a)/DAY+.5));
+  var d0=new Date(rg.a.getFullYear(),rg.a.getMonth(),rg.a.getDate()+Math.min(days-1,Math.floor(r()*days)));
+  var hi=(d0.getDate()===22&&d0.getMonth()===9)?16*60+29:17*60+59,mins=8*60+Math.floor(r()*(hi-8*60+1));
+  return new Date(d0.getFullYear(),d0.getMonth(),d0.getDate(),0,mins);
+}
+function fE(d,c){return range(c).one?fT(d):fDT(d)}
+function pname(ph,p){return p>=0?D.people(ph)[p]:"Chưa phân công"}
+function kind(i,a){return a[((i%a.length)+a.length)%a.length]}
+function tinhOf(ph,p,seed){
+  var n=pname(ph,p),T=SALE.T,t=T&&T.nv.filter(function(x){return x.t===n&&x.loai==="nv"})[0];
+  if(t&&t.tinh.length)return kind(D.R(seed)()*100|0,t.tinh);
+  return kind(D.R(seed)()*100|0,D.TINH).t;
+}
+/* danh sách dòng: nhân viên p có đúng col[p] dòng */
+var MAPCOL={don:"don",dt:"don",khm:"khm",cvngay:"cv",cxl:"cxl",dxl:"dxl",khut:"khut",khqh:"khqh",chmoi:"chmoi",chxl:"chxl",chqh:"chqh",chnc:"chnc",goi:"goi",hen:"hen",gap:"gap",bg:"bg",cs:"cs",pt:"ptn",ptqh:"ptqhn",
+  pheu_data:"data",pheu_tiep:"tiep",pheu_gap:"gap",pheu_bg:"bg",pheu_chot:"don",kh_moi:"khm",kh_hd:"hd",kh_tm:"tm",kh_mat:"mat",kh_tn:"tn"};
+function items(key,c,o){
+  var ph=c.ph,arr=D.col(ph,MAPCOL[key],c),ps=o.ps||(o.p!=null?[o.p]:D.idx(ph,c)),out=[];
+  if(o.its)return o.its;
+  if(o.n!=null&&o.p==null&&!o.ps){
+    var cover=o.cover&&o.cover.length?o.cover:D.idx(ph,c);
+    for(var k=0;k<o.n;k++)out.push({p:cover[k%cover.length],k:k});
+    return out;
+  }
+  ps.forEach(function(p){
+    var n=arr[p];
+    for(var k=0;k<n;k++){
+      if(key==="dt"&&!D.opaid(ph,p,k))continue;
+      out.push({p:p,k:k});
+    }
+  });
+  return out;
+}
+function S(k,t,cols,row,o){SPEC[k]={t:t,cols:cols,row:row,o:o||{}}}
+function oppNo(key,i,c){return 1100+((D.R("off"+c.ph+key)()*380|0)+i*3)%380}
+function oc(key,i,c){return "CH-2610-"+oppNo(key,i,c)}
+function tag(t,k){return H.tag(t,k,1)}
+var TXT={xong:tag("Đã xử lý","success"),can:tag("Cần xử lý","warning")};
+
+/* ---- đơn hàng: Σ giá trị = doanh số, đúng từng đơn ở báo cáo ---- */
+function orderRow(it,i,c,paidOnly){
+  var ph=c.ph,v=D.ov(ph,it.p,it.k),code=D.ocode(ph,it.p,it.k),part=D.opart(ph,it.p,it.k);
+  return {c:['<span class="mono">SO-2610-'+code+'</span>',cust(code),SPEC_SP(D.oprod(ph,it.p,it.k)),{r:1,v:H.vnd(v)},{r:1,v:H.vnd(Math.round(v*part/1e5)*1e5)},H.user(pname(ph,it.p)),fE(evt(c,"od"+ph+it.p+"_"+it.k),c)],t:evt(c,"od"+ph+it.p+"_"+it.k)};
+}
+function SPEC_SP(i){return D.SP[i]}
+S("don","Đơn hàng",["Số đơn","Khách hàng","Sản phẩm","Giá trị","Đã thu","Sale","Ngày đơn"],orderRow);
+S("dt","Đơn đã thu đủ 100% công nợ",["Số đơn","Khách hàng","Sản phẩm","Giá trị","Đã thu","Sale","Ngày đơn"],orderRow);
+S("khm","Khách hàng mới",["Khách hàng","Nguồn","Tỉnh/Thành phố","Sale phụ trách","Ngày tạo"],function(it,i,c){var n=3000+it.p*131+it.k,t=evt(c,"km"+c.ph+it.p+"_"+it.k);
+  return {c:[cust(n),kind(n,D.NGUON),tinhOf(c.ph,it.p,"kt"+n),H.user(pname(c.ph,it.p)),fE(t,c)],t:t}});
+S("cvngay","Công việc trong ngày",["Khách hàng","Hoạt động","Giờ","Sale","Trạng thái"],function(it,i,c){
+  var done=it.k<D.col(c.ph,"cvx",c)[it.p],r=D.R("cv"+c.ph+it.p+"_"+it.k),mins=done?8*60+Math.floor(r()*(16*60+29-8*60)):16*60+31+Math.floor(r()*170),t=new Date(2026,9,22,0,mins);
+  return {c:[cust(4000+it.p*97+it.k),kind(it.k+it.p,["Gọi tư vấn","Hẹn gặp","Gửi báo giá","Nhắn Zalo","Theo dõi sau báo giá"]),fT(t),H.user(pname(c.ph,it.p)),done?TXT.xong:TXT.can],t:t}});
+S("cxl","Hoạt động cần xử lý",["Khách hàng","Hoạt động","Hạn","Trễ","Sale"],function(it,i,c){
+  var r=D.R("cx"+c.ph+it.p+"_"+it.k),ago=r()<.35?0:1+Math.floor(r()*4),mins=8*60+Math.floor(r()*(ago?600:(16*60+29-8*60))),t=new Date(2026,9,22-ago,0,mins);
+  var lag=NOW-t,txt=ago===0?'<span class="overdue">Trễ '+Math.max(1,Math.floor(lag/36e5))+' giờ</span>':'<span class="overdue">Trễ '+Math.floor(lag/DAY)+' ngày</span>';
+  return {c:[cust(5000+it.p*97+it.k),kind(it.k,["Gọi lại","Gửi báo giá","Hẹn gặp","Nhắn Zalo"]),fDT(t),txt,H.user(pname(c.ph,it.p))],t:t}});
+S("dxl","Hoạt động đã xử lý",["Khách hàng","Hoạt động","Hoàn thành lúc","Kết quả","Sale"],function(it,i,c){var t=evt(c,"dx"+c.ph+it.p+"_"+it.k);
+  return {c:[cust(6000+it.p*97+it.k),kind(it.k,["Gọi tư vấn","Hẹn gặp","Gửi báo giá","Nhắn Zalo"]),fE(t,c),kind(it.k+it.p,["Khách quan tâm","Hẹn lại","Đồng ý hẹn gặp","Chờ phản hồi"]),H.user(pname(c.ph,it.p))],t:t}});
+S("khut","Khách hàng ưu tiên",["Khách hàng","Mức ưu tiên","Giai đoạn","Chăm sóc gần nhất","Sale"],function(it,i,c){var m=["Rất cao","Cao","Ưu tiên"][(it.k+it.p)%3],t=new Date(NOW-(1+Math.floor(D.R("ku"+c.ph+it.p+"_"+it.k)()*6))*DAY);
+  return {c:[cust(7000+it.p*97+it.k),H.tag(m,m==="Rất cao"?"danger":m==="Cao"?"warning":"info",1),kind(it.k+it.p,["Thương lượng và duyệt giá","Lập báo giá","Khảo sát hiện trạng"]),fD(t),H.user(pname(c.ph,it.p))],t:t}});
+S("khqh","Khách hàng quá hạn chăm sóc",["Khách hàng","Hạn chăm sóc","Quá hạn","Bậc chăm sóc","Sale"],function(it,i,c){
+  var n=1+Math.floor(D.R("kq"+c.ph+it.p+"_"+it.k)()*12),due=new Date(2026,9,22-n,9,0);
+  return {c:[cust(8000+it.p*97+it.k),fD(due),'<span class="overdue">'+n+' ngày</span>',kind(it.k+it.p,["Tiềm năng 1","Tiềm năng 2","Tiềm năng 3","Recare"]),H.user(pname(c.ph,it.p))],t:due}});
+S("chmoi","Cơ hội mới",["Mã cơ hội","Khách hàng","Nhãn sản phẩm","Nguồn","Sale","Thời điểm nhận"],function(it,i,c){var n=oppNo("chmoi",i,c),t=evt(c,"cm"+c.ph+it.p+"_"+it.k);
+  return {c:['<span class="mono">CH-2610-'+n+'</span>',cust(n),kind(n,D.NHAN),kind(n,D.NGUON),H.user(pname(c.ph,it.p)),fE(t,c)],t:t}});
+S("chxl","Cơ hội đang xử lý",["Mã cơ hội","Khách hàng","Trạng thái","Thao tác gần nhất","Sale","Lúc"],function(it,i,c){var n=oppNo("chxl",i,c),t=evt(c,"cx2"+c.ph+it.p+"_"+it.k);
+  return {c:['<span class="mono">CH-2610-'+n+'</span>',cust(n),H.tag(kind(n,["Đang tư vấn","Đã báo giá","Hẹn gặp"]),"info",1),kind(n+it.p,["Cập nhật thông tin","Hẹn gọi lại","Ghi chú","Gọi khách"]),H.user(pname(c.ph,it.p)),fDT(t)],t:t}});
+S("chqh","Cơ hội quá hạn (đã hẹn lịch, Sale chưa thực hiện)",["Mã cơ hội","Khách hàng","Lịch hẹn","Quá hạn","Sale"],function(it,i,c){var n=oppNo("chqh",i,c),ago=1+Math.floor(D.R("cq"+c.ph+it.p+"_"+it.k)()*6),t=new Date(2026,9,22-ago,8+(it.k*3)%9,(it.k*15)%60);
+  return {c:['<span class="mono">CH-2610-'+n+'</span>',cust(n),fDT(t),'<span class="overdue">'+Math.floor((NOW-t)/DAY)+' ngày</span>',H.user(pname(c.ph,it.p))],t:t}});
+S("chnc","Cơ hội có nguy cơ mất",["Mã cơ hội","Khách hàng","Loại data","SLA còn lại","Hạn xử lý","Sale"],function(it,i,c){
+  var n=oppNo("chnc",i,c),r=D.R("cn"+c.ph+it.p+"_"+it.k),lanh=r()<.6,remMin=lanh?[30,45,60,90,120][Math.floor(r()*5)]:[240,480,720,960,1380][Math.floor(r()*5)],due=new Date(NOW.getTime()+remMin*6e4);
+  var rt=remMin<60?remMin+" phút":remMin<1440?Math.floor(remMin/60)+" giờ"+(remMin%60?" "+remMin%60+" phút":""):"1 ngày";
+  return {c:['<span class="mono">CH-2610-'+n+'</span>',cust(n),H.tag(lanh?"Lạnh":"Cũ",lanh?"info":"neutral",1),'<span class="overdue">'+rt+'</span>',(due.getDate()===22?"Hôm nay ":fD(due)+" ")+fT(due),H.user(pname(c.ph,it.p))],t:due}});
+S("goi","Cuộc gọi",["Giờ","Khách hàng","Thời lượng","Kết quả","Sale"],function(it,i,c){
+  var t=evt(c,"gc"+c.ph+it.p+"_"+it.k),r=D.R("gd"+c.ph+it.p+"_"+it.k),ok=r()<.7,s=ok?20+Math.floor(r()*880):0;
+  return {c:[fE(t,c),cust(9000+it.p*97+it.k),ok?Math.floor(s/60)+"p "+pad(s%60)+"s":H.NV,H.tag(ok?"Kết nối":"Không nghe máy",ok?"success":"neutral",1),H.user(pname(c.ph,it.p))],t:t}});
+S("hen","Lịch hẹn",["Thời gian hẹn","Khách hàng","Địa điểm, hình thức","Sale","Trạng thái"],function(it,i,c){var t=evt(c,"hn"+c.ph+it.p+"_"+it.k),r=D.R("hs"+c.ph+it.p+"_"+it.k);
+  var ok=r()<.85;return {c:[fE(t,c),cust(9500+it.p*97+it.k),kind(it.k+it.p,["Tại xưởng khách","Văn phòng Datyso","Gọi video","Showroom Cầu Giấy"]),H.user(pname(c.ph,it.p)),H.tag(ok?"Đã diễn ra":"Khách dời lịch",ok?"success":"warning",1)],t:t}});
+S("gap","Cuộc gặp",["Thời gian","Khách hàng","Địa điểm","Kết quả","Sale"],function(it,i,c){var t=evt(c,"gp"+c.ph+it.p+"_"+it.k),n=9800+it.p*97+it.k;
+  return {c:[fE(t,c),cust(n),kind(n,["Xưởng khách, Bắc Ninh","Văn phòng khách, Hà Nội","Showroom Datyso, Cầu Giấy","Xưởng khách, Hải Phòng"]),kind(n+it.p,["Khách quan tâm, hẹn báo giá","Chốt demo máy","Cần thêm thông số","Đã chốt cấu hình"]),H.user(pname(c.ph,it.p))],t:t}});
+S("bg","Báo giá",["Số báo giá","Khách hàng","Sản phẩm","Giá trị","Trạng thái","Sale"],function(it,i,c){var n=1700+((D.R("bo"+c.ph)()*400|0)+i*3)%400,t=evt(c,"bq"+c.ph+it.p+"_"+it.k),v=Math.round(BASE_AVG(c.ph)*(0.6+D.R("bv"+c.ph+it.p+"_"+it.k)())/1e5)*1e5;
+  return {c:['<span class="mono">BG-2610-'+n+'</span>',cust(n),D.SP[(n+it.p)%D.SP.length],H.vnd(v),H.tag(kind(n,["Đã gửi","Khách đang xem","Chờ duyệt giá"]),"info",1),H.user(pname(c.ph,it.p))],t:t}});
+function BASE_AVG(ph){return D.BASE[ph].avg}
+S("cs","Lượt chăm sóc",["Khách hàng","Hoạt động trong ngày","Tính thành","Sale","Ngày"],function(it,i,c){var n=1+(it.k+it.p)%4,t=evt(c,"cs"+c.ph+it.p+"_"+it.k);
+  return {c:[cust(10000+it.p*131+it.k),n+" hoạt động (gọi, nhắn tin, hẹn gặp)",H.tag("1 lượt","success"),H.user(pname(c.ph,it.p)),fD(t)],t:t}});
+function ptRow(it,i,c){
+  var ph=c.ph,late=it.k<D.col(ph,"ptqhn",c)[it.p],due=late?new Date(NOW.getTime()-D.lateDays(ph,it.p,it.k)*DAY):new Date(NOW.getTime()+D.aheadDays(ph,it.p,it.k)*DAY),code=D.ocode(ph,it.p,40+it.k);
+  var days=Math.floor(Math.abs(NOW-due)/DAY);
+  return {c:['<span class="mono">SO-2610-'+code+'</span>',cust(code),fD(due)+"/"+due.getFullYear(),{r:1,v:H.vnd(D.rem(ph,it.p,it.k))},late?H.tag("Quá hạn "+days+" ngày","danger",1):H.tag("Còn "+days+" ngày","success",1),H.user(pname(ph,it.p))],t:due};
+}
+S("pt","Công nợ phải thu",["Số đơn","Khách hàng","Hạn thanh toán","Còn phải thu","Tình trạng","Sale"],ptRow,{asc:1});
+S("ptqh","Công nợ quá hạn",["Số đơn","Khách hàng","Hạn thanh toán","Còn phải thu","Tình trạng","Sale"],ptRow,{asc:1});
+/* tầng phễu và nhóm khách */
+var PH_ST={pheu_data:"Tiếp nhận",pheu_tiep:"Đang tư vấn",pheu_gap:"Đã gặp",pheu_bg:"Đã báo giá",pheu_chot:"Đã chốt"};
 ["pheu_data","pheu_tiep","pheu_gap","pheu_bg","pheu_chot"].forEach(function(k,ti){
-  S(k,["Data","Đã tiếp cận","Đã gặp","Đã báo giá","Đã chốt"][ti],["Mã cơ hội","Khách hàng","Nhãn sản phẩm","Giai đoạn hiện tại","Sale","Ngày vào tầng"],
-    function(i,c){return ['<span class="mono">'+ma("CH",i+ti*5)+'</span>',kh(i,ti),kind(i,D.NHAN),H.tag(kind(i+ti,["Tiếp nhận","Đang tư vấn","Đã báo giá","Thương lượng","Đã chốt"]),"info",1),H.user(sale(i,c)),("0"+(1+(i*3)%22)).slice(-2)+"/10"]},
-    function(c){return c.pheuN?c.pheuN[ti]:20});
+  S(k,["Data","Đã tiếp cận","Đã gặp","Đã báo giá","Đã chốt"][ti],["Mã cơ hội","Khách hàng","Nhãn sản phẩm","Giai đoạn","Sale","Ngày vào tầng"],function(it,i,c){var n=oppNo(k,i,c),t=evt(c,"pf"+k+c.ph+it.p+"_"+it.k);
+    return {c:['<span class="mono">CH-2610-'+n+'</span>',cust(n),kind(n,D.NHAN),H.tag(PH_ST[k],"info",1),H.user(pname(c.ph,it.p)),fD(t)],t:t}});
 });
+function khRow(k){return function(it,i,c){
+  var n=11000+it.p*211+it.k,r=D.R("kh"+k+c.ph+it.p+"_"+it.k),rg=range(c),buy,tv="Doanh nghiệp";
+  tv=kind(n,["Doanh nghiệp","Hộ kinh doanh","Cá nhân"]);
+  var mua=H.NV,ds=H.NV,t=NOW;
+  if(k==="kh_hd"){t=new Date(NOW-(1+Math.floor(r()*89))*DAY);mua=fD(t)+"/"+t.getFullYear();ds=H.vnd(Math.round(D.BASE[c.ph].avg*(0.7+r()*3)/1e5)*1e5)}
+  if(k==="kh_tm"){t=evt(c,"tm"+n);mua=fD(t)+"/"+t.getFullYear();ds=H.vnd(Math.round(D.BASE[c.ph].avg*(1.6+r()*3)/1e5)*1e5)}
+  if(k==="kh_mat"){t=new Date(2026,1+Math.floor(r()*3),1+Math.floor(r()*27));mua=fD(t)+"/"+t.getFullYear();ds=H.vnd(Math.round(D.BASE[c.ph].avg*(0.7+r()*2)/1e5)*1e5)}
+  if(k==="kh_moi"){t=evt(c,"kmm"+n)}
+  return {c:[cust(n),tv,mua,ds,H.user(pname(c.ph,it.p))],t:t};
+}}
 ["kh_moi","kh_hd","kh_tm","kh_mat","kh_tn"].forEach(function(k,ti){
-  S(k,["Khách hàng mới","Khách đang hoạt động","Khách tái mua","Khách đã mất","Khách tiềm năng"][ti],["Khách hàng","Loại","Mua gần nhất","Doanh số luỹ kế","Sale phụ trách"],
-    function(i,c){return [kh(i,ti),kind(i,["Doanh nghiệp","Hộ kinh doanh","Cá nhân"]),ti===0||ti===4?NVx():("0"+(1+(i*3)%22)).slice(-2)+"/"+kind(i,["10","09","08"]),ti===0||ti===4?NVx():H.vnd(gia(i,c,46e6,420e6)),H.user(sale(i,c))]},
-    function(c){return c.khN?c.khN[ti]:20});
+  S(k,["Khách hàng mới","Khách đang hoạt động","Khách tái mua","Khách đã mất","Khách tiềm năng"][ti],["Khách hàng","Loại","Mua gần nhất","Doanh số luỹ kế","Sale phụ trách"],khRow(k));
 });
-function NVx(){return H.NV}
 
 function openDrill(o,c){
   var sp=SPEC[o.k];if(!sp)return H.toast("Chưa có bảng chi tiết cho chỉ số này","info");
-  var cc=Object.assign({},c);if(o.ctx)Object.assign(cc,o.ctx);
-  var n=o.n!=null?o.n:sp.n(cc);var cap=300,total=Math.min(n,cap);
-  var rows=[];for(var i=0;i<total;i++)rows.push(sp.row(i,cc));
+  var its=items(o.k,c,o),rows=its.map(function(it,i){return sp.row(it,i,c)});
+  rows.sort(function(a,b){return sp.o.asc?a.t-b.t:b.t-a.t});
+  var n=rows.length,cap=300,rowsC=rows.slice(0,cap).map(function(r){return r.c});
   function cell(v){return v&&v.v!==undefined?v.v:v}
   var st={q:"",p:0,per:10,s:""};
-  var sales=D.sales(c.ph);
-  function filtered(){return rows.filter(function(r){var t=(r.map(function(x){return String(cell(x)).replace(/<[^>]+>/g,"")}).join(" ")).toLowerCase();
+  var sales=D.people(c.ph);
+  function filtered(){return rowsC.filter(function(r){var t=(r.map(function(x){return String(cell(x)).replace(/<[^>]+>/g,"")}).join(" ")).toLowerCase();
     return (!st.q||t.indexOf(st.q.toLowerCase())>=0)&&(!st.s||t.indexOf(st.s.toLowerCase())>=0)})}
   function body(){
     var f=filtered(),pages=Math.max(1,Math.ceil(f.length/st.per));if(st.p>=pages)st.p=pages-1;
-    var cols=sp.cols.map(function(x,i){var sample=rows[0]?rows[0][i]:null;return (sample&&sample.v!==undefined)?{t:typeof x==="string"?x:x.t,r:1}:x});
+    var cols=sp.cols.map(function(x,i){var sample=rowsC[0]?rowsC[0][i]:null;return (sample&&sample.v!==undefined)?{t:typeof x==="string"?x:x.t,r:1}:x});
     var show=f.slice(st.p*st.per,(st.p+1)*st.per).map(function(r){return r.map(cell)});
-    return '<div class="sale-drill__bar">'+
+    var multi=!o.p&&o.p!==0&&!o.ps&&D.idx(c.ph,c).length>1;
+    return (multi?'<div class="sale-drill__bar">'+
       '<div class="input-wrap" style="flex:1 1 180px"><input class="input" id="dq" type="search" placeholder="Tìm trong danh sách…" value="'+H.esc(st.q)+'" aria-label="Tìm trong danh sách"></div>'+
-      '<span class="select" style="flex:0 1 200px"><select class="input" id="ds" aria-label="Lọc theo Sale"><option value="">Tất cả Sale</option>'+sales.map(function(s){return '<option'+(st.s===s?" selected":"")+'>'+H.esc(s)+'</option>'}).join("")+'</select>'+H.ic("chev-down")+'</span></div>'+
-      (show.length?H.tbl(cols,show,{min:560}):'<div class="state"><h4>Không có dòng khớp bộ lọc</h4><p>Thử bỏ bớt điều kiện lọc</p></div>')+
+      '<span class="select" style="flex:0 1 200px"><select class="input" id="ds" aria-label="Lọc theo Sale"><option value="">Tất cả Sale</option>'+D.idx(c.ph,c).map(function(i){return '<option'+(st.s===sales[i]?" selected":"")+'>'+H.esc(sales[i])+'</option>'}).join("")+'</select>'+H.ic("chev-down")+'</span></div>':
+      '<div class="sale-drill__bar"><div class="input-wrap" style="flex:1 1 180px"><input class="input" id="dq" type="search" placeholder="Tìm trong danh sách…" value="'+H.esc(st.q)+'" aria-label="Tìm trong danh sách"></div></div>')+
+      (show.length?H.tbl(cols,show,{min:600}):'<div class="state"><h4>Không có dòng khớp bộ lọc</h4><p>Thử bỏ bớt điều kiện lọc</p></div>')+
       '<div class="pag"><span>'+(f.length?(st.p*st.per+1)+" - "+Math.min(f.length,(st.p+1)*st.per)+" trên "+H.so(f.length):"0 dòng")+(n>cap&&!st.q&&!st.s?" (hiển thị "+cap+" dòng đầu trong "+H.so(n)+")":"")+'</span><span class="spacer"></span>'+
       '<button class="btn btn--secondary btn--sm" id="dprev"'+(st.p===0?" disabled":"")+'>'+H.ic("chev-left","ic--sm")+'Trước</button><span>Trang '+(st.p+1)+' / '+pages+'</span>'+
       '<button class="btn btn--secondary btn--sm" id="dnext"'+(st.p>=pages-1?" disabled":"")+'>Sau'+H.ic("chev-right","ic--sm")+'</button></div>';
   }
-  var L=H.drawer({t:H.esc(o.t||sp.t)+' <span class="tag tag--info" style="vertical-align:middle">'+H.so(n)+'</span>',sub:H.esc(o.sub||(c.phL+" · "+c.scopeL+" · "+(H.D.TAI_THOI_DIEM[o.k]?"tại thời điểm hiện tại":"kỳ "+c.kyL))),
+  var scopeTxt=o.p!=null?pname(c.ph,o.p):c.scopeL;
+  var L=H.drawer({t:H.esc(o.t||sp.t)+' <span class="tag tag--info" style="vertical-align:middle">'+H.so(n)+'</span>',sub:H.esc(o.sub||(c.phL+" · "+scopeTxt+" · "+(D.TAI[MAPCOL[o.k]]?"tại thời điểm hiện tại":"kỳ "+c.kyL))),
     w:"min(820px,100vw)",body:'<div id="dbody">'+body()+'</div>',
-    foot:'<button class="btn btn--secondary" data-toast="Đã xuất Excel danh sách (mô phỏng)">'+H.ic("download")+'Xuất Excel</button><button class="btn btn--primary" data-toast="Mở danh sách đầy đủ trên màn hiện có của hệ thống" data-kind="info">Mở danh sách đầy đủ</button>',
+    foot:'<button class="btn btn--secondary" data-toast="Đã xuất Excel">'+H.ic("download")+'Xuất Excel</button>',
     bind:function(el){
       function redraw(){var b=el.querySelector("#dbody");var a=document.activeElement&&document.activeElement.id;b.innerHTML=body();var x=a&&el.querySelector("#"+a);if(x&&x.focus){x.focus();if(x.setSelectionRange&&x.type==="search")x.setSelectionRange(x.value.length,x.value.length)}}
       el.addEventListener("input",function(e){if(e.target.id==="dq"){st.q=e.target.value;st.p=0;redraw()}});
@@ -1320,15 +1453,14 @@ function openDrill(o,c){
 }
 SALE.onDrill=openDrill;
 SALE.openDrill=openDrill;
-SALE.drillSpec=function(k,t,cols,row,n){S(k,t,cols,row,n)};
-SALE.drillHelpers={sale:sale,kh:kh,hh:hh,when:when,ma:ma,gia:gia,kind:kind,TT:TT};
+SALE.drillHelpers={range:range,evt:evt,fD:fD,fT:fT,fDT:fDT,fE:fE,pname:pname,cust:cust,pad:pad};
 })();
 
 /* Màn 1. Bảng điều khiển Sale: khối Tăng trưởng, Công việc và chăm sóc, Cơ hội, Hoạt động bán hàng, Công nợ */
 (function(){
 var H=SALE,D=SALE.D;
 function n(c,k){return D.tinhSo(c.ph,k,c)}
-function prev(v,c,k){var x=H.hash(c.ph+c.ky+k)%23;return v/(0.92+(x-8)/100)}  /* kỳ trước: lệch nhẹ để có % tăng giảm */
+function pv(c,k){return D.tinhSo(c.ph,k,D.prevCtx(c))}
 function dr(k,c,extra){return Object.assign({k:k},extra||{})}
 function ngayThuong(c){return c.ky==="homnay"||c.ky==="homqua"}
 H.reg({
@@ -1344,12 +1476,12 @@ H.reg({
   hientrang:"Một phần. Đã có Công việc trong ngày, Hoạt động cần xử lý và đã xử lý, Khách hàng ưu tiên, Cuộc gọi. Chưa có khối Tăng trưởng, Khách quá hạn chăm sóc, 3 chỉ số cơ hội, lượt chăm sóc, khối Công nợ, bấm số mở chi tiết",
   nguon:"datyso_cohoi/static/src/dashboard/cohoi_dashboard.xml",
   render:function(c){
-    var doanhthu=n(c,"dt"),dtP=prev(doanhthu,c,"dt"),khm=n(c,"khm"),khmP=prev(khm,c,"khm"),don=n(c,"don"),donP=prev(don,c,"don");
-    var cv=n(c,"cv"),xong=Math.round(cv*D.BASE[c.ph].cv.xong/D.BASE[c.ph].cv.tong);
+    var doanhthu=n(c,"dt"),dtP=pv(c,"dt"),khm=n(c,"khm"),khmP=pv(c,"khm"),don=n(c,"don"),donP=pv(c,"don");
+    var cv=n(c,"cv"),xong=n(c,"cvx");
     var so="so với "+c.kySo;
     var h='';
     h+=H.sect("Tăng trưởng",H.kpiRow([
-      H.kpi({l:"Doanh thu",v:H.tien(doanhthu),meta:H.dl(doanhthu,dtP)+" "+so,drill:dr("don",c),tip:"Doanh thu thực đạt: đơn đã thanh toán đủ 100% công nợ, xem Báo cáo Doanh số và doanh thu"}),
+      H.kpi({l:"Doanh thu",v:H.tien(doanhthu),meta:H.dl(doanhthu,dtP)+" "+so,drill:dr("dt",c),tip:"Doanh thu thực đạt: chỉ tính các đơn khách đã thanh toán đủ 100% công nợ"}),
       H.kpi({l:"Khách hàng mới",v:H.so(khm),meta:H.dl(khm,khmP)+" "+so,drill:dr("khm",c)}),
       H.kpi({l:"Số đơn hàng",v:H.so(don),meta:H.dl(don,donP)+" "+so,drill:dr("don",c)})]));
     h+=H.sect("Công việc và chăm sóc khách hàng",H.kpiRow([
@@ -1370,8 +1502,8 @@ H.reg({
       H.kpi({l:"Số báo giá",v:H.so(n(c,"bg")),meta:"Trong kỳ "+c.kyL,drill:dr("bg",c)}),
       H.kpi({l:"Số lượt chăm sóc",v:H.so(n(c,"cs")),meta:"1 khách có hoạt động trong ngày = 1 lượt",tip:"Mỗi khách có ít nhất một hoạt động chăm sóc trong ngày (gọi, nhắn tin, hẹn gặp) tính 1 lượt. Làm nhiều lần trong cùng ngày vẫn là 1 lượt. Sang ngày khác tính thêm 1 lượt",drill:dr("cs",c)})]).replace('class="kpis"','class="kpis kpis--5"'));
     h+=H.sect("Công nợ",H.kpiRow([
-      H.kpi({l:"Tổng phải thu trong kỳ",v:H.tien(n(c,"pt")),meta:'<span class="kynote">Tại thời điểm hiện tại</span>',drill:dr("pt",c)}),
-      H.kpi({l:"Tổng quá hạn trong kỳ",v:H.tien(n(c,"ptqh")),meta:'<span class="kynote">Tại thời điểm hiện tại</span>',drill:dr("ptqh",c)})]).replace('class="kpis"','class="kpis kpis--3"'));
+      H.kpi({l:"Tổng phải thu",v:H.tien(n(c,"pt")),meta:'<span class="kynote">Tại thời điểm hiện tại</span>',drill:dr("pt",c)}),
+      H.kpi({l:"Tổng quá hạn",v:H.tien(n(c,"ptqh")),meta:'<span class="kynote">Tại thời điểm hiện tại</span>',drill:dr("ptqh",c)})]).replace('class="kpis"','class="kpis kpis--3"'));
     return '<div class="stack" style="gap:var(--space-5)">'+h+'</div>';
   }
 });
@@ -1380,32 +1512,25 @@ H.reg({
 /* Màn 2. Báo cáo Phễu bán hàng: Data, Đã tiếp cận, Đã gặp, Đã báo giá, Đã chốt. Bấm số mở bảng chi tiết */
 (function(){
 var H=SALE,D=SALE.D;
-var TANG=[["Data","pheu_data"],["Đã tiếp cận","pheu_tiep"],["Đã gặp","pheu_gap"],["Đã báo giá","pheu_bg"],["Đã chốt","pheu_chot"]];
-var TL={online:[1,.72,.115,.068,.024],thitruong:[1,.86,.34,.18,.07],duan:[1,.84,.62,.4,.09]};
-var BASE_DATA={online:210,thitruong:64,duan:18};
-function so(ph,c,tuoi){var f=c.kyF*c.scopeF*(tuoi||1);var d=BASE_DATA[ph]*f;var r=TL[ph];return r.map(function(x,i){return Math.max(i?0:1,Math.round(d*x))})}
-function sale(c){return D.sales(c.ph)}
+var TANG=[["Data","pheu_data","data"],["Đã tiếp cận","pheu_tiep","tiep"],["Đã gặp","pheu_gap","gap"],["Đã báo giá","pheu_bg","bg"],["Đã chốt","pheu_chot","don"]];
+function cols(c){return TANG.map(function(t){return D.col(c.ph,t[2],c)})}
+function totals(c){var ix=D.idx(c.ph,c),cs=cols(c);return cs.map(function(a){return ix.reduce(function(s,i){return s+a[i]},0)})}
 H.reg({
-  id:"pheu",grp:"Báo cáo",t:"Phễu bán hàng",ph:["online","thitruong","duan"],tag:"Mới",kySeg:true,scopeSel:true,xuat:true,
-  excel:[["online",4,"Bảng điều khiển > Phễu bán hàng","Phễu 5 tầng, tỷ lệ chuyển đổi giữa các tầng, bấm số mở chi tiết, so với kỳ liền trước"],
-         ["duan",5,"Bảng điều khiển > Phễu bán hàng","Như Sale online"],["thitruong",4,"Bảng điều khiển > Phễu bán hàng","Như Sale online"]],
-  hientrang:"Chưa có. Chỉ có báo cáo Hiệu suất & chuyển đổi (BC-05) và Phân bố theo trạng thái (BC-06), chưa có phễu 5 tầng. DTS đồng ý chuyển từ dashboard sang Báo cáo",
-  nguon:"datyso_baocao/views/cohoi_actions.xml (BC-05, BC-06)",
+  id:"pheu",grp:"Báo cáo",t:"Phễu bán hàng",ph:["online","thitruong","duan"],kySeg:true,scopeSel:true,xuat:true,
+  excel:[["online",4,"Bảng điều khiển > Phễu bán hàng","Phễu 5 tầng"],["duan",5,"Bảng điều khiển > Phễu bán hàng",""],["thitruong",4,"Bảng điều khiển > Phễu bán hàng",""]],
   render:function(c){
-    var cur=so(c.ph,c,1),prv=so(c.ph,c,.9+(H.hash(c.ph+c.ky)%15)/100);
-    var max=cur[0]||1;
+    var cur=totals(c),prv=totals(D.prevCtx(c)),max=cur[0]||1,ix=D.idx(c.ph,c),cs=cols(c);
     var rows=TANG.map(function(t,i){
-      var p=cur[i]*100/max, conv=i?cur[i]*100/Math.max(1,cur[i-1]):null;
+      var p=cur[i]*100/max,conv=i?cur[i]*100/Math.max(1,cur[i-1]):null;
       return (i?'<div class="funnel__conv">'+H.ic("chev-down","ic--sm")+'<span>Chuyển đổi từ <b>'+H.esc(TANG[i-1][0])+'</b> sang <b>'+H.esc(t[0])+'</b>: '+H.pt(conv)+'</span></div>':"")+
         '<div class="funnel__r"><span class="funnel__l">'+(i+1)+'. '+H.esc(t[0])+'</span><span class="funnel__b"><i style="width:'+Math.max(2,p)+'%;opacity:'+(1-i*.13)+'"></i></span>'+
-        '<button class="linkbtn funnel__v num"'+H.drillAttr({k:t[1],n:cur[i],t:t[0]})+'>'+H.so(cur[i])+'</button></div>'});
+        '<button class="linkbtn funnel__v num"'+H.drillAttr({k:t[1],t:t[0]})+'>'+H.so(cur[i])+'</button></div>'});
     var cmp=H.tbl(["Tầng",{t:"Kỳ này",r:1},{t:"Kỳ trước",r:1},{t:"Thay đổi",r:1},{t:"Tỷ lệ so với Data",r:1}],
       TANG.map(function(t,i){return [t[0],H.so(cur[i]),H.so(prv[i]),H.dl(cur[i],prv[i])||H.NV,H.pt(cur[i]*100/max)]}),{min:420});
-    var tot=cur[4]*100/max;
-    var list=c.scope==="canhan"?sale(c).slice(0,1):sale(c),ws=list.map(function(s,k){return 1+(H.hash(s)%40)/100+(k%2?0:.15)}),sw=ws.reduce(function(a,b){return a+b},0);
-    var per=list.map(function(s,k){
-      var d=so(c.ph,c,ws[k]/sw);
-      return [H.user(s)].concat(d.map(function(v,i){return '<button class="linkbtn num"'+H.drillAttr({k:TANG[i][1],n:v,t:TANG[i][0],sub:s+" · kỳ "+c.kyL})+'>'+H.so(v)+'</button>'})).concat([H.pt(d[4]*100/Math.max(1,d[0]))]);
+    var tot=cur[4]*100/max,totP=prv[4]*100/Math.max(1,prv[0]);
+    var per=ix.map(function(i){
+      var d=cs.map(function(a){return a[i]});
+      return [H.user(D.people(c.ph)[i])].concat(d.map(function(v,j){return '<button class="linkbtn num"'+H.drillAttr({k:TANG[j][1],p:i,t:TANG[j][0]})+'>'+H.so(v)+'</button>'})).concat([H.pt(d[4]*100/Math.max(1,d[0]))]);
     });
     var perHead=["Nhân viên"].concat(TANG.map(function(t){return {t:t[0],r:1}})).concat([{t:"Tỷ lệ chốt",r:1}]);
     return '<div class="stack" style="gap:var(--space-4)">'+
@@ -1413,7 +1538,7 @@ H.reg({
       H.card("Phễu bán hàng"+' '+H.tip("Mỗi tầng tính số cơ hội đã đi qua tầng đó trong kỳ"),'<div class="card__b funnel">'+rows.join("")+'</div>','<span class="note">Kỳ '+H.esc(c.kyL)+'</span>')+
       '<div class="stack" style="gap:var(--space-4)">'+
         H.card("So với "+H.esc(c.kySo),cmp)+
-        '<div class="card kpi"><div class="kpi__l">Tỷ lệ chốt toàn phễu</div><div class="kpi__v num">'+H.pt(tot)+'</div><div class="kpi__meta"><span>Đã chốt trên Data</span><span>'+H.dl(cur[4]/max,prv[4]/Math.max(1,prv[0]))+'</span></div></div>'+
+        '<div class="card kpi"><div class="kpi__l">Tỷ lệ chốt toàn phễu</div><div class="kpi__v num">'+H.pt(tot)+'</div><div class="kpi__meta"><span>Đã chốt trên Data</span><span>'+H.dl(tot,totP)+'</span></div></div>'+
       '</div></div>'+
       H.sect("Theo nhân viên",H.tbl(perHead,per,{min:640}))+
       '</div>';
@@ -1424,36 +1549,25 @@ H.reg({
 /* Màn 3. Báo cáo Khách hàng: Mới, Đang hoạt động, Tái mua, Đã mất, Tiềm năng, Tỷ lệ giữ chân */
 (function(){
 var H=SALE,D=SALE.D;
-var KEYS=[["Khách mới","kh_moi"],["Đang hoạt động","kh_hd"],["Tái mua","kh_tm"],["Đã mất","kh_mat"],["Tiềm năng","kh_tn"]];
-/* quy mô phòng: số phát sinh theo kỳ (mới, tái mua, mất) và số tồn tại thời điểm (đang hoạt động, tiềm năng) */
-var B={online:{moi:26,hd:1840,tm:62,mat:31,tn:4200},thitruong:{moi:11,hd:960,tm:28,mat:14,tn:2300},duan:{moi:3,hd:310,tm:9,mat:4,tn:540}};
-function tinh(ph,c,share,bias){
-  var b=B[ph],f=c.kyF*c.scopeF*share;
-  var moi=Math.round(b.moi*f*(bias||1)),tm=Math.round(b.tm*f),mat=Math.round(b.mat*f);
-  var hd=Math.round(b.hd*c.scopeF*share),tn=Math.round(b.tn*c.scopeF*share);
-  var giu=hd?100-(mat*100/Math.max(hd,1))*(c.ky==="thang"?1:2.4):100;
-  return {n:[moi,hd,tm,mat,tn],giu:Math.min(99.9,Math.max(80,giu))};
-}
+var KEYS=[["Khách mới","kh_moi","khm"],["Đang hoạt động","kh_hd","hd"],["Tái mua","kh_tm","tm"],["Đã mất","kh_mat","mat"],["Tiềm năng","kh_tn","tn"]];
+function arrs(c){return KEYS.map(function(k){return D.col(c.ph,k[2],c)})}
+function giu(hd,mat){return hd?100*(1-mat/hd):100}
+function totals(c){var ix=D.idx(c.ph,c),a=arrs(c),n=a.map(function(x){return ix.reduce(function(s,i){return s+x[i]},0)});return {n:n,giu:giu(n[1],n[3])}}
 H.reg({
-  id:"khachhang",grp:"Báo cáo",t:"Báo cáo Khách hàng",ph:["online","thitruong","duan"],tag:"Mới",kySeg:true,scopeSel:true,xuat:true,
-  excel:[["online",7,"Bảng điều khiển > Khách hàng","Mới, đang hoạt động, tái mua, đã mất, tiềm năng, tỷ lệ giữ chân"],
-         ["duan",8,"Bảng điều khiển > Khách hàng","Như Sale online"],["thitruong",7,"Bảng điều khiển > Khách hàng","Như Sale online"]],
-  hientrang:"Chưa có báo cáo. Có danh sách khách hàng, chưa có báo cáo theo trạng thái khách. DTS đồng ý chuyển từ dashboard sang Báo cáo",
-  nguon:"datyso_marketing/views/khachhang_views.xml (danh sách khách hàng)",
+  id:"khachhang",grp:"Báo cáo",t:"Báo cáo Khách hàng",ph:["online","thitruong","duan"],kySeg:true,scopeSel:true,xuat:true,
+  excel:[["online",7,"Bảng điều khiển > Khách hàng","Mới, đang hoạt động, tái mua, đã mất, tiềm năng, tỷ lệ giữ chân"],["duan",8,"Bảng điều khiển > Khách hàng",""],["thitruong",7,"Bảng điều khiển > Khách hàng",""]],
   render:function(c){
-    var all=tinh(c.ph,c,1),prv=tinh(c.ph,c,.88+(H.hash(c.ph+c.ky)%9)/100);
+    var all=totals(c),prv=totals(D.prevCtx(c)),ix=D.idx(c.ph,c),A=arrs(c);
     var tiles=KEYS.map(function(k,i){
       var tai=i===1||i===4;
-      return H.kpi({l:k[0],v:H.so(all.n[i]),meta:tai?'<span class="kynote">Tại thời điểm hiện tại</span>':(H.dl(all.n[i],prv.n[i],i===3)||"")+" so với "+c.kySo,drill:{k:k[1],n:all.n[i],t:k[0]}});
+      return H.kpi({l:k[0],v:H.so(all.n[i]),meta:tai?'<span class="kynote">Tại thời điểm hiện tại</span>':(H.dl(all.n[i],prv.n[i],i===3)||"")+" so với "+c.kySo,drill:{k:k[1],t:k[0]}});
     });
     tiles.push(H.kpi({l:"Tỷ lệ giữ chân khách hàng",v:H.pt(all.giu),meta:H.dl(all.giu,prv.giu)+" so với "+c.kySo,tip:"Tỷ lệ khách đang hoạt động không rơi vào nhóm Đã mất trong kỳ"}));
     var tong=all.n.reduce(function(a,b){return a+b},0);
     var bars=KEYS.map(function(k,i){var p=all.n[i]*100/Math.max(1,tong);return '<div class="sbar"><span>'+H.esc(k[0])+'</span><span class="sbar__t"><i style="width:'+p+'%;'+(i===3?"background:var(--status-danger-solid)":"")+'"></i></span><span class="num">'+H.so(all.n[i])+'</span><small class="num">'+H.pt(p,0)+'</small></div>'}).join("");
-    var list=c.scope==="canhan"?D.sales(c.ph).slice(0,1):D.sales(c.ph);
-    var ws=list.map(function(s){return 1+(H.hash(s)%35)/100}),sw=ws.reduce(function(a,b){return a+b},0);
-    var rows=list.map(function(s,k){
-      var t=tinh(c.ph,c,ws[k]/sw);
-      return [H.user(s)].concat(t.n.map(function(v,i){return '<button class="linkbtn num"'+H.drillAttr({k:KEYS[i][1],n:v,t:KEYS[i][0],sub:s+" · "+(i===1||i===4?"tại thời điểm hiện tại":"kỳ "+c.kyL)})+'>'+H.so(v)+'</button>'})).concat([H.pt(t.giu)]);
+    var rows=ix.map(function(i){
+      var d=A.map(function(a){return a[i]});
+      return [H.user(D.people(c.ph)[i])].concat(d.map(function(v,j){return '<button class="linkbtn num"'+H.drillAttr({k:KEYS[j][1],p:i,t:KEYS[j][0]})+'>'+H.so(v)+'</button>'})).concat([H.pt(giu(d[1],d[3]))]);
     });
     var head=["Nhân viên"].concat(KEYS.map(function(k){return {t:k[0],r:1}})).concat([{t:"Tỷ lệ giữ chân",r:1}]);
     return '<div class="stack" style="gap:var(--space-5)">'+
@@ -1464,77 +1578,61 @@ H.reg({
 });
 })();
 
-/* Màn 4. Báo cáo Doanh số và doanh thu (gộp một). Doanh thu thực đạt chỉ tính khi khách thanh toán đủ 100% công nợ */
+/* Màn 4. Báo cáo Doanh số và doanh thu (gộp một). Doanh thu thực đạt chỉ tính khi khách thanh toán đủ 100% công nợ.
+   Mọi con số cộng từ chính các đơn hàng ở data.js, nên khớp với Bảng điều khiển và bảng chi tiết đơn */
 (function(){
-var H=SALE,D=SALE.D;
+var H=SALE,D=SALE.D,DH=SALE.drillHelpers;
 var F={tu:"2026-10-01",den:"2026-10-22",by:"nv",so:"truoc"};
-function days(){return Math.max(1,(new Date(F.den)-new Date(F.tu))/864e5+1)}
-function nguoi(c){
-  if(F.by==="doi")return D.BASE[c.ph].team.slice();
-  if(F.by==="sp")return D.SP.slice(0,5);
-  return D.sales(c.ph).slice();
+function days(){return Math.max(1,Math.round((new Date(F.den)-new Date(F.tu))/864e5)+1)}
+function cx(c){var f=Math.max(.8,Math.round(days()*.795*10)/10);return Object.assign({},c,{ky:"tuychon",tu:F.tu,den:F.den,kyF:f,kyFp:Math.max(.7,Math.round(f*(F.so==="truoc"?.94:.88)*10)/10)})}
+function mau(tl){return tl>=100?["success","Đạt","ok"]:tl>=70?["warning","Gần đạt","warn"]:["danger","Chưa đạt","bad"]}
+/* danh sách đơn trong phạm vi */
+function orders(c){
+  var ph=c.ph,d=D.col(ph,"don",c),out=[];
+  D.idx(ph,c).forEach(function(i){for(var k=0;k<d[i];k++){var v=D.ov(ph,i,k),paid=D.opaid(ph,i,k);
+    out.push({p:i,k:k,v:v,paid:paid,thu:Math.round(v*D.opart(ph,i,k)/1e5)*1e5,qty:D.oqty(ph,i,k),prod:D.oprod(ph,i,k),code:D.ocode(ph,i,k),date:DH.evt(c,"od"+ph+i+"_"+k)})}});
+  return out;
 }
-function chiTieu(c,n){return Math.round(D.BASE[c.ph].dt*17.5*(days()/22)*c.scopeF*2.1/ Math.max(1,n)/1e6)*1e6}
-function tinh(c,t,i,n){
-  var r=H.rng(H.hash(t+c.ph+F.by));var w=.6+r()*.9;
-  var ds=Math.round(D.BASE[c.ph].dt*days()*.78*c.scopeF*w/ Math.max(1,n)*1.4/1e5)*1e5;
-  var thuc=Math.round(ds*(.52+r()*.3)/1e5)*1e5;
-  var ct=Math.round(thuc/(.58+r()*.7)/5e6)*5e6;
-  var tl=thuc*100/ct;var soDon=Math.max(1,Math.round(ds/(c.ph==="duan"?420e6:84e6)));
-  var thuhoi=Math.round(Math.min(ds,thuc*1.12+ds*.08)/1e5)*1e5;
-  return {t:t,ds:ds,thuc:thuc,ct:ct,tl:tl,don:soDon,sl:Math.round(soDon*(c.ph==="duan"?1.2:1.6)),bq:Math.round(ds/soDon/1e5)*1e5,thuhoi:thuhoi,tlth:thuhoi*100/ds};
+function groups(c,ords){
+  var ph=c.ph,ix=D.idx(ph,c),gs=[];
+  if(F.by==="nv")gs=ix.map(function(i){return {t:D.people(ph)[i],f:function(o){return o.p===i},ct:D.chiTieu(ph,i,c)}});
+  else if(F.by==="doi")gs=D.teams(ph).map(function(tm){var m=tm.m.filter(function(i){return ix.indexOf(i)>=0});return {t:tm.t,f:function(o){return m.indexOf(o.p)>=0},ct:m.reduce(function(s,i){return s+D.chiTieu(ph,i,c)},0),skip:!m.length}}).filter(function(g){return !g.skip});
+  else{var tc=ix.reduce(function(s,i){return s+D.chiTieu(ph,i,c)},0),tds=ords.reduce(function(s,o){return s+o.v},0)||1;
+    gs=D.SP.map(function(sp,j){var ds=ords.filter(function(o){return o.prod===j}).reduce(function(s,o){return s+o.v},0);return {t:sp,f:function(o){return o.prod===j},ct:Math.max(5e6,Math.round(tc*(ds/tds)*(0.8+0.4*D.R("sp"+ph+j)())/5e6)*5e6)}})}
+  return gs.map(function(g){var os=ords.filter(g.f),r={t:g.t,os:os,ct:g.ct,don:os.length,ds:0,th:0,sl:0,thu:0};os.forEach(function(o){r.ds+=o.v;r.sl+=o.qty;r.thu+=o.thu;if(o.paid)r.th+=o.v});r.tl=r.th*100/r.ct;return r});
 }
-function mau(tl){return tl>=100?["success","Đạt"]:tl>=70?["warning","Gần đạt"]:["danger","Chưa đạt"]}
-function orders(c,x){
-  var n=Math.min(12,x.don+2),o=[];var r=H.rng(H.hash(x.t));
-  o.push({ma:"SO-2609-0987",kh:D.KHACH[H.hash(x.t)%D.KHACH.length],v:2e9,thu:2e9,ngay:"12/09/2026",du:true,ngayDu:"15/10/2026",vd:true});
-  for(var i=0;i<n-1;i++){
-    var v=Math.round((c.ph==="duan"?260e6+r()*600e6:40e6+r()*150e6)/1e6)*1e6;
-    var thu=i%4===0?.75:1;var d0=1+Math.floor(r()*20);
-    o.push({ma:"SO-2610-"+("000"+(120-i*4)).slice(-4),kh:D.KHACH[(i*5+H.hash(x.t))%D.KHACH.length],v:v,thu:v*thu,ngay:("0"+d0).slice(-2)+"/10/2026",du:thu===1,
-      ngayDu:thu===1?("0"+Math.min(22,d0+Math.floor(r()*6))).slice(-2)+"/10/2026":null});
-  }
-  return o;
-}
-function drillRow(x,c){
-  var o=orders(c,x);
-  var vd='<div class="alert alert--info" style="margin-bottom:12px"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><div><b>Ví dụ ghi nhận doanh thu KPI</b><br>Đơn 2,0 tỷ phát sinh tháng 9/2026. Khách trả 1,5 tỷ trong tháng 9 và trả nốt 500 triệu ngày 15/10/2026. Đơn chỉ thu đủ vào 15/10 nên 2,0 tỷ tính vào <b>doanh thu KPI tháng 10</b>, không tính vào tháng 9</div></div>';
-  var rows=o.map(function(d){return ['<span class="mono">'+d.ma+'</span>',d.kh,d.ngay,{r:1,v:H.vnd(d.v)},{r:1,v:H.vnd(d.thu)},
-    d.du?H.tag("Thu đủ 100%","success",1):H.tag("Chưa thu đủ","warning",1),d.du?"Tháng 10/2026 ("+d.ngayDu+")":'<span style="color:var(--text-tertiary)">Chưa ghi nhận</span>']});
-  var cols=["Số đơn","Khách hàng","Ngày đơn",{t:"Doanh số (giá trị đơn)",r:1},{t:"Đã thu",r:1},"Công nợ","Ghi nhận doanh thu KPI"];
-  return vd+H.tbl(cols,rows.map(function(r){return r.map(function(v){return v&&v.v!==undefined?v.v:v})}),{min:760});
+function drillRows(x,c){
+  var rows=x.os.slice().sort(function(a,b){return b.date-a.date}).map(function(o){
+    var pd=o.paid?new Date(Math.min(DH.range(c).b.getTime(),o.date.getTime()+(3+o.k%14)*864e5)):null;
+    return [ '<span class="mono">SO-2610-'+o.code+'</span>',D.custOf(o.code),D.SP[o.prod],DH.fD(o.date)+"/2026",H.vnd(o.v),H.vnd(o.thu),
+      o.paid?H.tag("Thu đủ 100%","success",1):H.tag("Chưa thu đủ, còn "+H.tien(o.v-o.thu),"warning",1),
+      o.paid?"Tháng "+(pd.getMonth()+1)+"/"+pd.getFullYear()+" (thu đủ "+DH.fD(pd)+")":'<span style="color:var(--text-tertiary)">Chưa ghi nhận</span>']});
+  var cols=["Số đơn","Khách hàng","Sản phẩm","Ngày đơn",{t:"Doanh số (giá trị đơn)",r:1},{t:"Đã thu",r:1},"Công nợ","Ghi nhận doanh thu KPI"];
+  return rows.length?H.tbl(cols,rows,{min:900}):'<div class="state"><h4>Chưa có đơn hàng trong kỳ</h4></div>';
 }
 H.reg({
-  id:"doanhso",grp:"Báo cáo",t:"Doanh số và doanh thu",ph:["online","thitruong","duan"],tag:"Cập nhật",xuat:true,
-  excel:[["online",53,"Báo cáo > Báo cáo doanh thu","Doanh thu thực đạt so với chỉ tiêu KPI, tỷ lệ hoàn thành, ngưỡng màu, bấm dòng mở danh sách"],
-         ["online",54,"Báo cáo > Báo cáo doanh số","DTS: hai báo cáo gộp làm một"],
-         ["online",9,"Bảng điều khiển > Đơn hàng & doanh số","Số đơn, sản lượng, giá trị đơn bình quân chuyển sang báo cáo"],
-         ["online",10,"Bảng điều khiển > Công nợ","Đã thu hồi, tỷ lệ thu hồi chuyển sang báo cáo"],
-         ["duan",10,"Bảng điều khiển > Đơn hàng & doanh số","Như Sale online"],["duan",11,"Bảng điều khiển > Công nợ","Như Sale online"],
-         ["thitruong",9,"Bảng điều khiển > Đơn hàng & doanh số","Như Sale online"],["thitruong",10,"Bảng điều khiển > Công nợ","Như Sale online"]],
-  hientrang:"Một phần. Đã có Doanh số theo ngày, Chỉ tiêu & Dự kiến, Độ trễ doanh số. Chưa có Doanh thu thực đạt (đơn thu đủ 100% công nợ) và báo cáo gộp",
-  nguon:"datyso_baocao/views/chitieu_views.xml, datyso_baocao/models/baocao_doanhso_ngay.py, dinhnghia_doanhso.py",
-  meta:function(c){return H.esc(c.phL)+" · Kỳ "+H.ngayVN(F.tu)+" đến "+H.ngayVN(F.den)+" "},
-  render:function(c){
-    var ds=nguoi(c),n=ds.length;
-    var rows=ds.map(function(t,i){return tinh(c,t,i,n)});
-    var sum=rows.reduce(function(a,x){a.ds+=x.ds;a.thuc+=x.thuc;a.ct+=x.ct;a.don+=x.don;a.sl+=x.sl;a.th+=x.thuhoi;return a},{ds:0,thuc:0,ct:0,don:0,sl:0,th:0});
-    var tl=sum.thuc*100/sum.ct;var so=F.so==="truoc"?"kỳ trước":"cùng kỳ năm trước";
+  id:"doanhso",grp:"Báo cáo",t:"Doanh số và doanh thu",ph:["online","thitruong","duan"],xuat:true,scopeSel:true,
+  excel:[["online",53,"Báo cáo > Báo cáo doanh thu",""],["online",54,"Báo cáo > Báo cáo doanh số",""],["online",9,"Bảng điều khiển > Đơn hàng & doanh số",""],["online",10,"Bảng điều khiển > Công nợ",""],
+         ["duan",10,"Bảng điều khiển > Đơn hàng & doanh số",""],["duan",11,"Bảng điều khiển > Công nợ",""],["thitruong",9,"Bảng điều khiển > Đơn hàng & doanh số",""],["thitruong",10,"Bảng điều khiển > Công nợ",""]],
+  meta:function(c){return H.esc(c.phL)+" · "+H.esc(c.scopeL)+" · Kỳ "+H.ngayVN(F.tu)+" đến "+H.ngayVN(F.den)},
+  render:function(c0){
+    var c=cx(c0),ords=orders(c),gs=groups(c,ords),n=gs.length;
+    var sum=gs.reduce(function(a,x){a.ds+=x.ds;a.th+=x.th;a.ct+=x.ct;a.don+=x.don;a.sl+=x.sl;a.thu+=x.thu;return a},{ds:0,th:0,ct:0,don:0,sl:0,thu:0});
+    var tl=sum.th*100/(sum.ct||1),cp=D.prevCtx(c),so=F.so==="truoc"?"kỳ trước":"cùng kỳ năm trước";
+    var dsP=D.doanhSo(c.ph,cp),thP=D.thucDat(c.ph,cp);
     var def='<details class="card sale-def" open><summary><b>Định nghĩa</b></summary><div class="sale-def__b cols-2">'+
       '<div><h4>Doanh số</h4><p>Tổng giá trị đơn hàng phát sinh trong kỳ theo quy định ghi nhận của công ty, <b>không phụ thuộc</b> việc đã thu công nợ hay chưa</p></div>'+
-      '<div><h4>Doanh thu thực đạt</h4><p>Giá trị đơn chỉ tính vào doanh thu KPI khi khách đã thanh toán <b>đủ 100% công nợ</b> của đơn. Đơn mới thu một phần, kể cả đã giao hàng, chưa tính. Giá trị được ghi vào kỳ phát sinh việc thu đủ</p></div></div></details>';
+      '<div><h4>Doanh thu thực đạt</h4><p>Giá trị đơn chỉ tính vào doanh thu KPI khi khách đã thanh toán <b>đủ 100% công nợ</b> của đơn. Đơn mới thu một phần, kể cả đã giao hàng, chưa tính. Giá trị được ghi vào kỳ phát sinh việc thu đủ. Ví dụ: đơn 2 tỷ phát sinh tháng 9, khách trả nốt ngày 15/10 thì 2 tỷ tính vào doanh thu KPI tháng 10</p></div></div></details>';
     var tiles=H.kpiRow([
-      H.kpi({l:"Doanh số",v:H.tien(sum.ds),meta:H.dl(sum.ds,sum.ds*.93)+" so với "+so}),
-      H.kpi({l:"Doanh thu thực đạt",v:H.tien(sum.thuc),meta:H.dl(sum.thuc,sum.thuc*.97)+" so với "+so}),
+      H.kpi({l:"Doanh số",v:H.tien(sum.ds),meta:H.dl(sum.ds,dsP)+" so với "+so}),
+      H.kpi({l:"Doanh thu thực đạt",v:H.tien(sum.th),meta:H.dl(sum.th,thP)+" so với "+so}),
       H.kpi({l:"Chỉ tiêu KPI",v:H.tien(sum.ct),meta:"Theo kỳ đã chọn"}),
-      H.kpi({l:"Tỷ lệ hoàn thành",v:H.pt(tl),meta:H.tag(mau(tl)[1],mau(tl)[0],1),st:null})]).replace('class="kpis"','class="kpis kpis--4"');
+      H.kpi({l:"Tỷ lệ hoàn thành",v:H.pt(tl),meta:H.tag(mau(tl)[1],mau(tl)[0],1)})]).replace('class="kpis"','class="kpis kpis--4"');
     var head=[{t:{nv:"Nhân viên",doi:"Đội nhóm",sp:"Sản phẩm"}[F.by],w:"190px"},{t:"Doanh số",r:1},{t:"Doanh thu thực đạt",r:1},{t:"Chỉ tiêu KPI",r:1},{t:"Hoàn thành",w:"260px"},{t:"Số đơn",r:1},{t:"Sản lượng",r:1},{t:"Giá trị đơn bq",r:1},{t:"Đã thu hồi",r:1},{t:"Tỷ lệ thu hồi",r:1}];
-    var body=rows.map(function(x,i){var m=mau(x.tl);
-      return {tr:'data-row="'+i+'" style="cursor:pointer" tabindex="0"',c:[F.by==="nv"?H.user(x.t):H.esc(x.t),H.vnd(x.ds),H.vnd(x.thuc),H.vnd(x.ct),
-        '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(x.tl,m[0]==="success"?"ok":m[0]==="warning"?"warn":"bad")+'</span><span class="num" style="width:44px;text-align:right">'+H.pt(x.tl,0)+'</span>'+H.tag(m[1],m[0])+'</div>',
-        H.so(x.don),H.so(x.sl),H.vnd(x.bq),H.vnd(x.thuhoi),H.pt(x.tlth)]}});
-    body.push({tr:'class="sale-total"',c:['<b>Tổng</b>','<b>'+H.vnd(sum.ds)+'</b>','<b>'+H.vnd(sum.thuc)+'</b>','<b>'+H.vnd(sum.ct)+'</b>','<div style="display:flex;gap:8px;align-items:center"><span style="flex:1">'+H.prog(tl,mau(tl)[0]==="success"?"ok":mau(tl)[0]==="warning"?"warn":"bad")+'</span><b class="num" style="width:48px;text-align:right">'+H.pt(tl,0)+'</b></div>','<b>'+H.so(sum.don)+'</b>','<b>'+H.so(sum.sl)+'</b>','<b>'+H.vnd(sum.ds/Math.max(1,sum.don))+'</b>','<b>'+H.vnd(sum.th)+'</b>','<b>'+H.pt(sum.th*100/sum.ds)+'</b>']});
-    window.__dsRows=rows;
+    function bar(tlv){var m=mau(tlv);return '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(tlv,m[2])+'</span><span class="num" style="width:44px;text-align:right">'+H.pt(tlv,0)+'</span>'+H.tag(m[1],m[0])+'</div>'}
+    var body=gs.map(function(x,i){return {tr:'data-row="'+i+'" style="cursor:pointer" tabindex="0"',c:[F.by==="nv"?H.user(x.t):H.esc(x.t),H.vnd(x.ds),H.vnd(x.th),H.vnd(x.ct),bar(x.tl),H.so(x.don),H.so(x.sl),x.don?H.vnd(Math.round(x.ds/x.don/1e5)*1e5):H.NV,H.vnd(x.thu),x.ds?H.pt(x.thu*100/x.ds):H.NV]}});
+    body.push({tr:'class="sale-total"',c:['<b>Tổng</b>','<b>'+H.vnd(sum.ds)+'</b>','<b>'+H.vnd(sum.th)+'</b>','<b>'+H.vnd(sum.ct)+'</b>',bar(tl),'<b>'+H.so(sum.don)+'</b>','<b>'+H.so(sum.sl)+'</b>','<b>'+(sum.don?H.vnd(Math.round(sum.ds/sum.don/1e5)*1e5):"")+'</b>','<b>'+H.vnd(sum.thu)+'</b>','<b>'+(sum.ds?H.pt(sum.thu*100/sum.ds):"")+'</b>']});
+    window.__dsRows=gs;window.__dsCtx=c;
     var filt='<div class="card"><div class="card__b toolbar-row">'+
       H.input("fTu","Từ ngày",F.tu,{type:"date",num:1})+H.input("fDen","Đến ngày",F.den,{type:"date",num:1})+
       H.select("fBy","Xem theo",[{v:"nv",t:"Nhân viên"},{v:"doi",t:"Đội nhóm"},{v:"sp",t:"Sản phẩm"}],F.by)+
@@ -1547,124 +1645,133 @@ H.reg({
     root.querySelector("#fApply").onclick=function(){
       var a=root.querySelector("#fTu").value,b=root.querySelector("#fDen").value;
       if(!a||!b||a>b){var e=root.querySelector("#fTuErr");e.hidden=false;e.textContent="Ngày bắt đầu phải trước hoặc bằng ngày kết thúc";return}
+      if(b>"2026-10-22"){var e2=root.querySelector("#fDenErr");e2.hidden=false;e2.textContent="Ngày kết thúc không được sau ngày 22/10/2026";return}
       F.tu=a;F.den=b;F.by=root.querySelector("#fBy").value;F.so=root.querySelector("#fSo").value;H.redraw();H.toast("Đã áp dụng bộ lọc","success");
     };
-    root.addEventListener("click",function(e){var tr=e.target.closest("tr[data-row]");if(!tr)return;var x=window.__dsRows[+tr.dataset.row];
-      H.drawer({t:H.esc(x.t),sub:"Doanh số "+H.tien(x.ds)+" · Doanh thu thực đạt "+H.tien(x.thuc),w:"min(1000px,100vw)",body:drillRow(x,c),
+    root.addEventListener("click",function(e){var tr=e.target.closest("tr[data-row]");if(!tr)return;var x=window.__dsRows[+tr.dataset.row],cc=window.__dsCtx;
+      H.drawer({t:H.esc(x.t),sub:"Doanh số "+H.tien(x.ds)+" · Doanh thu thực đạt "+H.tien(x.th)+" · "+x.don+" đơn",w:"min(1000px,100vw)",body:drillRows(x,cc),
         foot:'<button class="btn btn--secondary" data-toast="Đã xuất Excel">'+H.ic("download")+'Xuất Excel</button>'})});
     root.addEventListener("keydown",function(e){if(e.key==="Enter"){var tr=e.target.closest&&e.target.closest("tr[data-row]");if(tr)tr.click()}});
   }
 });
 })();
 
-/* Màn 5. Báo cáo Số cuộc gặp khách hàng theo nhân viên hoặc đội nhóm */
+/* Màn 5. Báo cáo Số cuộc gặp khách hàng theo nhân viên hoặc đội nhóm. Số liệu lấy từ cùng nguồn với Bảng điều khiển */
 (function(){
 var H=SALE,D=SALE.D;
-var CT={online:6,thitruong:18,duan:12}; /* chỉ tiêu cuộc gặp mỗi người trong một ngày làm việc, đơn vị minh hoạ */
 var F={by:"nv"};
-function nguoi(c){return F.by==="doi"?D.BASE[c.ph].team.slice():(c.scope==="canhan"?D.sales(c.ph).slice(0,1):D.sales(c.ph).slice())}
-function tinh(c,t,n,pv){
-  var r=H.rng(H.hash(t+c.ph+(pv?"p":"")));
-  var base=D.BASE[c.ph].gap*c.kyF*c.scopeF/Math.max(1,F.by==="doi"?D.BASE[c.ph].team.length:n)*(.6+r()*.9)*(pv?(.85+r()*.3):1);
-  var gap=Math.max(0,Math.round(base));
-  var ct=Math.max(1,Math.round((CT[c.ph]/6)*c.kyF*(F.by==="doi"?3:1)*(c.scope==="canhan"?1:1)*(c.ph==="online"?.55:.8)));
-  return {t:t,gap:gap,ct:ct,tl:gap*100/ct};
+function mau(tl){return tl>=100?["success","Đạt","ok"]:tl>=70?["warning","Gần đạt","warn"]:["danger","Chưa đạt","bad"]}
+function rowsOf(c,cur){
+  var ph=c.ph,ix=D.idx(ph,c),g=D.col(ph,"gap",cur),pr=D.col(ph,"gap",D.prevCtx(cur)),people=D.people(ph);
+  if(F.by==="nv")return ix.map(function(i){return {t:people[i],ps:[i],gap:g[i],pv:pr[i],ct:D.chiTieuGap(ph,i,cur)}});
+  return D.teams(ph).map(function(tm){var m=tm.m.filter(function(i){return ix.indexOf(i)>=0});
+    return {t:tm.t,ps:m,gap:m.reduce(function(s,i){return s+g[i]},0),pv:m.reduce(function(s,i){return s+pr[i]},0),ct:m.reduce(function(s,i){return s+D.chiTieuGap(ph,i,cur)},0)}}).filter(function(x){return x.ps.length});
 }
-function mau(tl){return tl>=100?["success","Đạt"]:tl>=70?["warning","Gần đạt"]:["danger","Chưa đạt"]}
 H.reg({
-  id:"cuocgap",grp:"Báo cáo",t:"Báo cáo số cuộc gặp khách hàng",ph:["online"],tag:"Mới",kySeg:true,scopeSel:true,xuat:true,
-  excel:[["online",52,"Báo cáo > Báo cáo số cuộc gặp khách hàng","Số cuộc gặp theo nhân viên, đội nhóm, khoảng thời gian, so kỳ trước, ngưỡng màu, bấm dòng mở danh sách"]],
-  hientrang:"Một phần. Có bảng pivot Cuộc gặp nhưng menu đã gỡ từ 04/09/2026, chưa có báo cáo riêng",
-  nguon:"datyso_cohoi/views/cuocgap_views.xml (pivot), datyso_cohoi/views/cohoi_menus.xml",
+  id:"cuocgap",grp:"Báo cáo",t:"Báo cáo số cuộc gặp khách hàng",ph:["online"],kySeg:true,scopeSel:true,xuat:true,
+  excel:[["online",52,"Báo cáo > Báo cáo số cuộc gặp khách hàng",""]],
   render:function(c){
-    var ds=nguoi(c),n=ds.length;
-    var rows=ds.map(function(t){var a=tinh(c,t,n),b=tinh(c,t,n,1);a.pv=b.gap;return a});
-    var tong=rows.reduce(function(s,x){return s+x.gap},0),tongP=rows.reduce(function(s,x){return s+x.pv},0);
-    var dat=rows.filter(function(x){return x.tl>=100}).length;
+    var rows=rowsOf(c,c).map(function(x){x.tl=x.gap*100/x.ct;return x});
+    var tong=rows.reduce(function(s,x){return s+x.gap},0),tongP=rows.reduce(function(s,x){return s+x.pv},0),n=rows.length,dat=rows.filter(function(x){return x.tl>=100}).length;
     window.__cgRows=rows;
     var tiles=H.kpiRow([
-      H.kpi({l:"Tổng số cuộc gặp",v:H.so(tong),meta:H.dl(tong,tongP)+" so với "+c.kySo,drill:{k:"gap",n:tong,t:"Cuộc gặp"}}),
+      H.kpi({l:"Tổng số cuộc gặp",v:H.so(tong),meta:H.dl(tong,tongP)+" so với "+c.kySo,drill:{k:"gap",t:"Cuộc gặp"}}),
       H.kpi({l:F.by==="doi"?"Trung bình mỗi đội":"Trung bình mỗi nhân viên",v:(tong/Math.max(1,n)).toFixed(1).replace(".",","),meta:"Cuộc gặp trong kỳ "+c.kyL}),
       H.kpi({l:"Đạt chỉ tiêu",v:dat+" / "+n,meta:"Chỉ tiêu theo kỳ đã chọn",tip:"Chỉ tiêu cuộc gặp lấy từ cấu hình chỉ tiêu kinh doanh"})]).replace('class="kpis"','class="kpis kpis--3"');
     var max=Math.max.apply(null,rows.map(function(x){return Math.max(x.gap,x.ct)}))||1;
     var body=rows.map(function(x,i){var m=mau(x.tl);return {tr:'data-row="'+i+'" style="cursor:pointer" tabindex="0"',c:[
       F.by==="nv"?H.user(x.t):H.esc(x.t),H.so(x.gap),H.so(x.ct),
-      '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(Math.min(100,x.tl),m[0]==="success"?"ok":m[0]==="warning"?"warn":"bad")+'</span><span class="num" style="width:44px;text-align:right">'+H.pt(x.tl,0)+'</span>'+H.tag(m[1],m[0])+'</div>',
+      '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(Math.min(100,x.tl),m[2])+'</span><span class="num" style="width:44px;text-align:right">'+H.pt(x.tl,0)+'</span>'+H.tag(m[1],m[0])+'</div>',
       H.so(x.pv),H.dl(x.gap,x.pv)||H.NV]}});
+    body.push({tr:'class="sale-total"',c:['<b>Tổng</b>','<b>'+H.so(tong)+'</b>','<b>'+H.so(rows.reduce(function(s,x){return s+x.ct},0))+'</b>','',' <b>'+H.so(tongP)+'</b>','']});
     var head=[{t:F.by==="doi"?"Đội nhóm":"Nhân viên",w:"200px"},{t:"Số cuộc gặp",r:1},{t:"Chỉ tiêu",r:1},{t:"Mức đạt",w:"280px"},{t:"Kỳ trước",r:1},{t:"Thay đổi",r:1}];
     var bars='<div class="sbars">'+rows.map(function(x){return '<div class="sbar"><span>'+H.esc(x.t)+'</span><span class="sbar__t"><i style="width:'+(x.gap*100/max)+'%"></i></span><span class="num">'+H.so(x.gap)+'</span><small class="num">'+H.pt(x.gap*100/Math.max(1,tong),0)+'</small></div>'}).join("")+'</div>';
     var seg=H.seg("fBy",[["nv","Theo nhân viên"],["doi","Theo đội nhóm"]],F.by);
     return '<div class="stack" style="gap:var(--space-4)">'+tiles+
       '<div class="cols-main">'+H.card("Cuộc gặp theo "+(F.by==="doi"?"đội nhóm":"nhân viên"),'<div class="card__b">'+bars+'</div>',seg)+
-      H.card("Ngưỡng màu",'<div class="card__b stack" style="gap:8px">'+H.tag("Đạt từ 100% chỉ tiêu","success",1)+H.tag("Gần đạt 70% đến dưới 100%","warning",1)+H.tag("Chưa đạt dưới 70%","danger",1)+'<p class="note">Bấm vào một dòng ở bảng dưới để mở danh sách cuộc gặp đã lọc theo '+(F.by==="doi"?"đội":"nhân viên")+' đó</p></div>')+'</div>'+
+      H.card("Ngưỡng màu",'<div class="card__b stack" style="gap:8px">'+H.tag("Đạt từ 100% chỉ tiêu","success",1)+H.tag("Gần đạt 70% đến dưới 100%","warning",1)+H.tag("Chưa đạt dưới 70%","danger",1)+'</div>')+'</div>'+
       H.tbl(head,body,{min:860})+'</div>';
   },
   bind:function(root,c){
     root.addEventListener("click",function(e){
       var b=e.target.closest("#fBy [data-v]");if(b){F.by=b.dataset.v;H.redraw();return}
       var tr=e.target.closest("tr[data-row]");if(!tr)return;var x=window.__cgRows[+tr.dataset.row];
-      H.openDrill({k:"gap",n:x.gap,t:"Cuộc gặp: "+x.t,sub:c.phL+" · kỳ "+c.kyL},c);
+      H.openDrill({k:"gap",ps:x.ps,t:"Cuộc gặp: "+x.t,sub:c.phL+" · kỳ "+c.kyL},c);
     });
     root.addEventListener("keydown",function(e){if(e.key==="Enter"){var tr=e.target.closest&&e.target.closest("tr[data-row]");if(tr)tr.click()}});
   }
 });
 })();
 
-/* Màn 6. Báo cáo Tuyến và địa bàn: độ phủ, số data, số khách hàng, doanh số theo tuyến (hoặc theo kênh, nguồn với Sale online) */
+/* Màn 6. Báo cáo Tuyến và địa bàn: độ phủ, số data, số khách hàng, doanh số theo tuyến (hoặc theo kênh, nguồn với Sale online).
+   Tổng các tuyến luôn bằng tổng của phạm vi đang xem ở Bảng điều khiển, báo cáo Phễu và báo cáo Khách hàng */
 (function(){
 var H=SALE,D=SALE.D;
 var F={by:null};
-function sl(c){return c.kyF*c.scopeF}
-function tuyen(c,t,mien){
-  var r=H.rng(H.hash(t+c.ph));var w=.35+r()*1.3;if(t==="Hà Nội"||t==="TP Hồ Chí Minh")w*=2.2;
-  var f=sl(c)*w;var phu=Math.min(96,Math.round(22+r()*58+(t==="Hà Nội"||t==="TP Hồ Chí Minh"?12:0)));
-  var data=Math.max(0,Math.round(D.BASE[c.ph].chmoi*f*2.2));var kh=Math.max(0,Math.round(D.BASE[c.ph].khm*f*3.4+(r()*3)));
-  var ds=D.BASE[c.ph].dt*f*.32;
-  return {t:t,mien:mien,phu:phu,data:data,kh:kh,ds:ds};
+function tinhSet(c){
+  var T=SALE.T,all=T.allTinh().filter(function(a){return a.active});
+  if(c.ph==="thitruong"&&(c.scope==="canhan"||c.scope==="nhom")){
+    var names=D.idx(c.ph,c).map(function(i){return D.people(c.ph)[i]}),set={};
+    T.nv.forEach(function(x){if(x.loai==="nv"&&names.indexOf(x.t)>=0)x.tinh.forEach(function(t){set[t]=1})});
+    var f=all.filter(function(a){return set[a.t]});if(f.length)return f;
+  }
+  return all;
 }
-function kenh(c,t){
-  var r=H.rng(H.hash(t+c.ph));var w=.4+r()*1.4;var f=sl(c)*w;
-  return {t:t,phu:Math.round(30+r()*60),data:Math.max(0,Math.round(D.BASE[c.ph].chmoi*f*2.6)),kh:Math.max(0,Math.round(D.BASE[c.ph].khm*f*3)),ds:D.BASE[c.ph].dt*f*.3};
+function wts(list,salt,ph){
+  var raw=list.map(function(a){var w=(0.35+1.3*D.R(salt+ph+a.t)());if(a.t==="Hà Nội"||a.t==="TP Hồ Chí Minh")w*=2.2;return w}),s=raw.reduce(function(a,b){return a+b},0);
+  return raw.map(function(v){return v/s});
+}
+/* đơn của phạm vi, chia lần lượt cho từng tuyến theo số đơn của tuyến */
+function orderItems(c){var d=D.col(c.ph,"don",c),out=[];D.idx(c.ph,c).forEach(function(i){for(var k=0;k<d[i];k++)out.push({p:i,k:k})});return out}
+function build(c,list,salt){
+  var ph=c.ph,n=list.length,w=wts(list,salt,ph),ix=D.idx(ph,c);
+  var dataT=D.tot(ph,"data",c),hdT=D.tot(ph,"hd",c),tnT=D.tot(ph,"tn",c),its=orderItems(c);
+  var data=D.alloc(dataT,w),hd=D.alloc(hdT,w),tn=D.alloc(tnT,wts(list,salt+"tn",ph)),don=D.alloc(its.length,w),ptr=0;
+  return list.map(function(a,i){
+    var mine=its.slice(ptr,ptr+don[i]);ptr+=don[i];
+    var ds=mine.reduce(function(s,it){return s+D.ov(ph,it.p,it.k)},0);
+    return {a:a,data:data[i],kh:hd[i],don:don[i],its:mine,ds:ds,phu:hd[i]+tn[i]?hd[i]*100/(hd[i]+tn[i]):0};
+  });
 }
 H.reg({
-  id:"bc_tuyen",grp:"Báo cáo",t:"Báo cáo Tuyến và địa bàn",ph:["online","thitruong","duan"],tag:"Mới",kySeg:true,scopeSel:true,xuat:true,
-  excel:[["online",8,"Bảng điều khiển > Tuyến & địa bàn","Độ phủ, data, khách hàng, doanh số theo tuyến, hoặc theo kênh và nguồn nếu Sale online không chia địa bàn"],
-         ["duan",9,"Bảng điều khiển > Tuyến & địa bàn","Như Sale online"],["thitruong",8,"Bảng điều khiển > Tuyến & địa bàn","Như Sale online"]],
-  hientrang:"Chưa có, vì hệ thống chưa có dữ liệu tuyến (chỉ có ô Tỉnh/TP trên cơ hội). Phụ thuộc Màn Quản lý tuyến và địa bàn. DTS đồng ý chuyển từ dashboard sang Báo cáo",
-  nguon:"datyso_cohoi/data/tinhthanh_data.xml (danh mục tỉnh)",
+  id:"bc_tuyen",grp:"Báo cáo",t:"Báo cáo Tuyến và địa bàn",ph:["online","thitruong","duan"],kySeg:true,scopeSel:true,xuat:true,
+  excel:[["online",8,"Bảng điều khiển > Tuyến & địa bàn",""],["duan",9,"Bảng điều khiển > Tuyến & địa bàn",""],["thitruong",8,"Bảng điều khiển > Tuyến & địa bàn",""]],
   render:function(c){
     var by=F.by||(c.ph==="online"?"kenh":"tuyen");
     var seg=H.seg("fBy",[["tuyen","Theo tuyến"],["kenh","Theo kênh và nguồn"]],by);
-    var head,body=[],tot={data:0,kh:0,ds:0},phuSum=0,np=0;
-    function dr(k,n,t,sub){return H.drillAttr({k:k,n:n,t:t,sub:sub+" · kỳ "+c.kyL})}
+    var ph=c.ph,T=SALE.T;
+    function coverOf(tinh){return T.cover(tinh).filter(function(x){return x.loai==="nv"}).map(function(x){return D.people(ph).indexOf(x.t)}).filter(function(i){return i>=0})}
+    function dr(k,n,t,sub,cover){return H.drillAttr({k:k,n:n,t:t,sub:sub+" · kỳ "+c.kyL,cover:cover})}
+    function pctCell(p){return '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(p,p>=35?"ok":p>=25?"warn":"bad")+'</span><span class="num" style="width:40px;text-align:right">'+H.pt(p,0)+'</span></div>'}
+    var head,body=[],tot={data:0,kh:0,ds:0,don:0,phuN:0,phuD:0};
+    function addRow(r,label,pad,cover){
+      tot.data+=r.data;tot.kh+=r.kh;tot.ds+=r.ds;tot.don+=r.don;
+      body.push([ '<span style="padding-left:'+pad+'px">'+H.esc(label)+'</span>',pctCell(r.phu),
+        '<button class="linkbtn num"'+dr("pheu_data",r.data,"Data: "+label,label,cover)+'>'+H.so(r.data)+'</button>',
+        '<button class="linkbtn num"'+dr("kh_hd",r.kh,"Khách hàng: "+label,label,cover)+'>'+H.so(r.kh)+'</button>',
+        '<button class="linkbtn num"'+H.drillAttr({k:"don",its:r.its,t:"Đơn hàng: "+label,sub:label+" · kỳ "+c.kyL})+'>'+H.so(r.don)+'</button>',H.vnd(r.ds)]);
+    }
+    head=[{t:by==="tuyen"?"Tuyến":"Kênh, nguồn",w:"220px"},{t:"Độ phủ",w:"200px"},{t:"Số data",r:1},{t:"Số khách hàng",r:1},{t:"Số đơn",r:1},{t:"Doanh số",r:1}];
     if(by==="tuyen"){
-      head=[{t:"Tuyến",w:"220px"},{t:"Độ phủ",w:"200px"},{t:"Số data",r:1},{t:"Số khách hàng",r:1},{t:"Doanh số",r:1}];
+      var list=tinhSet(c),rs=build(c,list,"tt");
       D.MIEN.forEach(function(m){
-        var rs=m.tinh.map(function(t){return tuyen(c,t,m.t)});
-        var s={data:0,kh:0,ds:0,phu:0};rs.forEach(function(x){s.data+=x.data;s.kh+=x.kh;s.ds+=x.ds;s.phu+=x.phu});
-        body.push({tr:'class="sale-total"',c:['<b style="display:inline-flex;align-items:center;gap:6px">'+H.ic("tree","ic--sm")+H.esc(m.t)+'</b>','<b>'+H.pt(s.phu/rs.length,0)+'</b>','<b>'+H.so(s.data)+'</b>','<b>'+H.so(s.kh)+'</b>','<b>'+H.vnd(s.ds)+'</b>']});
-        rs.forEach(function(x){
-          tot.data+=x.data;tot.kh+=x.kh;tot.ds+=x.ds;phuSum+=x.phu;np++;
-          body.push([ '<span style="padding-left:20px">'+H.esc(x.t)+'</span>',
-            '<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(x.phu,x.phu>=60?"ok":x.phu>=40?"warn":"bad")+'</span><span class="num" style="width:40px;text-align:right">'+H.pt(x.phu,0)+'</span></div>',
-            '<button class="linkbtn num"'+dr("pheu_data",x.data,"Data: "+x.t,x.t)+'>'+H.so(x.data)+'</button>',
-            '<button class="linkbtn num"'+dr("kh_hd",x.kh,"Khách hàng: "+x.t,x.t)+'>'+H.so(x.kh)+'</button>',
-            '<button class="linkbtn num"'+dr("don",Math.max(1,Math.round(x.ds/70e6)),"Đơn hàng: "+x.t,x.t)+'>'+H.vnd(x.ds)+'</button>']);
-        });
+        var mr=rs.filter(function(r){return r.a.mid===m.id});if(!mr.length)return;
+        var s=mr.reduce(function(a,r){a.data+=r.data;a.kh+=r.kh;a.ds+=r.ds;a.don+=r.don;a.hd+=r.kh;return a},{data:0,kh:0,ds:0,don:0,hd:0});
+        var pm=mr.reduce(function(a,r){return a+r.phu*r.kh},0)/Math.max(1,s.kh);
+        body.push({tr:'class="sale-total"',c:['<b style="display:inline-flex;align-items:center;gap:6px">'+H.ic("tree","ic--sm")+H.esc(m.t)+'</b>','<b>'+H.pt(pm,0)+'</b>','<b>'+H.so(s.data)+'</b>','<b>'+H.so(s.kh)+'</b>','<b>'+H.so(s.don)+'</b>','<b>'+H.vnd(s.ds)+'</b>']});
+        mr.forEach(function(r){addRow(r,r.a.t,20,coverOf(r.a.t))});
       });
     }else{
-      head=[{t:"Kênh, nguồn",w:"220px"},{t:"Độ phủ",w:"200px"},{t:"Số data",r:1},{t:"Số khách hàng",r:1},{t:"Doanh số",r:1}];
-      D.NGUON.forEach(function(t){var x=kenh(c,t);tot.data+=x.data;tot.kh+=x.kh;tot.ds+=x.ds;phuSum+=x.phu;np++;
-        body.push([H.esc(t),'<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">'+H.prog(x.phu,x.phu>=60?"ok":x.phu>=40?"warn":"bad")+'</span><span class="num" style="width:40px;text-align:right">'+H.pt(x.phu,0)+'</span></div>',
-          '<button class="linkbtn num"'+dr("pheu_data",x.data,"Data: "+t,t)+'>'+H.so(x.data)+'</button>','<button class="linkbtn num"'+dr("kh_hd",x.kh,"Khách hàng: "+t,t)+'>'+H.so(x.kh)+'</button>',
-          '<button class="linkbtn num"'+dr("don",Math.max(1,Math.round(x.ds/70e6)),"Đơn hàng: "+t,t)+'>'+H.vnd(x.ds)+'</button>'])});
+      var kl=D.NGUON.map(function(t){return {t:t}}),kr=build(c,kl,"kn");
+      kr.forEach(function(r){addRow(r,r.a.t,0,[])});
     }
+    var phuAvg=(function(){var s=0,k=0;body.forEach(function(){});return null})();
     var tiles=H.kpiRow([
-      H.kpi({l:"Độ phủ bình quân",v:H.pt(phuSum/np,0),meta:"Khách đã tiếp cận trên khách mục tiêu",tip:"Độ phủ = số khách hàng đã tiếp cận trên số khách hàng mục tiêu của tuyến"}),
       H.kpi({l:"Số data",v:H.so(tot.data),meta:"Trong kỳ "+c.kyL}),
-      H.kpi({l:"Số khách hàng",v:H.so(tot.kh),meta:"Trong kỳ "+c.kyL}),
+      H.kpi({l:"Số khách hàng",v:H.so(tot.kh),meta:'<span class="kynote">Tại thời điểm hiện tại</span>'}),
+      H.kpi({l:"Số đơn",v:H.so(tot.don),meta:"Trong kỳ "+c.kyL}),
       H.kpi({l:"Doanh số",v:H.tien(tot.ds),meta:"Trong kỳ "+c.kyL})]).replace('class="kpis"','class="kpis kpis--4"');
-    return '<div class="stack" style="gap:var(--space-4)">'+tiles+H.card(by==="tuyen"?"Hiệu quả theo tuyến, nhóm theo miền":"Hiệu quả theo kênh và nguồn",H.tbl(head,body,{min:760,cls:"tbl-flat"}),seg)+'</div>';
+    return '<div class="stack" style="gap:var(--space-4)">'+tiles+H.card(by==="tuyen"?"Hiệu quả theo tuyến, nhóm theo miền":"Hiệu quả theo kênh và nguồn",H.tbl(head,body,{min:820,cls:"tbl-flat"}),seg)+'</div>';
   },
   bind:function(root){
     root.addEventListener("click",function(e){var b=e.target.closest("#fBy [data-v]");if(b){F.by=b.dataset.v;H.redraw()}});
@@ -1692,7 +1799,7 @@ T.nv=[
  {id:"g7",loai:"nv",t:"Ngô Thanh Hằng",tinh:["Cần Thơ","An Giang"],nhan:["Laser UV","Máy hàn Laser"],on:false,upd:"15/10/2026"},
  {id:"g8",loai:"doi",t:"Đội Miền Bắc",tinh:["Quảng Ninh","Thái Nguyên","Hưng Yên","Ninh Bình"],nhan:NH.slice(),on:true,upd:"12/10/2026"},
  {id:"g9",loai:"doi",t:"Đội Miền Trung",tinh:["Thanh Hoá","Nghệ An","Đắk Lắk","Lâm Đồng"],nhan:NH.slice(),on:true,upd:"12/10/2026"},
- {id:"g10",loai:"doi",t:"Đội Miền Nam",tinh:["Tây Ninh","Vĩnh Long"],nhan:NH.slice(),on:true,upd:"12/10/2026"}];
+ {id:"g10",loai:"doi",t:"Đội Miền Nam",tinh:["Tây Ninh"],nhan:NH.slice(),on:true,upd:"12/10/2026"}];
 T.ma=function(i){return "GT-"+("000"+(i+1)).slice(-4)};
 T.allTinh=function(){var a=[];T.mien.forEach(function(m){m.tinh.forEach(function(t){a.push({t:t.t,mien:m.t,mid:m.id,active:t.active})})});return a};
 T.cover=function(tinh){return T.nv.filter(function(x){return x.on&&x.tinh.indexOf(tinh)>=0})};
@@ -1819,7 +1926,7 @@ function formGan(x,onSave){
   var loai=x?x.loai:"nv";
   function trees(){return T.mien.map(function(m){var ts=m.tinh.filter(function(t){return t.active});var all=ts.every(function(t){return sel.indexOf(t.t)>=0});
     return '<div class="sale-pick__g"><label class="chk"><input type="checkbox" data-mien="'+m.id+'"'+(ts.length&&all?" checked":"")+'> <b>'+H.esc(m.t)+'</b></label><div class="sale-pick__c">'+ts.map(function(t){return '<label class="chk"><input type="checkbox" data-t="'+H.esc(t.t)+'"'+(sel.indexOf(t.t)>=0?" checked":"")+'> '+H.esc(t.t)+'</label>'}).join("")+'</div></div>'}).join("")}
-  var nm=loai==="doi"?["Đội Miền Bắc","Đội Miền Trung","Đội Miền Nam"]:D.sales("thitruong");
+  var nm=loai==="doi"?["Đội Miền Bắc","Đội Miền Trung","Đội Miền Nam"]:D.TEN.slice(2,9);
   var body='<div class="form-grid">'+
     '<div class="field"><span class="field__label">Đối tượng</span>'+H.seg("gLoai",[["nv","Nhân viên"],["doi","Đội nhóm"]],loai)+'</div>'+
     H.select("gTen",loai==="doi"?"Đội nhóm":"Nhân viên",nm,x?x.t:nm[0],x?" disabled":"")+
@@ -1840,7 +1947,7 @@ function formGan(x,onSave){
         if(t.dataset.n){var j=nhan.indexOf(t.dataset.n);if(t.checked&&j<0)nhan.push(t.dataset.n);if(!t.checked&&j>=0)nhan.splice(j,1)}
       });
       el.addEventListener("click",function(e){
-        var sg=e.target.closest("#gLoai [data-v]");if(sg&&!x){loai=sg.dataset.v;var s2=el.querySelector("#gTen");s2.innerHTML=(loai==="doi"?["Đội Miền Bắc","Đội Miền Trung","Đội Miền Nam"]:D.sales("thitruong")).map(function(n){return '<option>'+H.esc(n)+'</option>'}).join("");
+        var sg=e.target.closest("#gLoai [data-v]");if(sg&&!x){loai=sg.dataset.v;var s2=el.querySelector("#gTen");s2.innerHTML=(loai==="doi"?["Đội Miền Bắc","Đội Miền Trung","Đội Miền Nam"]:D.TEN.slice(2,9)).map(function(n){return '<option>'+H.esc(n)+'</option>'}).join("");
           [].forEach.call(el.querySelectorAll("#gLoai button"),function(b){b.setAttribute("aria-pressed",b===sg?"true":"false")});el.querySelector('label[for="gTen"]').textContent=loai==="doi"?"Đội nhóm":"Nhân viên"}
         var sw=e.target.closest("#gSw");if(sw){var on=sw.getAttribute("aria-checked")!=="true";sw.setAttribute("aria-checked",on);sw.lastChild.textContent=on?"Bật":"Tắt"}
       });
@@ -1908,6 +2015,8 @@ function moLead(ten){return MO[ten]!=null?MO[ten]:8+H.hash(ten)%24}
 function chon(tinh,nhan,bang){
   var out={steps:[],kq:null};
   if(!tinh||!nhan){out.steps.push({ok:false,t:"Thiếu "+(!tinh?"địa bàn":"nhãn sản phẩm"),d:"Không tự suy đoán. Data đưa vào danh sách chờ xác minh"});out.kq={loai:"xacminh",lydo:"Thiếu "+(!tinh?"địa bàn":"nhãn sản phẩm")};return out}
+  var tt=T.allTinh().filter(function(a){return a.t===tinh})[0];
+  if(tt&&!tt.active){out.steps.push({ok:false,t:"Tuyến đang ngừng dùng",d:"Tuyến <b>"+H.esc(tinh)+"</b> đã ngừng dùng nên không chia data. Data vào <b>danh sách chờ xác minh</b>"});out.kq={loai:"xacminh",lydo:"Tuyến "+tinh+" đang ngừng dùng"};return out}
   var du=T.nv.filter(function(x){return x.loai==="nv"&&x.on&&x.tinh.indexOf(tinh)>=0&&x.nhan.indexOf(nhan)>=0});
   out.steps.push({ok:du.length>0,t:"Lọc Sale đủ điều kiện",d:du.length?"Đang hoạt động, được gán đúng địa bàn <b>"+H.esc(tinh)+"</b> và nhãn sản phẩm <b>"+H.esc(nhan)+"</b>: "+du.map(function(x){return H.esc(x.t)}).join(", "):"Không có Sale nào được gán đồng thời địa bàn "+H.esc(tinh)+" và nhãn sản phẩm "+H.esc(nhan)});
   if(!du.length){
@@ -1920,7 +2029,10 @@ function chon(tinh,nhan,bang){
   out.steps.push({ok:true,t:"Đếm khách tương đồng",d:"Số khách hàng, lead Sale đang phụ trách có cùng địa bàn và cùng nhãn sản phẩm với data mới"});
   var max=Math.max.apply(null,rows.map(function(r){return r.k})),top=rows.filter(function(r){return r.k===max});
   var ten;
-  if(top.length===1){ten=top[0].t;out.steps.push({ok:true,t:"Xếp hạng mức độ phù hợp",d:"<b>"+H.esc(ten)+"</b> có "+max+" khách, nhiều nhất"});out.kq={loai:"sale",ten:ten,lydo:"Có "+max+" khách "+nhan+" tại "+tinh+", nhiều hơn "+rows.filter(function(r){return r.t!==ten}).map(function(r){return H.esc(r.t)+" ("+r.k+")"}).join(", ")}}
+  if(top.length===1){ten=top[0].t;
+    if(rows.length===1){out.steps.push({ok:true,t:"Xếp hạng mức độ phù hợp",d:"Chỉ có <b>"+H.esc(ten)+"</b> đủ điều kiện nên không cần so sánh"});out.kq={loai:"sale",ten:ten,lydo:"Là Sale duy nhất phụ trách "+tinh+" với nhãn "+nhan}}
+    else{out.steps.push({ok:true,t:"Xếp hạng mức độ phù hợp",d:"<b>"+H.esc(ten)+"</b> có "+max+" khách, nhiều nhất"});out.kq={loai:"sale",ten:ten,lydo:"Có "+max+" khách "+nhan+" tại "+tinh+", nhiều hơn "+rows.filter(function(r){return r.t!==ten}).map(function(r){return H.esc(r.t)+" ("+r.k+")"}).join(", ")}}
+  }
   else{
     out.steps.push({ok:true,t:"Xếp hạng mức độ phù hợp",d:top.length+" Sale bằng nhau ("+max+" khách)"});
     var minO=Math.min.apply(null,top.map(function(r){return r.m})),t2=top.filter(function(r){return r.m===minO});
@@ -1936,19 +2048,25 @@ function chon(tinh,nhan,bang){
 SALE.chia={chon:function(tinh,nhan){return chon(tinh,nhan,false)},cfg:CFG};
 /* lịch sử và danh sách chờ */
 var LS=[],CHO=[];
+var KT={"Hà Nội":["Công ty CP Sao Mai","Cơ khí Phú Mỹ","Xưởng quảng cáo Ánh Dương","Inox Thành Đạt"],"Bắc Ninh":["Nội thất Hoàng Gia","Xưởng biển hiệu Minh Đức"],"TP Hồ Chí Minh":["Cơ khí Hải Long","Xưởng cơ khí Phước Lộc"],"Đà Nẵng":["Công ty TNHH An Phát"],"Khánh Hoà":["Gốm sứ Khánh Hoà Hưng Thịnh"],"Đồng Nai":["Công ty TNHH Nhựa Tiến Đạt"],"Cần Thơ":["Cơ khí Cửu Long"],"Hải Phòng":["Xưởng quảng cáo Hải Phòng Đại Phát"],"Thái Nguyên":["Xưởng inox Thái Nguyên Quang Minh"],"Quảng Ninh":["Cơ khí Hạ Long"]};
+function khT(tinh,i){var a=KT[tinh]||["Khách hàng "+tinh];return a[i%a.length]}
 (function seed(){
-  var combos=[["Hà Nội","Laser Fiber"],["Hà Nội","Laser UV"],["Bắc Ninh","Laser Fiber"],["TP Hồ Chí Minh","Máy hàn Laser"],["Đà Nẵng","Laser CO2"],["Hà Nội","Laser Fiber"],["Cần Thơ","Laser UV"],["Hà Nội","Laser UV"],["Khánh Hoà","Laser Fiber"],["Đồng Nai","Máy hàn Laser"]];
+  var combos=[["Hà Nội","Laser Fiber"],["Hà Nội","Laser UV"],["Bắc Ninh","Laser Fiber"],["TP Hồ Chí Minh","Máy hàn Laser"],["Đà Nẵng","Laser CO2"],["Hà Nội","Laser Fiber"],["Khánh Hoà","Laser Fiber"],["Hà Nội","Laser UV"],["Đồng Nai","Máy hàn Laser"],["Hà Nội","Laser Fiber"]];
+  var mins=16*60+20,code=1500;
   combos.forEach(function(cb,i){
     var r=chon(cb[0],cb[1],false);if(r.kq.loai!=="sale")return;
-    var other=r.rows?r.rows.filter(function(x){return x.t!==r.kq.ten})[0]:null,me=r.rows?r.rows.filter(function(x){return x.t===r.kq.ten})[0]:null;
-    LS.push({t:("0"+(16-Math.floor(i/3))).slice(-2)+":"+("0"+((i*11)%60)).slice(-2)+" 22/10/2026",ma:"CH-2610-"+("0000"+(1498-i*3)).slice(-4),kh:D.KHACH[(i*5)%D.KHACH.length],tinh:cb[0],nhan:cb[1],sale:r.kq.ten,kieu:"Tự động",ai:"Hệ thống",
-      so:me?me.k+(other?" so với "+other.k:""):"",lydo:r.kq.lydo});
+    var me=r.rows?r.rows.filter(function(x){return x.t===r.kq.ten})[0]:null,other=r.rows?r.rows.filter(function(x){return x.t!==r.kq.ten})[0]:null;
+    LS.push({m:mins,ma:"CH-2610-"+(code--),kh:khT(cb[0],i),tinh:cb[0],nhan:cb[1],sale:r.kq.ten,kieu:"Tự động",ai:"Hệ thống",so:me?me.k+(other?" so với "+other.k:""):"",lydo:r.kq.lydo});
+    mins-=12+(i*5)%9;
   });
-  LS.splice(3,0,{t:"15:12 22/10/2026",ma:"CH-2610-1471",kh:"Công ty CP Sao Mai",tinh:"Hà Nội",nhan:"Laser Fiber",sale:"Lê Quang Huy",kieu:"Chia lại",ai:"Phan Văn Khôi (Trưởng nhóm)",so:"",lydo:"Đỗ Thị Mai nghỉ phép, chuyển sang Lê Quang Huy"});
-  CHO.push({ma:"CH-2610-1495",kh:"Xưởng quảng cáo Hải Dương",tinh:"Hải Phòng",nhan:"Laser UV",lydo:"Chưa có Sale phụ trách Hải Phòng với nhãn Laser UV",loai:"cho",since:"2 giờ 10 phút"},
-    {ma:"CH-2610-1493",kh:"Cơ khí Ngọc Lâm",tinh:"Cần Thơ",nhan:"Laser UV",lydo:"Chưa có Sale phụ trách Cần Thơ với nhãn Laser UV (Ngô Thanh Hằng đang tắt gán tuyến)",loai:"cho",since:"3 giờ 25 phút"},
-    {ma:"CH-2610-1489",kh:"Phạm Quang Huy",tinh:"",nhan:"Máy hàn Laser",lydo:"Thiếu địa bàn, cần xác minh với khách",loai:"xacminh",since:"5 giờ 02 phút"},
-    {ma:"CH-2610-1484",kh:"Xưởng inox Phú Thọ",tinh:"Thái Nguyên",nhan:"",lydo:"Thiếu nhãn sản phẩm, cần xác minh với khách",loai:"xacminh",since:"1 ngày 03 giờ"});
+  /* một lần chia lại thủ công, xen đúng vào thứ tự thời gian */
+  LS.push({m:15*60+12,ma:"CH-2610-1471",kh:"Công ty CP Sao Mai",tinh:"Hà Nội",nhan:"Laser Fiber",sale:"Lê Quang Huy",kieu:"Chia lại",ai:"Phan Văn Khôi (Trưởng nhóm)",so:"",lydo:"Đỗ Thị Mai nghỉ phép, chuyển sang Lê Quang Huy"});
+  LS.sort(function(a,b){return b.m-a.m});
+  LS.forEach(function(x){x.t=("0"+Math.floor(x.m/60)).slice(-2)+":"+("0"+(x.m%60)).slice(-2)+" 22/10/2026"});
+  CHO.push({ma:"CH-2610-1507",kh:khT("Hải Phòng",0),tinh:"Hải Phòng",nhan:"Laser UV",lydo:"Chưa có Sale phụ trách Hải Phòng với nhãn Laser UV",loai:"cho",since:"2 giờ 10 phút"},
+    {ma:"CH-2610-1506",kh:khT("Cần Thơ",0),tinh:"Cần Thơ",nhan:"Laser UV",lydo:"Chưa có Sale phụ trách Cần Thơ với nhãn Laser UV (Ngô Thanh Hằng đang tắt gán tuyến)",loai:"cho",since:"3 giờ 25 phút"},
+    {ma:"CH-2610-1505",kh:"Phạm Quang Huy",tinh:"",nhan:"Máy hàn Laser",lydo:"Thiếu địa bàn, cần xác minh với khách",loai:"xacminh",since:"5 giờ 02 phút"},
+    {ma:"CH-2610-1504",kh:"Xưởng inox Phú Thọ",tinh:"Thái Nguyên",nhan:"",lydo:"Thiếu nhãn sản phẩm, cần xác minh với khách",loai:"xacminh",since:"1 ngày 03 giờ"});
 })();
 
 function tabs(){return '<div class="tabs" role="tablist">'+[["cfg","Cấu hình"],["sim","Chạy thử"],["ls","Lịch sử phân công"],["cho","Danh sách chờ ("+CHO.length+")"],["bc","Báo cáo"]].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S10.tab===t[0])+'" type="button">'+t[1]+'</button>'}).join("")+'</div>'}
@@ -2008,7 +2126,7 @@ function tabCho(){
 }
 function tabBc(){
   var ds=T.nv.filter(function(x){return x.loai==="nv"&&x.on});
-  var tot=0,rows=ds.map(function(x){var r=H.rng(H.hash("bc"+x.t));var n=Math.round(14+r()*40);tot+=n;return {t:x.t,n:n,m:moLead(x.t),tl:Math.round(60+r()*35)}});
+  var tot=0,rows=ds.map(function(x){var n={"Lê Quang Huy":34,"Đỗ Thị Mai":41,"Vũ Hoàng Nam":18,"Bùi Anh Tuấn":29,"Hoàng Thị Lan":37,"Trần Đức Thịnh":24}[x.t]||15;tot+=n;return {t:x.t,n:n,m:moLead(x.t),tl:Math.round(60+(H.hash("tl"+x.t)%35))}});
   return '<div class="stack" style="gap:var(--space-4)">'+H.kpiRow([H.kpi({l:"Data đã giao tự động",v:H.so(tot),meta:"Trong tháng 10/2026"}),H.kpi({l:"Data chờ phân công",v:H.so(CHO.filter(function(x){return x.loai==="cho"}).length),meta:"Chưa có Sale phụ trách tuyến"}),H.kpi({l:"Data chờ xác minh",v:H.so(CHO.filter(function(x){return x.loai==="xacminh"}).length),meta:"Thiếu địa bàn hoặc nhãn sản phẩm"})]).replace('class="kpis"','class="kpis kpis--3"')+
     H.card("Số data theo từng Sale",H.tbl(["Sale",{t:"Data đã giao trong tháng",r:1},{t:"Lead đang mở",r:1},{t:"Tỷ trọng",r:1}],rows.map(function(r){return [H.user(r.t),H.so(r.n),H.so(r.m),'<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><span style="width:120px">'+H.prog(r.n*100/Math.max.apply(null,rows.map(function(z){return z.n})))+'</span><span class="num" style="width:44px;text-align:right">'+H.pt(r.n*100/tot,0)+'</span></div>']}),{min:560}))+'</div>';
 }
@@ -2060,7 +2178,7 @@ H.reg({
 (function(){
 var H=SALE,D=SALE.D;
 var LOAI=["Kinh doanh thị trường","Nóng","Ấm","Cũ","Lạnh"];
-var TRUNG={"0912345678":{kh:"Xưởng cơ khí Tân Phát",sale:"Vũ Hoàng Nam",ma:"CH-2610-1402",tt:"Đang tư vấn"}};
+var TRUNG={"0912345678":{kh:"Xưởng cơ khí Tân Phát",sale:"Vũ Hoàng Nam",ma:"CH-2610-1467",tt:"Đã chốt"}};
 var seqNo=1500;
 function sdtOk(s){return /^0\d{9}$/.test(s.replace(/\s/g,""))}
 function du(el){
@@ -2081,7 +2199,7 @@ H.reg({
   hientrang:"Một phần. Có form tạo cơ hội. Chưa có loại data Kinh doanh thị trường (hiện Nóng, Ấm, Cũ, Lạnh), địa bàn chưa bắt buộc, chưa nối với chia theo tuyến",
   nguon:"datyso_cohoi/views/cohoi_views.xml (cohoi_view_form), datyso_cohoi/data/cohoi_data.xml (loại data)",
   render:function(c){
-    var tinhs=D.TINH.map(function(t){return {v:t.t,t:t.t+" ("+t.mien+")"}});
+    var act=SALE.T.allTinh().filter(function(a){return a.active}).map(function(a){return a.t}),tinhs=D.TINH.filter(function(t){return act.indexOf(t.t)>=0}).map(function(t){return {v:t.t,t:t.t+" ("+t.mien+")"}});
     return '<div class="sale-split sale-split--r2"><div class="card"><div class="card__h"><h4>Thông tin data mới</h4></div><div class="card__b stack" style="gap:var(--space-4)">'+
       '<div id="nDup"></div>'+
       '<div><h4 class="sale-h">Khách hàng</h4><div class="form-grid">'+
@@ -2138,11 +2256,11 @@ var G=[
 
 /* cơ hội mẫu của từng phân hệ */
 var OPP={
- online:{ma:"CH-2610-1462",ten:"Công ty CP Sao Mai",done:4,tags:[["Tiềm năng 1","info"],["Ưu tiên cao","warning"],["Laser Fiber","neutral"]],
+ online:{ma:"CH-2610-1461",ten:"Công ty CP Sao Mai",done:4,tags:[["Tiềm năng 1","info"],["Ưu tiên cao","warning"],["Laser Fiber","neutral"]],
    dl:[["Người liên hệ","Chị Lan, 0987 *** 321"],["Tỉnh/Thành phố","Hà Nội"],["Sale phụ trách","Nguyễn Minh Tâm"],["Nguồn","Tin nhắn Fanpage"]],link:"Đơn hàng",lkMa:"SO-2610-1488"},
- thitruong:{ma:"CH-2610-1455",ten:"Xưởng cơ khí Tân Phát",done:4,tags:[["Tiềm năng 2","info"],["Ưu tiên cao","warning"],["Kinh doanh thị trường","teal"]],
+ thitruong:{ma:"CH-2610-1467",ten:"Xưởng cơ khí Tân Phát",done:6,tags:[["Đã chốt","success"],["Ưu tiên cao","warning"],["Kinh doanh thị trường","teal"]],
    dl:[["Người liên hệ","Chú Phát, 0912 *** 678"],["Tỉnh/Thành phố","Bắc Ninh"],["Sale phụ trách","Vũ Hoàng Nam"],["Nguồn","Nhập tay"]],link:"Đơn hàng",lkMa:"SO-2610-1479"},
- duan:{ma:"CH-2610-1420",ten:"HTX Cơ khí Đông Anh",done:4,tags:[["Dự án DA-2610-024","info"],["Ưu tiên rất cao","danger"],["Laser Fiber","neutral"]],
+ duan:{ma:"CH-2610-1457",ten:"HTX Cơ khí Đông Anh",done:6,tags:[["Dự án DA-2610-024","info"],["Ưu tiên rất cao","danger"],["Laser Fiber","neutral"]],
    dl:[["Người liên hệ","Anh Hùng, 0903 *** 245"],["Tỉnh/Thành phố","Hà Nội"],["Sale phụ trách","Nguyễn Minh Tâm"],["Nguồn","Giới thiệu"]],link:"Dự án",lkMa:"DA-2610-024"}
 };
 var LOAI=["Hợp đồng bán hàng","Phụ lục hợp đồng","Biên bản nghiệm thu","Biên bản bàn giao","Chứng từ thanh toán","Chứng từ khác"];
@@ -2154,8 +2272,8 @@ function ttFind(l,name){return ttOf(l).filter(function(t){return t[0]===name})[0
 var HD={
  online:[
   {id:"HD-2610-0041",loai:"Hợp đồng bán hàng",link:"SO-2610-1488",ngay:"21/10/2026",gt:168e6,tt:"Chờ ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"HD-2610-0041.pdf",s:"512 KB"}],ghichu:"Khách yêu cầu giao hàng làm hai đợt"},
-  {id:"PL-2610-0009",loai:"Phụ lục hợp đồng",link:"SO-2610-1488",ngay:"21/10/2026",gt:0,tt:"Nháp",nguoi:"Nguyễn Minh Tâm",files:[{n:"Phu-luc-bao-hanh-24-thang.pdf",s:"214 KB"}],ghichu:""},
-  {id:"UNC-0212",loai:"Chứng từ thanh toán",link:"SO-2610-1488",ngay:"22/10/2026",gt:50.4e6,tt:"Đã nhận",nguoi:"Đỗ Thị Mai",files:[{n:"Uy-nhiem-chi-dat-coc-30pct.jpg",s:"1,1 MB"}],ghichu:"Đặt cọc 30% giá trị hợp đồng"}],
+  {id:"BG-2610-0187",loai:"Chứng từ khác",link:"SO-2610-1488",ngay:"20/10/2026",gt:168e6,tt:"Đã nhận",nguoi:"Nguyễn Minh Tâm",files:[{n:"Bao-gia-LaserFiber30W-khach-da-duyet.pdf",s:"340 KB"}],ghichu:"Báo giá khách đã duyệt, làm căn cứ lập hợp đồng"},
+  {id:"BB-2610-0012",loai:"Chứng từ khác",link:"SO-2610-1488",ngay:"21/10/2026",gt:0,tt:"Đã nhận",nguoi:"Nguyễn Minh Tâm",files:[{n:"Bien-ban-thuong-luong-gia.pdf",s:"190 KB"}],ghichu:""}],
  thitruong:[
   {id:"HD-2610-0037",loai:"Hợp đồng bán hàng",link:"SO-2610-1479",ngay:"19/10/2026",gt:96e6,tt:"Đã ký",nguoi:"Vũ Hoàng Nam",files:[{n:"HD-2610-0037.pdf",s:"498 KB"},{n:"Phu-luc-giao-hang.pdf",s:"156 KB"}],ghichu:""},
   {id:"BB-2610-0015",loai:"Biên bản bàn giao",link:"SO-2610-1479",ngay:"22/10/2026",gt:0,tt:"Nháp",nguoi:"Vũ Hoàng Nam",files:[],ghichu:"Chờ lắp đặt xong tại xưởng khách"},
@@ -2163,7 +2281,8 @@ var HD={
  duan:[
   {id:"HD-2610-0033",loai:"Hợp đồng bán hàng",link:"DA-2610-024",ngay:"09/10/2026",gt:850e6,tt:"Đã ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"HD-2610-0033-day-chuyen-laser.pdf",s:"1,4 MB"}],ghichu:"Cung cấp và lắp đặt dây chuyền khắc laser"},
   {id:"PL-2610-0006",loai:"Phụ lục hợp đồng",link:"DA-2610-024",ngay:"15/10/2026",gt:60e6,tt:"Chờ ký",nguoi:"Nguyễn Minh Tâm",files:[{n:"Phu-luc-1-bo-sung-ban-xoay.pdf",s:"260 KB"}],ghichu:""},
-  {id:"BB-2610-0011",loai:"Biên bản nghiệm thu",link:"DA-2610-024",ngay:"20/10/2026",gt:0,tt:"Đã ký",nguoi:"Phan Văn Khôi",files:[{n:"BBNT-giai-doan-1.pdf",s:"380 KB"},{n:"Anh-nghiem-thu-1.jpg",s:"2,2 MB"}],ghichu:"Nghiệm thu giai đoạn khảo sát và lắp đặt"}]
+  {id:"BB-2610-0011",loai:"Biên bản nghiệm thu",link:"DA-2610-024",ngay:"20/10/2026",gt:0,tt:"Đã ký",nguoi:"Phan Văn Khôi",files:[{n:"BBNT-giai-doan-1.pdf",s:"380 KB"},{n:"Anh-nghiem-thu-1.jpg",s:"2,2 MB"}],ghichu:"Nghiệm thu giai đoạn khảo sát và lắp đặt"},
+  {id:"UNC-0205",loai:"Chứng từ thanh toán",link:"DA-2610-024",ngay:"12/10/2026",gt:255e6,tt:"Đã nhận",nguoi:"Nguyễn Minh Tâm",files:[{n:"Uy-nhiem-chi-dot-1-30pct.jpg",s:"1,3 MB"}],ghichu:"Thanh toán đợt 1, 30% giá trị hợp đồng"}]
 };
 var S12={tab:{},fq:"",floai:"",ftt:""};
 function curTab(ph){return S12.tab[ph]||(ph==="online"?"gap":"hd")}
@@ -2197,9 +2316,9 @@ function hdTable(ph){
   return H.tbl(head,body,{min:900,cls:"tbl-flat"});
 }
 function tabHd(ph){
-  var all=HD[ph],ky=all.filter(function(x){return x.tt==="Đã ký"}).length,cho=all.filter(function(x){return x.tt==="Chờ ký"}).length;
+  var all=HD[ph],HDL=all.filter(function(x){return x.loai==="Hợp đồng bán hàng"||x.loai==="Phụ lục hợp đồng"}),ky=HDL.filter(function(x){return x.tt==="Đã ký"}).length,cho=HDL.filter(function(x){return x.tt==="Chờ ký"}).length;
   return '<div class="stack" style="gap:var(--space-4)">'+
-    H.kpiRow([H.kpi({l:"Hợp đồng và chứng từ",v:H.so(all.length),meta:"Của cơ hội này"}),H.kpi({l:"Đã ký",v:H.so(ky),meta:"Hợp đồng có hiệu lực"}),H.kpi({l:"Chờ ký",v:H.so(cho),meta:"Cần theo dõi"})]).replace('class="kpis"','class="kpis kpis--3"')+
+    H.kpiRow([H.kpi({l:"Hợp đồng và chứng từ",v:H.so(all.length),meta:"Của cơ hội này"}),H.kpi({l:"Hợp đồng, phụ lục đã ký",v:H.so(ky),meta:"Có hiệu lực"}),H.kpi({l:"Hợp đồng, phụ lục chờ ký",v:H.so(cho),meta:"Cần theo dõi"})]).replace('class="kpis"','class="kpis kpis--3"')+
     '<div class="card"><div class="card__h"><h4>Danh sách hợp đồng và chứng từ</h4><button class="btn btn--primary btn--sm" id="hdNew" type="button">'+H.ic("upload","ic--sm")+'Tải lên</button></div>'+
       '<div class="card__b toolbar-row" style="border-bottom:1px solid var(--border-subtle)">'+
         '<div class="field" style="flex:1 1 220px"><label class="field__label" for="hdQ">Tìm kiếm</label><input class="input" id="hdQ" type="search" placeholder="Số hiệu, loại, '+(ph==="duan"?"dự án":"đơn hàng")+'…" value="'+H.esc(S12.fq)+'"></div>'+
@@ -2247,7 +2366,7 @@ function formHtml(){
   var ph=CTX.ph,o=OPP[ph],cur=curTab(ph);
   var tabs='<div class="tabs" role="tablist" style="flex-wrap:wrap">'+tabsOf(ph).map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(cur===t[0])+'" type="button">'+t[1]+'</button>'}).join("")+'</div>';
   var body=cur==="gap"?tabGap():cur==="hd"?tabHd(ph):'<div class="state"><h4>Chưa có dữ liệu</h4></div>';
-  var steps=["Tiếp nhận","Khảo sát hiện trạng","Hẹn gặp","Lập báo giá","Thương lượng"];
+  var steps=["Tiếp nhận","Khảo sát hiện trạng","Hẹn gặp","Lập báo giá","Thương lượng","Đã chốt"];
   return '<div class="card sale-form"><div class="sale-form__bar"><div class="row" style="gap:8px;flex-wrap:wrap">'+
       ['Gọi khách','Thêm ghi chú','Chuyển giao / Trả về kho','Tạo báo giá','Tạo ticket','Đóng cơ hội'].map(function(b){return '<button class="btn btn--secondary btn--sm" type="button">'+b+'</button>'}).join("")+'</div></div>'+
     '<div class="sale-form__steps"><ol class="steps">'+steps.map(function(s,i){return '<li'+(i<o.done?' class="done"':"")+'><b>'+s+'</b></li>'}).join("")+'</ol></div>'+
@@ -2309,30 +2428,65 @@ H.reg({
 });
 })();
 
-/* Màn 13. Check-in, Check-out cuộc gặp và lộ trình di chuyển (Sale dự án). Web mô phỏng điện thoại của Sale và màn quản lý */
+/* Màn 13. Check-in, Check-out cuộc gặp và lộ trình di chuyển (Sale dự án). Web mô phỏng điện thoại của Sale và màn quản lý.
+   Bản ghi check-in và lộ trình của mỗi nhân viên đều sinh từ MỘT lịch gặp duy nhất, nên giờ giấc, quãng đường và vị trí luôn khớp nhau */
 (function(){
 var H=SALE,D=SALE.D;
-var CFG={radius:100,lyDo:true,khongGps:false,mode:"diem"};
-var MEET=[
- {id:"CG-2610-0021",kh:"Công ty CP Sao Mai",dd:"KCN Quế Võ, Bắc Ninh",gio:"09:30",lat:21.1561,lng:106.1523,st:"todo"},
- {id:"CG-2610-0022",kh:"Xưởng cơ khí Tân Phát",dd:"Đông Anh, Hà Nội",gio:"14:00",lat:21.1485,lng:105.8269,st:"todo"},
- {id:"CG-2610-0023",kh:"Nội thất Hoàng Gia",dd:"Từ Sơn, Bắc Ninh",gio:"16:30",lat:21.1182,lng:105.9577,st:"todo"}];
-var REC=[
- {id:"R1",sale:"Phan Văn Khôi",kh:"Cơ khí Phú Mỹ",dd:"Gia Lâm, Hà Nội",vao:"08:42",ra:"09:51",tl:69,kc:42,ok:true,moi:false},
- {id:"R2",sale:"Lê Quang Huy",kh:"Inox Thành Đạt",dd:"Hải Dương",vao:"09:05",ra:"10:12",tl:67,kc:880,ok:false,moi:false,ly:"Khách đổi địa điểm sang quán cà phê gần xưởng"},
- {id:"R3",sale:"Đỗ Thị Mai",kh:"Công ty TNHH An Phát",dd:"Thanh Trì, Hà Nội",vao:"10:20",ra:null,tl:0,kc:25,ok:true,moi:false}];
-var S13={tab:"rec",scr:"list",sel:null,gps:"at",clock:9*60+28,cur:null,kq:null,saleXem:null,mode:"diem"};
-function hm(m){return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+(m%60)).slice(-2)}
-function meet(id){return MEET.filter(function(x){return x.id===id})[0]}
+var CFG={radius:100,lyDo:true,khongGps:false};
+var OFFICE={lat:21.0285,lng:105.8542,l:"Văn phòng Datyso"};
+var CUS={
+ dongAnh:{kh:"HTX Cơ khí Đông Anh",dd:"KCN Đông Anh, Hà Nội",lat:21.1485,lng:105.8269},
+ tuSon:{kh:"Nội thất Hoàng Gia",dd:"Từ Sơn, Bắc Ninh",lat:21.1182,lng:105.9577},
+ giaLam:{kh:"Cơ khí Phú Mỹ",dd:"Gia Lâm, Hà Nội",lat:21.0236,lng:105.9333},
+ hoangMai:{kh:"Công ty CP Sao Mai",dd:"Hoàng Mai, Hà Nội",lat:20.9750,lng:105.8540},
+ thanhTri:{kh:"Inox Thành Đạt",dd:"Thanh Trì, Hà Nội",lat:20.9380,lng:105.8420},
+ cauGiay:{kh:"Xưởng quảng cáo Ánh Dương",dd:"Cầu Giấy, Hà Nội",lat:21.0333,lng:105.7900}};
+/* lịch gặp theo từng nhân viên: [khách, giờ hẹn (phút), thời lượng (phút), lệch check-in so với tọa độ khách (m), trạng thái] */
+var PLAN=[
+ [["dongAnh",9*60+30,70,28,"xong"],["tuSon",14*60,66,41,"xong"],["giaLam",16*60+45,0,0,"todo"]],
+ [["hoangMai",8*60+45,62,17,"xong"],["thanhTri",13*60+30,75,55,"xong"]],
+ [["cauGiay",9*60,58,22,"xong"],["giaLam",14*60+30,64,180,"xong"]],
+ [["thanhTri",10*60,70,34,"xong"],["hoangMai",15*60+40,0,26,"dang"]],
+ [["dongAnh",10*60+30,60,48,"xong"],["hoangMai",15*60,52,31,"xong"]]];
+function hm(m){m=Math.round(m);return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+(m%60)).slice(-2)}
 function dist(a,b,c,d){var R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,q=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)*Math.sin(y/2);return 2*R*Math.asin(Math.sqrt(q))}
+function jitter(c,m,seed){var r=D.R(seed),ang=r()*6.283,d=m/111000;return {lat:c.lat+Math.cos(ang)*d,lng:c.lng+Math.sin(ang)*d/Math.cos(c.lat*Math.PI/180)}}
+var TRAVEL_KMH=28;
+/* dựng lịch cho một nhân viên: giờ đến = giờ rời điểm trước + thời gian đi đường, không bao giờ vượt 16:30 */
+function schedule(si){
+  var sale=D.people("duan")[si],plan=PLAN[si],pts=[{lat:OFFICE.lat,lng:OFFICE.lng,m:8*60+10,l:"Xuất phát, "+OFFICE.l,kind:"o"}],recs=[],meets=[];
+  var pos=OFFICE,free=8*60+10;
+  plan.forEach(function(p,j){
+    var c=CUS[p[0]],travel=Math.ceil(dist(pos.lat,pos.lng,c.lat,c.lng)/1000/TRAVEL_KMH*60)+8,arrive=free+travel,start=p[1];
+    var vao=Math.max(arrive,start-6),meet={id:"CG-2610-"+("00"+(21+si*5+j)).slice(-4),kh:c.kh,dd:c.dd,gio:hm(start),lat:c.lat,lng:c.lng,st:p[4]==="todo"?"todo":p[4]==="dang"?"in":"done"};
+    meets.push(meet);
+    if(p[4]==="todo"){return}
+    var ci=jitter(c,p[3],"ci"+si+j),kc=p[3];
+    pts.push({lat:ci.lat,lng:ci.lng,m:vao,l:"Check-in: "+c.kh,kind:"i"});
+    var rec={id:"R"+si+"_"+j,sale:sale,kh:c.kh,dd:c.dd,vao:hm(vao),ra:null,tl:0,kc:kc,ok:kc<=CFG.radius,moi:false,ly:kc>CFG.radius?"Khách đổi địa điểm sang quán cà phê gần xưởng":""};
+    if(p[4]==="xong"){var ra=vao+p[2],co=jitter(c,Math.min(p[3],60),"co"+si+j);pts.push({lat:co.lat,lng:co.lng,m:ra,l:"Check-out: "+c.kh,kind:"c"});rec.ra=hm(ra);rec.tl=p[2];free=ra;pos=c}
+    else{free=vao;pos=c}
+    recs.push(rec);
+  });
+  /* về văn phòng nếu kịp trước 16:30 */
+  var last=pts[pts.length-1];
+  if(plan[plan.length-1][4]==="xong"){var back=last.m+Math.ceil(dist(last.lat,last.lng,OFFICE.lat,OFFICE.lng)/1000/TRAVEL_KMH*60)+5;if(back<=16*60+25)pts.push({lat:OFFICE.lat,lng:OFFICE.lng,m:back,l:"Về "+OFFICE.l.toLowerCase(),kind:"o"})}
+  return {sale:sale,pts:pts,recs:recs,meets:meets};
+}
+var SCH=D.people("duan").map(function(_,i){return schedule(i)});
+var USER_I=0,USER=D.people("duan")[0];
+var MEET=SCH[USER_I].meets;
+var REC=[];SCH.forEach(function(s){s.recs.forEach(function(r){REC.push(r)})});
+REC.sort(function(a,b){return b.vao<a.vao?-1:1});
+var S13={tab:"rec",scr:"list",sel:null,gps:"at",clock:16*60+38,cur:null,saleXem:null,mode:"diem"};
+function meet(id){return MEET.filter(function(x){return x.id===id})[0]}
 var GPS={at:{t:"Đang ở địa điểm hẹn (cách 35 m)",m:35},near:{t:"Lệch khỏi địa điểm (cách 850 m)",m:850},none:{t:"Không lấy được GPS",m:null}};
-var USER="Nguyễn Minh Tâm";
 
 /* ----- điện thoại ----- */
 function phone(){
-  var s=S13,h="",m=s.sel?meet(s.sel):null,body="",foot="",title="Lịch hẹn hôm nay";
+  var s=S13,m=s.sel?meet(s.sel):null,body="",foot="",title="Lịch hẹn hôm nay";
   if(s.scr==="list"){
-    body=MEET.map(function(x){var st=x.st==="todo"?H.tag("Chưa đến","neutral"):x.st==="in"?H.tag("Đã check-in","info",1):H.tag("Hoàn thành","success",1);
+    body=MEET.map(function(x){var st=x.st==="todo"?H.tag("Chưa đến","neutral"):x.st==="in"?H.tag("Đang gặp","info",1):H.tag("Hoàn thành","success",1);
       return '<button class="sale-m" data-m="'+x.id+'" type="button"><div><b>'+x.gio+'</b> · '+H.esc(x.kh)+'</div><div class="note">'+H.esc(x.dd)+'</div><div>'+st+'</div></button>'}).join("");
   }else if(s.scr==="detail"){title="Chi tiết lịch hẹn";
     body='<div class="stack" style="gap:8px"><b style="font-size:15px">'+H.esc(m.kh)+'</b><div class="note">'+m.gio+' · '+H.esc(m.dd)+'</div><dl class="dl" style="grid-template-columns:96px 1fr"><dt>Mã</dt><dd class="mono">'+m.id+'</dd><dt>Tọa độ khách</dt><dd class="mono">'+m.lat.toFixed(4)+', '+m.lng.toFixed(4)+'</dd><dt>Phạm vi</dt><dd>'+CFG.radius+' m</dd></dl></div>';
@@ -2347,35 +2501,48 @@ function phone(){
     foot='<button class="btn btn--primary" data-ph="save" type="button">Lưu kết quả</button>';
   }
   return '<div class="sale-phone" aria-label="Màn hình điện thoại của Sale"><div class="sale-phone__st"><span>'+hm(s.clock)+'</span><span style="display:inline-flex;gap:6px;align-items:center">'+H.ic("pin","ic--sm")+'GPS '+H.ic("battery","ic--sm")+'</span></div>'+
-    '<div class="sale-phone__h">'+(s.scr!=="list"&&s.scr!=="in"&&s.scr!=="kq"?'<button class="btn btn--ghost btn--icon btn--sm" data-ph="back" aria-label="Quay lại">'+H.ic("chev-left")+'</button>':"")+'<b>'+title+'</b></div>'+
+    '<div class="sale-phone__h">'+(s.scr==="detail"?'<button class="btn btn--ghost btn--icon btn--sm" data-ph="back" aria-label="Quay lại">'+H.ic("chev-left")+'</button>':"")+'<b>'+title+'</b></div>'+
     '<div class="sale-phone__b">'+body+'</div>'+(foot?'<div class="sale-phone__f">'+foot+'</div>':"")+'</div>';
 }
 /* ----- bên quản lý ----- */
 function tabRec(){
-  var rows=REC.map(function(r){return {tr:r.moi?'class="sale-new"':"",c:[H.user(r.sale),'<b>'+H.esc(r.kh)+'</b><div class="note">'+H.esc(r.dd)+'</div>',r.vao,r.ra||'<span class="note">Chưa check-out</span>',r.tl?r.tl+" phút":H.NV,H.so(r.kc)+" m",
+  var rows=REC.map(function(r){return {tr:r.moi?'class="sale-new"':"",c:[H.user(r.sale),'<b>'+H.esc(r.kh)+'</b><div class="note">'+H.esc(r.dd)+'</div>',r.vao,r.ra||'<span class="note">Đang gặp</span>',r.tl?r.tl+" phút":H.NV,H.so(r.kc)+" m",
     r.ok?H.tag("Trong phạm vi","success",1):H.tag("Ngoài phạm vi","danger",1)+(r.ly?'<div class="note" style="white-space:normal;max-width:220px">'+H.esc(r.ly)+'</div>':"")]}});
   return H.tbl(["Sale","Khách hàng, địa điểm","Check-in","Check-out","Thời lượng",{t:"Cách địa điểm hẹn",r:1},"So khớp tọa độ"],rows,{min:860});
 }
-var PTS={};
-function path(sale){
-  if(PTS[sale])return PTS[sale];
-  var r=H.rng(H.hash("p"+sale)),base=[[21.0285,105.8542,"08:10","Xuất phát, Văn phòng Datyso"],[21.0610,105.7936,"08:55","Check-in: Cơ khí Phú Mỹ"],[21.0850,105.8340,"10:15","Check-out: Cơ khí Phú Mỹ"],[21.1485,105.8269,"11:05","Check-in: Xưởng cơ khí Tân Phát"],[21.1495,105.8275,"12:20","Check-out: Xưởng cơ khí Tân Phát"],[21.1182,105.9577,"14:10","Check-in: Nội thất Hoàng Gia"],[21.1190,105.9570,"15:05","Check-out: Nội thất Hoàng Gia"],[21.0285,105.8542,"16:40","Về văn phòng"]];
-  var key=base.map(function(b,i){return {lat:b[0]+(i?(r()-.5)*.01:0),lng:b[1]+(i?(r()-.5)*.01:0),t:b[2],l:b[3]}});
-  var dense=[];for(var i=0;i<key.length-1;i++){for(var k=0;k<7;k++){var f=k/7;dense.push({lat:key[i].lat+(key[i+1].lat-key[i].lat)*f+(r()-.5)*.004,lng:key[i].lng+(key[i+1].lng-key[i].lng)*f+(r()-.5)*.004})}}
-  dense.push(key[key.length-1]);
-  return PTS[sale]={key:key,dense:dense};
+/* lộ trình: chế độ điểm lấy các điểm check-in, check-out; chế độ liên tục thêm mẫu GPS mỗi 10 phút trên đường đi */
+function legPoints(a,b,seed){
+  /* đứng yên ở điểm trước đến lúc khởi hành, rồi mới di chuyển: mẫu GPS mỗi 30 phút khi đứng, mỗi 10 phút khi đi */
+  var out=[],r=D.R(seed),travel=Math.ceil(dist(a.lat,a.lng,b.lat,b.lng)/1000/TRAVEL_KMH*60)+8,dep=Math.max(a.m,b.m-travel);
+  for(var m=a.m+30;m<dep;m+=30)out.push({lat:a.lat+(r()-.5)*.0002,lng:a.lng+(r()-.5)*.0002,m:m,l:"",kind:"g"});
+  var n=Math.max(0,Math.floor((b.m-dep)/10));
+  for(var k=1;k<=n;k++){var f=(k*10)/Math.max(1,b.m-dep);if(f>=1)break;out.push({lat:a.lat+(b.lat-a.lat)*f+(r()-.5)*.0012,lng:a.lng+(b.lng-a.lng)*f+(r()-.5)*.0012,m:dep+k*10,l:"",kind:"g"})}
+  return out;
+}
+function route(si){
+  var s=SCH[si],key=s.pts,dense=[key[0]],legs=[];
+  for(var i=1;i<key.length;i++){
+    var a=key[i-1],b=key[i],mid=legPoints(a,b,"lg"+si+i),pathPts=[a].concat(mid,[b]),dKm=0,dKmD=0;
+    dKm=dist(a.lat,a.lng,b.lat,b.lng)/1000;
+    for(var q=1;q<pathPts.length;q++)dKmD+=dist(pathPts[q-1].lat,pathPts[q-1].lng,pathPts[q].lat,pathPts[q].lng)/1000;
+    legs.push({km:dKm,kmD:dKmD,n:mid.length});
+    dense=dense.concat(mid,[b]);
+  }
+  return {key:key,dense:dense,legs:legs};
 }
 function tabMap(){
-  var ds=D.sales("duan"),sale=S13.saleXem||ds[0],p=path(sale),pts=S13.mode==="lien"?p.dense:p.key;
-  var all=p.dense.concat(p.key),lats=all.map(function(a){return a.lat}),lngs=all.map(function(a){return a.lng}),mnA=Math.min.apply(null,lats),mxA=Math.max.apply(null,lats),mnG=Math.min.apply(null,lngs),mxG=Math.max.apply(null,lngs);
+  var ds=D.people("duan"),sale=S13.saleXem||ds[0],si=ds.indexOf(sale),r=route(si),lien=S13.mode==="lien",pts=lien?r.dense:r.key;
+  var all=r.dense,lats=all.map(function(a){return a.lat}),lngs=all.map(function(a){return a.lng}),mnA=Math.min.apply(null,lats),mxA=Math.max.apply(null,lats),mnG=Math.min.apply(null,lngs),mxG=Math.max.apply(null,lngs);
   var W=640,Ht=380,pad=36;function X(g){return pad+(g-mnG)/(mxG-mnG||1)*(W-2*pad)}function Y(a){return Ht-pad-(a-mnA)/(mxA-mnA||1)*(Ht-2*pad)}
   var line=pts.map(function(a){return X(a.lng)+","+Y(a.lat)}).join(" ");
   var grid="";for(var i=1;i<8;i++)grid+='<line x1="'+(W*i/8)+'" y1="0" x2="'+(W*i/8)+'" y2="'+Ht+'" class="sale-map__g"/>';for(var j=1;j<5;j++)grid+='<line x1="0" y1="'+(Ht*j/5)+'" x2="'+W+'" y2="'+(Ht*j/5)+'" class="sale-map__g"/>';
-  var mk=p.key.map(function(a,i){return '<g><circle cx="'+X(a.lng)+'" cy="'+Y(a.lat)+'" r="'+(i===0||i===p.key.length-1?8:6)+'" class="sale-map__m'+(i===0||i===p.key.length-1?" is-end":"")+'"/><text x="'+X(a.lng)+'" y="'+(Y(a.lat)+4)+'" class="sale-map__n">'+(i+1)+'</text></g>'}).join("");
-  var tot=0;for(var q=1;q<pts.length;q++)tot+=dist(pts[q-1].lat,pts[q-1].lng,pts[q].lat,pts[q].lng);
-  var tl=p.key.map(function(a,i){var d=i?dist(p.key[i-1].lat,p.key[i-1].lng,a.lat,a.lng):0;return '<li><span class="sale-tl__n">'+(i+1)+'</span><div><b>'+a.t+'</b> '+H.esc(a.l)+(i?'<div class="note">Di chuyển '+(d/1000).toFixed(1).replace(".",",")+' km từ điểm trước</div>':"")+'</div></li>'}).join("");
+  var mk=r.key.map(function(a,i){var end=i===0||i===r.key.length-1;return '<g><circle cx="'+X(a.lng)+'" cy="'+Y(a.lat)+'" r="'+(end?8:6)+'" class="sale-map__m'+(end?" is-end":"")+'"/><text x="'+X(a.lng)+'" y="'+(Y(a.lat)+4)+'" class="sale-map__n">'+(i+1)+'</text></g>'}).join("");
+  var tot=r.legs.reduce(function(s,l){return s+(lien?l.kmD:l.km)},0);
+  var tl=r.key.map(function(a,i){var lg=i?r.legs[i-1]:null;var km=lg?(lien?lg.kmD:lg.km):0;
+    return '<li><span class="sale-tl__n">'+(i+1)+'</span><div><b>'+hm(a.m)+'</b> '+H.esc(a.l)+(lg?'<div class="note">Di chuyển '+km.toFixed(1).replace(".",",")+' km từ điểm trước'+(lien?', '+lg.n+' điểm GPS':"")+'</div>':"")+'</div></li>'}).join("");
+  var ongoing=SCH[si].recs.some(function(x){return !x.ra});
   return '<div class="stack" style="gap:var(--space-3)"><div class="toolbar-row">'+H.select("mSale","Nhân viên",ds,sale)+'<div class="field"><span class="field__label">Chế độ ghi lộ trình</span>'+H.seg("mMode",[["diem","Chỉ điểm check-in, check-out"],["lien","Theo dõi liên tục"]],S13.mode)+'</div></div>'+
-    '<div class="cols-main"><div class="card"><div class="card__h"><h4>Lộ trình ngày 22/10/2026</h4><span class="note">Tổng '+(tot/1000).toFixed(1).replace(".",",")+' km · '+p.key.length+' điểm ghi nhận</span></div><div class="card__b"><svg viewBox="0 0 '+W+' '+Ht+'" class="sale-map" role="img" aria-label="Bản đồ lộ trình trong ngày của '+H.esc(sale)+'"><rect width="'+W+'" height="'+Ht+'" class="sale-map__bg"/>'+grid+'<polyline points="'+line+'" class="sale-map__l"/>'+mk+'</svg></div></div>'+
+    '<div class="cols-main"><div class="card"><div class="card__h"><h4>Lộ trình ngày 22/10/2026</h4><span class="note">Tổng '+(tot).toFixed(1).replace(".",",")+' km · '+r.key.length+' điểm ghi nhận'+(ongoing?' · đang gặp khách':"")+'</span></div><div class="card__b"><svg viewBox="0 0 '+W+' '+Ht+'" class="sale-map" role="img" aria-label="Bản đồ lộ trình trong ngày của '+H.esc(sale)+'"><rect width="'+W+'" height="'+Ht+'" class="sale-map__bg"/>'+grid+'<polyline points="'+line+'" class="sale-map__l"/>'+mk+'</svg></div></div>'+
     '<div class="card"><div class="card__h"><h4>Các điểm trong ngày</h4></div><div class="card__b"><ol class="sale-tl">'+tl+'</ol></div></div></div></div>';
 }
 function tabCfg(){
@@ -2387,14 +2554,11 @@ function tabCfg(){
 }
 function mgr(){return '<div class="stack" style="gap:var(--space-3)"><div class="tabs" role="tablist">'+[["rec","Bản ghi check-in"],["map","Lộ trình trong ngày"],["cfg","Cấu hình"]].map(function(t){return '<button role="tab" data-tab="'+t[0]+'" aria-selected="'+(S13.tab===t[0])+'" type="button">'+t[1]+'</button>'}).join("")+'</div><div id="mBody">'+({rec:tabRec,map:tabMap,cfg:tabCfg}[S13.tab])()+'</div></div>'}
 H.reg({
-  id:"checkin",grp:"Thực thi cuộc gặp",t:"Check-in, Check-out và lộ trình",ph:["duan"],tag:"Mới",
-  excel:[["duan",25,"Thực thi cuộc gặp > Check-in cuộc gặp, Check-out cuộc gặp (đề xuất), Lộ trình di chuyển (đề xuất)","Tọa độ và giờ check-in, so khớp tọa độ khách, check-out và thời lượng tự tính, chuỗi điểm lộ trình. DTS hỏi: có thể test máy ảo web không"],
-         ["duan",26,"Thực thi cuộc gặp > Kết quả cuộc gặp","Nội dung trao đổi, tư liệu (đã có trên hệ thống, chỉ nối vào luồng)"],
-         ["thitruong",25,"Chăm sóc khách hàng thị trường > Lên lịch hẹn gặp","Địa điểm kèm tọa độ để đối chiếu check-in. Màn lịch hẹn đã có, chỉ bổ sung tọa độ"]],
-  hientrang:"Chưa có. datyso_mobile_api chỉ có chấm công hiện trường, không gắn với cuộc gặp. Đội dự án trả lời làm trên mobile app sau",
-  nguon:"datyso_mobile_api/controllers/chamcong.py (chấm công, không phải check-in cuộc gặp)",
+  id:"checkin",grp:"Thực thi cuộc gặp",t:"Check-in, Check-out và lộ trình",ph:["duan"],
+  excel:[["duan",25,"Thực thi cuộc gặp > Check-in cuộc gặp, Check-out cuộc gặp, Lộ trình di chuyển",""]],
   render:function(c){
-    return '<div class="stack" style="gap:var(--space-3)">'+      '<div class="sale-split sale-split--ph"><div class="stack" style="gap:var(--space-3)"><div class="card"><div class="card__b">'+H.select("gpsSel","Vị trí giả lập của máy",[{v:"at",t:GPS.at.t},{v:"near",t:GPS.near.t},{v:"none",t:GPS.none.t}],S13.gps)+'</div></div><div id="phoneBox">'+phone()+'</div></div><div id="mgr">'+mgr()+'</div></div></div>';
+    return '<div class="stack" style="gap:var(--space-3)">'+
+      '<div class="sale-split sale-split--ph"><div class="stack" style="gap:var(--space-3)"><div class="card"><div class="card__b">'+H.select("gpsSel","Vị trí giả lập của máy",[{v:"at",t:GPS.at.t},{v:"near",t:GPS.near.t},{v:"none",t:GPS.none.t}],S13.gps)+'</div></div><div id="phoneBox">'+phone()+'</div></div><div id="mgr">'+mgr()+'</div></div></div>';
   },
   bind:function(root,c){
     function ph(){root.querySelector("#phoneBox").innerHTML=phone()}
@@ -2402,13 +2566,16 @@ H.reg({
     function doIn(lyDo){
       var m=meet(S13.sel),g=GPS[S13.gps],kc=g.m,ok=kc<=CFG.radius;
       var r={id:"R"+(REC.length+1),sale:USER,kh:m.kh,dd:m.dd,vao:hm(S13.clock),ra:null,tl:0,kc:kc,ok:ok,moi:true,ly:lyDo||""};
-      REC.unshift(r);S13.cur=r;m.st="in";S13.scr="in";ph();mg();
-      H.toast(ok?"Check-in thành công, trong phạm vi cho phép":"Đã check-in ngoài phạm vi, ghi nhận lý do","success");
+      REC.unshift(r);S13.cur=r;m.st="in";S13.scr="in";
+      if(kc!=null){var ci=jitter({lat:m.lat,lng:m.lng},kc,"sim"+REC.length);SCH[USER_I].pts.push({lat:ci.lat,lng:ci.lng,m:S13.clock,l:"Check-in: "+m.kh,kind:"i"})}
+      ph();mg();
+      H.toast(ok?"Check-in thành công, trong phạm vi cho phép":"Đã check-in ngoài phạm vi, ghi nhận lý do",ok?"success":"warning");
     }
     root.addEventListener("change",function(e){if(e.target.id==="gpsSel")S13.gps=e.target.value;if(e.target.id==="mSale"){S13.saleXem=e.target.value;mg()}});
     root.addEventListener("click",function(e){
       var tb=e.target.closest('[role="tab"]');if(tb){S13.tab=tb.dataset.tab;mg();return}
-      var mm=e.target.closest("[data-m]");if(mm){S13.sel=mm.dataset.m;var x=meet(S13.sel);S13.scr=x.st==="in"?"in":x.st==="done"?"list":"detail";if(x.st==="in")S13.cur=REC.filter(function(r){return r.sale===USER&&r.kh===x.kh})[0];ph();return}
+      var mm=e.target.closest("[data-m]");if(mm){S13.sel=mm.dataset.m;var x=meet(S13.sel);
+        if(x.st==="in"){S13.cur=REC.filter(function(r){return r.sale===USER&&r.kh===x.kh&&!r.ra})[0];S13.scr="in"}else if(x.st==="done"){S13.scr="list";H.toast("Cuộc gặp này đã hoàn thành","info")}else S13.scr="detail";ph();return}
       var pb=e.target.closest("[data-ph]");
       if(pb){var a=pb.dataset.ph;
         if(a==="back"){S13.scr="list";ph();return}
@@ -2421,7 +2588,8 @@ H.reg({
               foot:'<button class="btn btn--ghost" data-x type="button">Huỷ</button><button class="btn btn--primary" data-ok type="button">Vẫn check-in</button>',
               bind:function(el,L){el.querySelector("[data-x]").onclick=L.close;el.querySelector("[data-ok]").onclick=function(){var v=el.querySelector("#oL").value.trim();if(!v){el.querySelector("#oL").classList.add("is-error");var er=el.querySelector("#oLErr");er.hidden=false;er.textContent="Nhập lý do";return}L.close();doIn(v)}}});return}
           doIn("");return}
-        if(a==="out"){var r=S13.cur,dur=48+H.hash(r.id)%34;S13.clock+=dur;r.ra=hm(S13.clock);r.tl=dur;S13.scr="kq";ph();mg();H.toast("Đã check-out, thời lượng "+dur+" phút","success");return}
+        if(a==="out"){var r=S13.cur,dur=48+H.hash(r.id)%34;S13.clock+=dur;r.ra=hm(S13.clock);r.tl=dur;S13.scr="kq";
+          var mm2=meet(S13.sel),co=jitter({lat:mm2.lat,lng:mm2.lng},Math.min(r.kc||20,60),"simo"+REC.length);SCH[USER_I].pts.push({lat:co.lat,lng:co.lng,m:S13.clock,l:"Check-out: "+r.kh,kind:"c"});ph();mg();H.toast("Đã check-out, thời lượng "+dur+" phút","success");return}
         if(a==="pick"){root.querySelector("#pF").textContent="2 tệp: anh-xuong.jpg, bao-gia-nhap.pdf";return}
         if(a==="save"){var t=root.querySelector("#pKq");if(!t.value.trim()){t.classList.add("is-error");var er2=root.querySelector("#pKqErr");er2.hidden=false;er2.textContent="Nhập nội dung trao đổi";return}
           meet(S13.sel).st="done";S13.scr="list";ph();H.toast("Đã lưu kết quả cuộc gặp","success");return}
