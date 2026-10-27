@@ -6,7 +6,7 @@
 <title>Datyso Design System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* =====================================================================
    1. PRIMITIVE TOKENS: bảng màu gốc. Mọi mã hex nằm ở tầng này và chỉ ở tầng này.
@@ -37,7 +37,7 @@
   --seq-100:#cde2fb; --seq-200:#9ec5f4; --seq-300:#6da7ec; --seq-400:#3987e5; --seq-500:#256abf; --seq-600:#184f95; --seq-700:#0d366b;
   --div-neg:#2a78d6; --div-mid:#f0efec; --div-pos:#e34948;
 
-  --font-sans:"Be Vietnam Pro","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --font-sans:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
 
   --space-0-5:2px; --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem; --space-5:1.25rem;
@@ -254,14 +254,14 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .cal{width:15.75rem;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
   box-shadow:var(--shadow-overlay);padding:.5rem}
 .cal__h{display:flex;align-items:center;gap:.25rem;padding:0 0 .375rem}
-.cal__h b{flex:1;text-align:center;font-weight:600}
+.cal__h b{flex:1;text-align:center;font-weight:700}
 .cal__g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .cal__g span,.cal__g button{height:2rem;display:grid;place-items:center;font-size:.75rem;border:0;background:none;border-radius:var(--radius-md)}
 .cal__g span{color:var(--text-tertiary);font-weight:500}
 .cal__g button{cursor:pointer;color:var(--text-primary)}
 .cal__g button:hover{background:var(--bg-hover)}
 .cal__g .mu{color:var(--text-disabled)}
-.cal__g .today{box-shadow:inset 0 0 0 1px var(--border-control);font-weight:600}
+.cal__g .today{box-shadow:inset 0 0 0 1px var(--border-control);font-weight:700}
 .cal__g .sel{background:var(--interactive);color:var(--text-on-brand)}
 .cal__g .sel:hover{background:var(--interactive-hover)}
 .cal__f{display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);margin-top:.375rem;padding-top:.375rem}
@@ -319,11 +319,11 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
   border-radius:2px;cursor:pointer;color:inherit}
 .tag button:hover{background:var(--bg-active)}
 .badge{display:inline-grid;place-items:center;min-width:1.125rem;height:1.125rem;padding:0 .3125rem;border-radius:.5625rem;
-  font-size:.6875rem;line-height:1;font-weight:600;background:var(--status-danger-solid);color:var(--text-on-color);font-variant-numeric:tabular-nums}
+  font-size:.6875rem;line-height:1;font-weight:700;background:var(--status-danger-solid);color:var(--text-on-color);font-variant-numeric:tabular-nums}
 .badge--neutral{background:var(--bg-active);color:var(--text-secondary)}
 .badge--info{background:var(--status-info-solid);color:var(--text-on-color)}
 .dotmark{width:.5rem;height:.5rem;border-radius:50%;background:var(--status-danger-solid);display:inline-block}
-.avatar{width:1.5rem;height:1.5rem;border-radius:50%;display:inline-grid;place-items:center;font-size:.625rem;font-weight:600;
+.avatar{width:1.5rem;height:1.5rem;border-radius:50%;display:inline-grid;place-items:center;font-size:.625rem;font-weight:700;
   background:var(--status-neutral-bg);color:var(--status-neutral-fg);flex:none}
 .avatar--a{background:var(--tag-teal-bg);color:var(--tag-teal-fg)}
 .avatar--b{background:var(--tag-violet-bg);color:var(--tag-violet-fg)}
@@ -360,14 +360,14 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
   background:var(--modal-bg);border-radius:var(--radius-lg);box-shadow:var(--shadow-modal);display:flex;flex-direction:column;max-height:76vh}
 .modal--sm{width:min(26.25rem,calc(100vw - 2rem))}
 .modal__h{display:flex;align-items:flex-start;gap:.75rem;padding:1rem 1rem .5rem 1.25rem}
-.modal__h h3{margin:0;font-size:1rem;line-height:1.5rem;font-weight:600;flex:1}
+.modal__h h3{margin:0;font-size:1rem;line-height:1.5rem;font-weight:700;flex:1}
 .modal__b{padding:.25rem 1.25rem 1.25rem;overflow:auto;color:var(--text-secondary)}
 .modal__f{display:flex;justify-content:flex-end;gap:.5rem;padding:.75rem 1rem;border-top:1px solid var(--border-subtle);background:var(--modal-footer-bg);
   border-radius:0 0 var(--radius-lg) var(--radius-lg)}
 .drawer{position:fixed;z-index:81;top:0;right:0;bottom:0;width:min(30rem,100vw);background:var(--bg-surface);
   box-shadow:var(--shadow-modal);display:flex;flex-direction:column}
 .drawer__h{display:flex;align-items:center;gap:.5rem;padding:.75rem .75rem .75rem 1.25rem;border-bottom:1px solid var(--border-subtle)}
-.drawer__h h3{margin:0;font-size:1rem;line-height:1.5rem;font-weight:600;flex:1}
+.drawer__h h3{margin:0;font-size:1rem;line-height:1.5rem;font-weight:700;flex:1}
 .drawer__b{flex:1;overflow:auto;padding:1rem 1.25rem}
 .drawer__f{display:flex;gap:.5rem;justify-content:flex-end;padding:.75rem 1rem;border-top:1px solid var(--border-subtle)}
 /* bản tĩnh để minh hoạ trong trang */
@@ -400,7 +400,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .cell-2{display:flex;flex-direction:column;line-height:1rem}
 .cell-2 small{color:var(--text-tertiary);font-size:.75rem}
 .cell-user{display:flex;align-items:center;gap:.5rem}
-.tbl tr.total td{font-weight:600;background:var(--bg-subtle);border-top:1px solid var(--border);border-bottom:0}
+.tbl tr.total td{font-weight:700;background:var(--bg-subtle);border-top:1px solid var(--border);border-bottom:0}
 .overdue{color:var(--status-danger-fg)}
 .bulk{display:flex;align-items:center;gap:.25rem;height:var(--control-h-lg);padding:0 .5rem 0 1rem;background:var(--bg-inverse);color:var(--text-inverse);
   border-radius:var(--radius-md) var(--radius-md) 0 0}
@@ -414,18 +414,18 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .pag__pages button{min-width:1.75rem;height:1.75rem;border:0;background:none;border-radius:var(--radius-md);cursor:pointer;color:var(--text-primary);
   font-variant-numeric:tabular-nums;font-size:.75rem}
 .pag__pages button:hover{background:var(--bg-hover)}
-.pag__pages button[aria-current="page"]{background:var(--bg-selected);color:var(--text-link);font-weight:600}
+.pag__pages button[aria-current="page"]{background:var(--bg-selected);color:var(--text-link);font-weight:700}
 .pag__pages span{min-width:1.25rem;text-align:center;line-height:1.75rem;color:var(--text-tertiary)}
 .pag .select select.input{height:1.75rem;font-size:.75rem;width:auto}
 
 /* Card / KPI */
 .card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
 .card__h{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-bottom:1px solid var(--border-subtle)}
-.card__h h4{margin:0;font-size:.875rem;line-height:1.25rem;font-weight:600;flex:1}
+.card__h h4{margin:0;font-size:.875rem;line-height:1.25rem;font-weight:700;flex:1}
 .card__b{padding:1rem}
 .kpi{padding:1rem}
 .kpi__l{font-size:.75rem;line-height:1rem;color:var(--text-secondary);display:flex;gap:.375rem;align-items:center}
-.kpi__v{font-size:1.75rem;line-height:2.25rem;font-weight:600;letter-spacing:-.01em;margin-top:.25rem;font-variant-numeric:tabular-nums}
+.kpi__v{font-size:1.75rem;line-height:2.25rem;font-weight:700;letter-spacing:-.01em;margin-top:.25rem;font-variant-numeric:tabular-nums}
 .kpi__v small{font-size:.875rem;font-weight:500;color:var(--text-secondary);margin-left:.25rem}
 .kpi__meta{font-size:.75rem;line-height:1rem;color:var(--text-tertiary);margin-top:.5rem;display:flex;justify-content:space-between;gap:.5rem}
 .prog{height:.375rem;background:var(--bg-active);border-radius:.1875rem;position:relative;margin-top:.5rem}
@@ -435,7 +435,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .kpi-mini{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border-subtle)}
 .kpi-mini > div{padding:.625rem 1rem;border-left:1px solid var(--border-subtle)}
 .kpi-mini > div:first-child{border-left:0}
-.kpi-mini b{display:block;font-size:1rem;line-height:1.5rem;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi-mini b{display:block;font-size:1rem;line-height:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
 .kpi-mini span{font-size:.75rem;color:var(--text-tertiary)}
 .trend-up,.kpi-mini .trend-up{color:var(--status-success-fg)} .trend-down,.kpi-mini .trend-down{color:var(--status-danger-fg)}
 .spark{display:block;width:100%;height:2.25rem;margin-top:.5rem}
@@ -444,7 +444,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .alert{display:flex;gap:.625rem;align-items:flex-start;padding:.625rem .75rem;border-radius:var(--radius-md);border:1px solid;
   background:var(--status-info-bg);border-color:color-mix(in srgb,var(--status-info-solid) 35%,transparent);color:var(--text-primary)}
 .alert > .ic{margin-top:2px;color:var(--status-info-solid)}
-.alert__t{font-weight:600}
+.alert__t{font-weight:700}
 .alert__d{color:var(--text-secondary)}
 .alert__a{margin-left:auto;display:flex;gap:.25rem;flex:none}
 .alert--success{background:var(--status-success-bg);border-color:color-mix(in srgb,var(--status-success-solid) 35%,transparent)}
@@ -462,7 +462,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .toast > .ic{margin-top:2px}
 .toast--success > .ic{color:var(--toast-ic-success)} .toast--error > .ic{color:var(--toast-ic-error)} .toast--info > .ic{color:var(--toast-ic-info)}
 .toast__m{flex:1}
-.toast__a{border:0;background:none;color:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0 .25rem}
+.toast__a{border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0 .25rem}
 .toast__x{border:0;background:none;color:inherit;opacity:.7;cursor:pointer;padding:2px;border-radius:2px}
 .toast__x:hover{opacity:1}
 .toast.is-static{animation:none;position:static}
@@ -477,7 +477,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .state__ic{width:2.5rem;height:2.5rem;border-radius:50%;display:grid;place-items:center;background:var(--bg-active);color:var(--text-secondary)}
 .state__ic .ic{width:1.25rem;height:1.25rem}
 .state__ic--danger{background:var(--status-danger-bg);color:var(--status-danger-fg)}
-.state h4{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;font-weight:600}
+.state h4{margin:.25rem 0 0;font-size:.875rem;line-height:1.25rem;font-weight:700}
 .state p{margin:0;color:var(--text-secondary);max-width:42ch}
 .state .row{margin-top:.5rem;justify-content:center}
 
@@ -485,7 +485,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .appbar{height:3rem;display:flex;align-items:center;gap:.75rem;padding:0 .5rem 0 .75rem;background:var(--appbar-bg);color:var(--appbar-fg)}
 .appbar__mod{display:flex;align-items:center;gap:.375rem;height:2rem;padding:0 .5rem;border:0;background:none;color:inherit;border-radius:var(--radius-md);cursor:pointer;font-weight:500}
 .appbar__mod:hover{background:rgba(255,255,255,.14)}
-.appbar__brand{font-weight:600;letter-spacing:.01em}
+.appbar__brand{font-weight:700;letter-spacing:.01em}
 .appbar__sep{width:1px;height:1.25rem;background:rgba(255,255,255,.3)}
 .appbar__search{flex:1;max-width:26.25rem;position:relative}
 .appbar__search input{width:100%;height:2rem;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);color:var(--text-on-brand);
@@ -498,19 +498,17 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .appbar__ib{width:2rem;height:2rem;border:0;background:none;color:inherit;display:grid;place-items:center;border-radius:var(--radius-md);cursor:pointer;position:relative}
 .appbar__ib:hover{background:rgba(255,255,255,.14)}
 .appbar__ib .badge{position:absolute;top:2px;right:0;height:1rem;min-width:1rem;font-size:.625rem;box-shadow:0 0 0 2px var(--appbar-bg)}
-.sidenav{width:15rem;background:var(--bg-surface);border-right:1px solid var(--border-subtle);padding:.5rem 0;font-size:.8125rem}
-.sidenav__g{display:flex;align-items:center;gap:.5rem;width:100%;height:2rem;padding:0 .75rem;border:0;background:none;cursor:pointer;
-  font-weight:500;color:var(--text-primary);text-align:left}
-.sidenav__g:hover{background:var(--bg-hover)}
-.sidenav__g .ic:first-child{color:var(--text-secondary)}
-.sidenav__g .chev{margin-left:auto;color:var(--text-tertiary)}
-.sidenav__s{padding:.5rem .75rem 2px 2.25rem;font-size:.75rem;color:var(--text-tertiary)}
-.sidenav__i{display:flex;align-items:center;width:100%;height:1.875rem;padding:0 .75rem 0 2.25rem;border:0;background:none;cursor:pointer;
-  color:var(--text-secondary);text-align:left;position:relative}
-.sidenav__i:hover{background:var(--bg-hover);color:var(--text-primary)}
-.sidenav__i[aria-current="page"]{background:var(--bg-selected);color:var(--text-primary);font-weight:500}
-.sidenav__i[aria-current="page"]::before{content:"";position:absolute;left:0;top:.25rem;bottom:.25rem;width:.1875rem;background:var(--interactive);border-radius:0 2px 2px 0}
-.sidenav__i .badge{margin-left:auto}
+/* Menu nhóm chức năng nằm ngang trên thanh trên cùng, như Odoo */
+.appbar__secs{display:flex;align-self:stretch;margin-left:.25rem}
+.appbar__sec-w{position:relative;display:flex}
+.appbar__sec{display:flex;align-items:center;gap:.25rem;height:100%;padding:0 .75rem;border:0;background:none;color:inherit;cursor:pointer;font-weight:500;white-space:nowrap}
+.appbar__sec:hover{background:rgba(255,255,255,.14)}
+.appbar__sec[aria-current="true"]{background:rgba(255,255,255,.18)}
+.appbar__sec[aria-expanded="true"]{background:rgba(255,255,255,.24)}
+.navmenu{position:absolute;left:0;top:100%;z-index:5;box-shadow:var(--shadow-overlay);color:var(--text-primary);padding:.25rem 0}
+.navmenu__s{padding:.5rem .75rem .125rem;font-size:.75rem;color:var(--text-tertiary)}
+.navmenu .menu__i[aria-current="page"]{background:var(--bg-selected);font-weight:500}
+.navmenu .menu__i .badge{margin-left:auto}
 .crumbs{display:flex;align-items:center;gap:.25rem;font-size:.75rem;color:var(--text-tertiary);flex-wrap:wrap}
 .crumbs a{color:var(--text-link);text-decoration:none}
 .crumbs a:hover{text-decoration:underline}
@@ -531,10 +529,10 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .steps li.done{border-top-color:var(--interactive)}
 .steps li.done b{color:var(--text-primary)}
 .steps li[aria-current="step"]{border-top-color:var(--interactive)}
-.steps li[aria-current="step"] b{color:var(--text-primary);font-weight:600}
+.steps li[aria-current="step"] b{color:var(--text-primary);font-weight:700}
 .steps li.err{border-top-color:var(--status-danger-solid)}
 .pagehead{display:flex;align-items:flex-end;gap:.75rem;flex-wrap:wrap}
-.pagehead h1{margin:2px 0 0;font-size:1.25rem;line-height:1.75rem;font-weight:600}
+.pagehead h1{margin:2px 0 0;font-size:1.25rem;line-height:1.75rem;font-weight:700}
 .pagehead__l{flex:1;min-width:0}
 
 /* Filter chips */
@@ -548,7 +546,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 /* Form layout */
 .form-sec{display:grid;grid-template-columns:13.75rem 1fr;gap:1.5rem;padding:1.25rem 0;border-top:1px solid var(--border-subtle)}
 .form-sec:first-child{border-top:0;padding-top:0}
-.form-sec h4{margin:0;font-size:.875rem;line-height:1.25rem;font-weight:600}
+.form-sec h4{margin:0;font-size:.875rem;line-height:1.25rem;font-weight:700}
 .form-sec p{margin:.25rem 0 0;color:var(--text-tertiary);font-size:.75rem;line-height:1rem}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.25rem}
 .form-grid .full{grid-column:1/-1}
@@ -575,7 +573,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .dg td.edit .input:focus,.dg td.edit .input.is-focus{border-color:var(--interactive);background:var(--bg-surface);box-shadow:inset 0 0 0 1px var(--interactive)}
 .dg td.edit.is-error .input{border-color:var(--status-danger-solid);box-shadow:inset 0 0 0 1px var(--status-danger-solid);background:var(--status-danger-bg)}
 .dg td.is-calc{color:var(--text-secondary);background:var(--bg-subtle)}
-.dg tfoot td{font-weight:600;background:var(--bg-subtle);border-top:1px solid var(--border);border-bottom:0}
+.dg tfoot td{font-weight:700;background:var(--bg-subtle);border-top:1px solid var(--border);border-bottom:0}
 .dg tfoot tr + tr td{border-top:1px solid var(--border-subtle)}
 .dg-cap{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
 
@@ -588,7 +586,7 @@ textarea.input{height:auto;min-height:4.5rem;padding:.375rem .625rem;resize:vert
 .cb__o.is-active{background:var(--menu-item-hover);box-shadow:inset 2px 0 0 var(--interactive)}
 .cb__o[aria-selected="true"]{background:var(--bg-selected)}
 .cb__o small{display:block;color:var(--text-tertiary);font-size:.75rem;line-height:1rem}
-.cb__o mark{background:none;color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.cb__o mark{background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
 .cb__o > div{flex:1;min-width:0}
 .cb__st{padding:.625rem .75rem;color:var(--text-tertiary)}
 .cb__foot{border-top:1px solid var(--border-subtle);margin-top:.25rem;padding-top:.25rem}
@@ -668,7 +666,7 @@ kbd{font-family:var(--font-mono);font-size:.6875rem;border:1px solid var(--borde
 .doc-top{position:sticky;top:0;z-index:50;height:3.5rem;display:flex;align-items:center;gap:1rem;padding:0 1.25rem;
   background:var(--bg-surface);border-bottom:1px solid var(--border-subtle)}
 .doc-brand{display:flex;align-items:baseline;gap:.5rem}
-.doc-brand b{font-size:.9375rem;font-weight:600}
+.doc-brand b{font-size:.9375rem;font-weight:700}
 .doc-brand span{color:var(--text-tertiary)}
 .doc-ver{font-family:var(--font-mono);font-size:.6875rem;color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1px .375rem}
 .doc-ctrls{margin-left:auto;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
@@ -676,7 +674,7 @@ kbd{font-family:var(--font-mono);font-size:.6875rem;border:1px solid var(--borde
 .doc-menu-btn{display:none}
 .doc-shell{display:grid;grid-template-columns:15.5rem minmax(0,1fr)}
 .doc-nav{position:sticky;top:3.5rem;height:calc(100vh - 3.5rem);overflow:auto;padding:1rem 0 2.5rem;border-right:1px solid var(--border-subtle);background:var(--bg-surface)}
-.doc-nav__g{padding:1rem 1.25rem .25rem;font-size:.75rem;font-weight:600;color:var(--text-primary)}
+.doc-nav__g{padding:1rem 1.25rem .25rem;font-size:.75rem;font-weight:700;color:var(--text-primary)}
 .doc-nav__g:first-child{padding-top:.25rem}
 .doc-nav a{display:block;padding:.25rem 1.25rem .25rem 1.75rem;color:var(--text-secondary);text-decoration:none;font-size:.8125rem;border-left:2px solid transparent;margin-left:0}
 .doc-nav a:hover{color:var(--text-primary);background:var(--bg-hover)}
@@ -685,12 +683,12 @@ kbd{font-family:var(--font-mono);font-size:.6875rem;border:1px solid var(--borde
 .sec{padding:2.5rem 0 .5rem;border-top:1px solid var(--border-subtle)}
 .sec:first-child{border-top:0}
 .sec__k{font-family:var(--font-mono);font-size:.75rem;color:var(--text-tertiary)}
-.sec h2{margin:2px 0 .5rem;font-size:1.5rem;line-height:2rem;font-weight:600;letter-spacing:-.005em}
-.sec h3{margin:2rem 0 .5rem;font-size:1rem;line-height:1.5rem;font-weight:600}
+.sec h2{margin:2px 0 .5rem;font-size:1.5rem;line-height:2rem;font-weight:700;letter-spacing:-.005em}
+.sec h3{margin:2rem 0 .5rem;font-size:1rem;line-height:1.5rem;font-weight:700}
 .sec h3:first-of-type{margin-top:1.5rem}
 .lead{margin:0 0 1rem;font-size:.875rem;line-height:1.375rem;color:var(--text-secondary);max-width:76ch}
 .p{margin:0 0 .75rem;color:var(--text-secondary);max-width:76ch}
-.p b,.lead b{color:var(--text-primary);font-weight:600}
+.p b,.lead b{color:var(--text-primary);font-weight:700}
 code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-subtle);border:1px solid var(--border-subtle);
   border-radius:var(--radius-sm);padding:0 .25rem;color:var(--text-primary)}
 .spec{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);margin:.75rem 0}
@@ -706,7 +704,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .dd2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.75rem 0}
 .do,.dont{background:var(--bg-surface);border:1px solid var(--border-subtle);border-top:.1875rem solid var(--status-success-solid);border-radius:var(--radius-md)}
 .dont{border-top-color:var(--status-danger-solid)}
-.do__h,.dont__h{display:flex;gap:.375rem;align-items:center;padding:.5rem .75rem 0;font-weight:600;font-size:.75rem}
+.do__h,.dont__h{display:flex;gap:.375rem;align-items:center;padding:.5rem .75rem 0;font-weight:700;font-size:.75rem}
 .do__h{color:var(--status-success-fg)} .dont__h{color:var(--status-danger-fg)}
 .do__b,.dont__b{padding:.75rem}
 .do__p,.dont__p{padding:0 .75rem .75rem;color:var(--text-secondary);font-size:.75rem;line-height:1.125rem;margin:0}
@@ -726,7 +724,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .ramp__t{padding:.375rem .5rem;font-size:.6875rem;line-height:.875rem}
 .ramp__t b{display:block;font-weight:500;font-size:.75rem}
 .ramp__t span{font-family:var(--font-mono);color:var(--text-tertiary)}
-.ramp-lbl{font-size:.75rem;font-weight:600;margin:1rem 0 .375rem}
+.ramp-lbl{font-size:.75rem;font-weight:700;margin:1rem 0 .375rem}
 .typerow{display:grid;grid-template-columns:12.5rem 1fr;gap:1rem;padding:.875rem 0;border-bottom:1px solid var(--border-subtle);align-items:baseline}
 .typerow:last-child{border-bottom:0}
 .typerow__m{font-size:.75rem;line-height:1.125rem;color:var(--text-tertiary)}
@@ -752,24 +750,24 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .gridviz{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;height:5rem}
 .gridviz i{background:color-mix(in srgb,var(--data-1) 14%,transparent);border-left:1px solid color-mix(in srgb,var(--data-1) 40%,transparent);
   border-right:1px solid color-mix(in srgb,var(--data-1) 40%,transparent)}
-.anat{display:grid;grid-template:"top top" 2.25rem "nav ph" 2.75rem "nav tb" 2.25rem "nav ct" 1fr "nav ab" 2.25rem / 8.25rem 1fr;
+.anat{display:grid;grid-template:"top" 2.25rem "ph" 2.75rem "tb" 2.25rem "ct" 1fr "ab" 2.25rem / 1fr;
   height:18.75rem;gap:.25rem;font-size:.6875rem;font-family:var(--font-mono)}
 .anat > div{border:1px dashed var(--border-control);border-radius:2px;display:flex;align-items:center;justify-content:center;
   color:var(--text-secondary);background:var(--bg-surface);text-align:center;padding:.25rem}
 .chain{display:flex;align-items:stretch;gap:.5rem;flex-wrap:wrap}
 .chain > div{flex:1;min-width:9.375rem;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:.75rem}
 .chain > div b{display:block;font-size:.75rem;color:var(--text-tertiary);font-weight:500;font-family:var(--font-mono)}
-.chain > div span{display:block;margin-top:.25rem;font-weight:600}
+.chain > div span{display:block;margin-top:.25rem;font-weight:700}
 .chain > div small{display:block;margin-top:.25rem;color:var(--text-secondary);font-size:.75rem;line-height:1rem}
 .chain > .arr{flex:none;min-width:0;border:0;background:none;padding:0;display:grid;place-items:center;color:var(--text-tertiary)}
 .tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(18.75rem,1fr));gap:1rem}
 .tpl{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-card)}
-.tpl__h{padding:.75rem .875rem .25rem;font-weight:600}
+.tpl__h{padding:.75rem .875rem .25rem;font-weight:700}
 .tpl__p{padding:0 .875rem .75rem;color:var(--text-secondary);font-size:.75rem;line-height:1.125rem;margin:0}
 .tpl__p code{font-size:.6875rem}
 .wf{height:10.625rem;margin:0 .875rem .875rem;border:1px solid var(--border-subtle);border-radius:2px;display:grid;
-  grid-template:"h h" .75rem "s m" 1fr / 2.125rem 1fr;background:var(--bg-page);overflow:hidden}
-.wf__h{grid-area:h;background:var(--gray-80)}
+  grid-template:"h" .75rem "m" 1fr / 1fr;background:var(--bg-page);overflow:hidden}
+.wf__h{grid-area:h;background:var(--appbar-bg)}
 .wf__s{grid-area:s;background:var(--bg-surface);border-right:1px solid var(--border-subtle);padding:.375rem .25rem;display:flex;flex-direction:column;gap:.25rem}
 .wf__s i{height:.1875rem;background:var(--border);border-radius:1px}
 .wf__s i.on{background:var(--interactive)}
@@ -788,8 +786,8 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .pr b{display:block;font-size:.875rem;margin-bottom:.25rem}
 .pr p{margin:0;color:var(--text-secondary);font-size:.75rem;line-height:1.125rem}
 .pr i{font-style:normal;font-family:var(--font-mono);font-size:.6875rem;color:var(--text-tertiary)}
-.pass{color:var(--status-success-fg);font-weight:600}
-.fail{color:var(--status-danger-fg);font-weight:600}
+.pass{color:var(--status-success-fg);font-weight:700}
+.fail{color:var(--status-danger-fg);font-weight:700}
 
 @media (max-width:1100px){
   .grid4{grid-template-columns:repeat(2,1fr)}
@@ -819,7 +817,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 /* Biểu đồ */
 .chart{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:1rem;box-shadow:var(--shadow-card)}
 .chart__h{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap}
-.chart__h b{font-size:.875rem;font-weight:600}
+.chart__h b{font-size:.875rem;font-weight:700}
 .chart__h span{font-size:.75rem;color:var(--text-tertiary)}
 .legend{display:flex;flex-wrap:wrap;gap:.375rem 1rem;margin:.75rem 0 0;padding:0;list-style:none;font-size:.75rem;color:var(--text-secondary)}
 .legend li{display:inline-flex;align-items:center;gap:.375rem}
@@ -846,13 +844,13 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .brandpick button.bp[aria-pressed="true"]{box-shadow:0 0 0 2px var(--text-primary)}
 .brandpick input[type=color]{width:2.5rem;height:2rem;padding:0;border:1px solid var(--border-control);border-radius:var(--radius-md);background:none;cursor:pointer}
 .brandprev{border:1px solid var(--border-subtle);border-radius:var(--radius-card);overflow:hidden;background:var(--bg-surface)}
-.brandprev__bar{background:var(--appbar-bg);color:var(--appbar-fg);padding:0 1rem;height:2.5rem;display:flex;align-items:center;gap:.75rem;font-weight:600}
+.brandprev__bar{background:var(--appbar-bg);color:var(--appbar-fg);padding:0 1rem;height:2.5rem;display:flex;align-items:center;gap:.75rem;font-weight:700}
 .brandprev__b{padding:1rem;display:flex;flex-direction:column;gap:.75rem}
 /* Co giãn theo màn hình */
 .scalelive{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
 .scalelive > div{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:.75rem}
 .scalelive small{display:block;font-size:.6875rem;color:var(--text-tertiary);font-family:var(--font-mono)}
-.scalelive b{display:block;font-size:1.25rem;line-height:1.75rem;font-weight:600}
+.scalelive b{display:block;font-size:1.25rem;line-height:1.75rem;font-weight:700}
 @media (max-width:900px){.scalelive{grid-template-columns:repeat(2,1fr)}}
 #brandGate td:first-child{white-space:normal}
 
@@ -860,7 +858,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 .densbox{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:.75rem;display:flex;flex-direction:column;gap:.75rem;box-shadow:var(--shadow-card)}
 .densbox .tbl{min-width:0}
 .densm{margin:.5rem 0 0;font-size:.75rem;color:var(--text-secondary)}
-.densm b{color:var(--text-primary);font-weight:600}
+.densm b{color:var(--text-primary);font-weight:700}
 </style>
 </head>
 <body>
@@ -1067,7 +1065,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 <section class="sec" id="chu">
   <div class="sec__k">01 · Foundations</div>
   <h2>Typography</h2>
-  <p class="lead">Font <b>Be Vietnam Pro</b> được chọn vì dấu tiếng Việt đặt đúng chỗ, không chồng lên dòng trên ở cỡ nhỏ. Cỡ mặc định của giao diện nghiệp vụ là <b>13/20 tại màn hình 1440px</b> và <b>co giãn theo kích thước màn hình</b> (mục dưới), nhưng cỡ chữ quyết định theo ngữ cảnh (bảng dưới), và độ gọn là <b>một chế độ</b> người dùng chọn, không phải cá tính thị giác của hệ thống. Số liệu luôn dùng <code>font-variant-numeric: tabular-nums</code> để các cột thẳng hàng. <b>IBM Plex Mono</b> chỉ dùng cho mã chứng từ, mã token và dữ liệu kỹ thuật</p>
+  <p class="lead">Font <b>Roboto</b>, kiểu chữ sans-serif không chân, có đủ dấu tiếng Việt và quen thuộc với người dùng Odoo. Hệ thống chỉ dùng hai độ đậm: thường (400) và đậm vừa (500), thêm đậm (700) cho tiêu đề; Roboto không có độ đậm 600 nên mọi chỗ cần "đậm" dùng 700. Cỡ mặc định của giao diện nghiệp vụ là <b>13/20 tại màn hình 1440px</b> và <b>co giãn theo kích thước màn hình</b> (mục dưới), nhưng cỡ chữ quyết định theo ngữ cảnh (bảng dưới), và độ gọn là <b>một chế độ</b> người dùng chọn, không phải cá tính thị giác của hệ thống. Số liệu luôn dùng <code>font-variant-numeric: tabular-nums</code> để các cột thẳng hàng. <b>IBM Plex Mono</b> chỉ dùng cho mã chứng từ, mã token và dữ liệu kỹ thuật</p>
   <div class="spec"><div class="spec__b" id="typeRows"></div>
     <div class="spec__c"><span>Mỗi bậc có hai token: <code>--type-{bậc}-size</code> và <code>--type-{bậc}-lh</code></span></div></div>
   <h3>Co giãn theo màn hình</h3>
@@ -1117,22 +1115,22 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
     <thead><tr><th>Hạng mục</th><th>Quy tắc</th></tr></thead>
     <tbody>
       <tr><td>Nguồn font</td><td>Hệ thống nội bộ hoặc on-premise: tự host file woff2 cùng domain với ứng dụng, không gọi Google Fonts. Bản chạy trên mạng công cộng được dùng CDN</td></tr>
-      <tr><td>Giấy phép</td><td>Be Vietnam Pro và IBM Plex Mono đều theo SIL Open Font License, cho phép nhúng và tự host. Lưu kèm bản giấy phép cùng file font</td></tr>
+      <tr><td>Giấy phép</td><td>Roboto và IBM Plex Mono đều theo SIL Open Font License, cho phép nhúng và tự host. Lưu kèm bản giấy phép cùng file font</td></tr>
       <tr><td>Cách tải</td><td><code>font-display: swap</code>, preload hai file dùng ngay (400 và 500), chỉ nhúng subset latin và vietnamese</td></tr>
-      <tr><td>Fallback</td><td>Be Vietnam Pro, Segoe UI, system-ui, Roboto, Arial. Mọi font trong danh sách đều hiển thị đúng dấu tiếng Việt</td></tr>
+      <tr><td>Fallback</td><td>Roboto, system-ui, Segoe UI, Arial, rồi sans-serif của hệ điều hành. Mọi font trong danh sách đều hiển thị đúng dấu tiếng Việt</td></tr>
       <tr><td>Offline, VPN</td><td>Khi mạng chặn font, giao diện vẫn dùng được với font hệ thống. Cột số có độ rộng cố định để bố cục không nhảy khi font tải xong</td></tr>
       <tr><td>Nghiệm thu</td><td>Kiểm tra từng màn khi tắt mạng và khi font bị chặn</td></tr>
     </tbody>
   </table></div>
-  <pre class="codeblock">@font-face{font-family:"Be Vietnam Pro";font-weight:400;font-display:swap;
-  src:url("/assets/fonts/be-vietnam-pro-400.woff2") format("woff2")}
-/* lặp lại cho 500, 600 và cho IBM Plex Mono 400, 500 */</pre>
+  <pre class="codeblock">@font-face{font-family:"Roboto";font-weight:400;font-display:swap;
+  src:url("/assets/fonts/roboto-400.woff2") format("woff2")}
+/* lặp lại cho 500, 700 và cho IBM Plex Mono 400, 500; mỗi file gồm hai dải latin và vietnamese */</pre>
   <div class="dd2">
     <div class="do"><div class="do__h"><svg class="ic ic--sm"><use href="#i-check"/></svg>Nên</div>
       <div class="do__b"><div style="font-size:.75rem;font-weight:500;color:var(--text-secondary)">Giá trị dự kiến</div></div>
       <p class="do__p">Nhãn viết như câu bình thường (sentence case): chữ hoa chỉ ở chữ đầu</p></div>
     <div class="dont"><div class="dont__h"><svg class="ic ic--sm"><use href="#i-x"/></svg>Không nên</div>
-      <div class="dont__b"><div style="font-size:.6875rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-tertiary)">GIÁ TRỊ DỰ KIẾN</div></div>
+      <div class="dont__b"><div style="font-size:.6875rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-tertiary)">GIÁ TRỊ DỰ KIẾN</div></div>
       <p class="dont__p">Chữ hoa giãn cách ở khắp nơi. Khó đọc với tiếng Việt có dấu và làm giao diện trông như template</p></div>
   </div>
 </section>
@@ -2035,7 +2033,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
   <p class="lead">Control cỡ lớn, một cột, nút chính rộng hết khung. Thông báo lỗi không tiết lộ trường nào sai, nhưng nói rõ còn bao nhiêu lần thử</p>
   <div class="spec"><div class="spec__b spec__b--page" style="display:grid;place-items:center;padding:2.5rem 1rem">
     <form class="card" style="width:min(23.75rem,100%);padding:1.75rem" onsubmit="return false">
-      <div style="font-weight:600;font-size:.9375rem">Datyso</div>
+      <div style="font-weight:700;font-size:.9375rem">Datyso</div>
       <h3 style="margin:1rem 0 .25rem;font-size:1.25rem;line-height:1.75rem">Đăng nhập</h3>
       <p style="margin:0 0 1rem;color:var(--text-secondary)">Dùng tài khoản do quản trị hệ thống cấp</p>
       <div class="alert alert--danger" style="margin-bottom:1rem"><svg class="ic"><use href="#i-err"/></svg><div class="alert__d" style="color:var(--text-primary)">Sai tên đăng nhập hoặc mật khẩu. Còn 2 lần thử trước khi tài khoản bị khoá 15 phút</div></div>
@@ -2088,7 +2086,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
         <button class="md__i" role="option" aria-selected="false"><span class="row" style="justify-content:space-between;gap:.5rem;flex-wrap:nowrap"><b class="mono">BG-2610-0079</b><span class="tag tag--warning tag--dot">Chờ duyệt</span></span><span>Nội thất Hoàng Gia</span><small class="num">342.800.000 ₫ · gửi 30/09</small></button>
       </div>
       <div class="md__r">
-        <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><div style="font-weight:600;font-size:.9375rem;line-height:1.375rem">BG-2610-0087 · Xưởng cơ khí Tân Phát</div><div class="field__help">Cơ hội CH-2610-0142 · Lê Thu Hà</div></div><div class="row" style="flex-wrap:nowrap"><button class="btn btn--danger-ghost btn--sm">Từ chối</button><button class="btn btn--primary btn--sm">Duyệt</button></div></div>
+        <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><div style="font-weight:700;font-size:.9375rem;line-height:1.375rem">BG-2610-0087 · Xưởng cơ khí Tân Phát</div><div class="field__help">Cơ hội CH-2610-0142 · Lê Thu Hà</div></div><div class="row" style="flex-wrap:nowrap"><button class="btn btn--danger-ghost btn--sm">Từ chối</button><button class="btn btn--primary btn--sm">Duyệt</button></div></div>
         <h4 style="margin:1.25rem 0 .625rem;font-size:.875rem">Luồng duyệt</h4>
         <ol class="tl">
           <li><span class="tl__d tl__d--ok"><svg class="ic"><use href="#i-check"/></svg></span><div><div class="tl__t">Lê Thu Hà gửi duyệt</div><div class="tl__m">Nhân viên kinh doanh · 03/10/2026 08:04</div></div></li>
@@ -2115,11 +2113,10 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 <section class="sec" id="bo-cuc">
   <div class="sec__k">05 · Layout và điều hướng</div>
   <h2>Bố cục trang</h2>
-  <p class="lead">Mọi màn nghiệp vụ dùng chung một khung. Chỉ vùng nội dung cuộn; thanh trên, menu và thanh thao tác đứng yên</p>
+  <p class="lead">Mọi màn nghiệp vụ dùng chung một khung. Chỉ vùng nội dung cuộn; thanh trên cùng (gồm menu nhóm chức năng nằm ngang) và thanh thao tác đứng yên</p>
   <div class="spec"><div class="spec__b">
     <div class="anat">
-      <div style="grid-area:top">App bar · 48px · chọn phân hệ, tìm kiếm toàn cục, thông báo, tài khoản</div>
-      <div style="grid-area:nav">Sidebar<br>240px<br>(thu gọn 56px)</div>
+      <div style="grid-area:top">App bar · 48px · chọn phân hệ, menu nhóm chức năng nằm ngang, tìm kiếm, thông báo, tài khoản</div>
       <div style="grid-area:ph">Page header · breadcrumb + tiêu đề + hành động chính</div>
       <div style="grid-area:tb">Toolbar · tìm, lọc, kỳ báo cáo</div>
       <div style="grid-area:ct">Nội dung · cuộn · lề 24px · giới hạn 1440px, riêng vùng bảng chạy full width</div>
@@ -2131,7 +2128,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
   <div class="dt-wrap"><table class="dt">
     <thead><tr><th>Primitive</th><th>Quy tắc</th></tr></thead>
     <tbody>
-      <tr><td>Page shell</td><td>App bar, sidebar và vùng nội dung. Chỉ vùng nội dung cuộn</td></tr>
+      <tr><td>Page shell</td><td>App bar (gồm menu nhóm chức năng nằm ngang) và vùng nội dung. Chỉ vùng nội dung cuộn</td></tr>
       <tr><td>Content container</td><td>Giới hạn 1440px, căn giữa, dùng cho dashboard, biểu mẫu và trang chi tiết</td></tr>
       <tr><td>Full-bleed data region</td><td>Bảng và data grid chiếm hết chiều ngang vùng nội dung, kể cả trên màn 1920px trở lên</td></tr>
       <tr><td>Split layout</td><td>Hai vùng cạnh nhau, tỷ lệ cố định hoặc kéo được</td></tr>
@@ -2148,7 +2145,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
     <thead><tr><th>Dải</th><th>Độ rộng</th><th>Hành vi</th></tr></thead>
     <tbody>
       <tr><td>Desktop lớn</td><td class="num">≥ 1440px</td><td>Điều hướng đầy đủ, bảng dày, panel chi tiết mở song song với danh sách</td></tr>
-      <tr><td>Desktop</td><td class="num">1024–1439px</td><td>Sidebar thu gọn còn icon, ẩn bớt cột phụ theo thứ tự ưu tiên đã khai báo, panel chi tiết thành drawer. Đây là kích thước thiết kế chính</td></tr>
+      <tr><td>Desktop</td><td class="num">1024–1439px</td><td>Menu nhóm chức năng gom các nhóm cuối vào mục "Thêm" khi hết chỗ, ẩn bớt cột phụ theo thứ tự ưu tiên đã khai báo, panel chi tiết thành drawer. Đây là kích thước thiết kế chính</td></tr>
       <tr><td>Tablet ngang</td><td class="num">768–1023px</td><td>Bảng cuộn ngang với cột đầu dính, thao tác phụ gom vào menu "Thao tác", biểu mẫu một cột</td></tr>
       <tr><td>Nhỏ</td><td class="num">&lt; 768px</td><td>Không có bản thu nhỏ của mọi màn. Chỉ làm giao diện riêng cho tác vụ ngắn như duyệt, tra cứu, nhập nhanh. Màn còn lại báo người dùng mở bằng máy tính</td></tr>
     </tbody>
@@ -2158,29 +2155,32 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 <section class="sec" id="dieu-huong">
   <div class="sec__k">05 · Layout và điều hướng</div>
   <h2>Điều hướng</h2>
-  <p class="lead">Ba tầng: phân hệ (app bar) → nhóm chức năng (sidebar) → màn hình. Không quá 3 cấp trong sidebar. Mục đang mở có vạch xanh bên trái và nền nhạt</p>
+  <p class="lead">Ba tầng: phân hệ → nhóm chức năng → màn hình. Nhóm chức năng là <b>menu nằm ngang trên thanh trên cùng</b> (như Odoo), bấm vào mở danh sách màn hình của nhóm. Không quá 2 cấp (nhóm, màn hình). Nhóm chứa màn đang mở được tô nền nhạt trên thanh, màn đang mở được tô nền chọn trong danh sách</p>
   <div class="spec"><div class="spec__b spec__b--flush" style="overflow-x:auto">
-    <div class="appbar" style="min-width:45rem">
-      <button class="appbar__mod" aria-label="Chọn phân hệ"><svg class="ic"><use href="#i-apps"/></svg><span class="appbar__brand">Datyso</span></button>
-      <span class="appbar__sep"></span>
-      <button class="appbar__mod">Marketing<svg class="ic ic--sm"><use href="#i-chev-down"/></svg></button>
-      <div class="appbar__search"><svg class="ic"><use href="#i-search"/></svg><input placeholder="Tìm khách hàng, đơn hàng, chứng từ…" aria-label="Tìm toàn hệ thống"><kbd>Ctrl K</kbd></div>
+    <div style="position:relative;min-width:45rem">
+    <div class="appbar">
+      <button class="appbar__mod" aria-label="Chọn phân hệ"><svg class="ic"><use href="#i-apps"/></svg></button>
+      <span class="appbar__brand">Marketing</span>
+      <nav class="appbar__secs" aria-label="Nhóm chức năng">
+        <div class="appbar__sec-w">
+          <button class="appbar__sec" aria-haspopup="menu" aria-expanded="true" aria-current="true">Bảng điều khiển<svg class="ic ic--sm"><use href="#i-chev-down"/></svg></button>
+          <div class="menu navmenu" role="menu" aria-label="Bảng điều khiển">
+            <div class="navmenu__s">Điều hành</div>
+            <button class="menu__i" role="menuitem" aria-current="page">Tổng quan</button>
+            <button class="menu__i" role="menuitem">Cảnh báo cần xử lý<span class="badge">23</span></button>
+            <button class="menu__i" role="menuitem">Phễu và hiệu quả</button>
+          </div>
+        </div>
+        <button class="appbar__sec" aria-haspopup="menu" aria-expanded="false">Lead và hội thoại<svg class="ic ic--sm"><use href="#i-chev-down"/></svg></button>
+        <button class="appbar__sec" aria-haspopup="menu" aria-expanded="false">Chiến dịch<svg class="ic ic--sm"><use href="#i-chev-down"/></svg></button>
+        <button class="appbar__sec" aria-haspopup="menu" aria-expanded="false">Thiết lập<svg class="ic ic--sm"><use href="#i-chev-down"/></svg></button>
+      </nav>
       <span class="spacer"></span>
+      <button class="appbar__ib" aria-label="Tìm kiếm"><svg class="ic"><use href="#i-search"/></svg></button>
       <button class="appbar__ib" aria-label="Thông báo, 5 chưa đọc"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">5</span></button>
       <button class="appbar__mod"><span class="avatar avatar--a">KH</span><span>Khánh Hòa</span></button>
     </div>
-    <div style="display:flex;min-height:18.75rem;min-width:45rem">
-      <nav class="sidenav" aria-label="Ví dụ menu">
-        <button class="sidenav__g" aria-expanded="true"><svg class="ic"><use href="#i-chart"/></svg>Bảng điều khiển<svg class="ic ic--sm chev"><use href="#i-chev-down"/></svg></button>
-        <div class="sidenav__s">Điều hành</div>
-        <button class="sidenav__i" aria-current="page">Tổng quan</button>
-        <button class="sidenav__i">Cảnh báo cần xử lý<span class="badge">23</span></button>
-        <button class="sidenav__i">Phễu và hiệu quả</button>
-        <button class="sidenav__g"><svg class="ic"><use href="#i-user"/></svg>Lead và hội thoại<svg class="ic ic--sm chev"><use href="#i-chev-right"/></svg></button>
-        <button class="sidenav__g"><svg class="ic"><use href="#i-doc"/></svg>Chiến dịch<svg class="ic ic--sm chev"><use href="#i-chev-right"/></svg></button>
-        <button class="sidenav__g"><svg class="ic"><use href="#i-sliders"/></svg>Thiết lập<svg class="ic ic--sm chev"><use href="#i-chev-right"/></svg></button>
-      </nav>
-      <div style="flex:1;padding:1rem 1.5rem;min-width:0" class="stack">
+    <div style="min-height:20rem;padding:1rem 1.5rem" class="stack">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="#dieu-huong">Marketing</a><svg class="ic"><use href="#i-chev-right"/></svg><a href="#dieu-huong">Cơ hội</a><svg class="ic"><use href="#i-chev-right"/></svg><span aria-current="page">CH-2610-0142</span></nav>
         <div class="pagehead"><div class="pagehead__l"><h1>Máy cắt laser fiber 3kW cho Tân Phát</h1></div>
           <span class="tag tag--info tag--dot">Lập báo giá</span><button class="btn btn--secondary">Sửa</button><button class="btn btn--primary">Gửi báo giá</button></div>
@@ -2191,12 +2191,13 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
           <button role="tab" aria-selected="true">Tổng quan</button><button role="tab" aria-selected="false">Báo giá <span class="cnt">2</span></button>
           <button role="tab" aria-selected="false">Hoạt động <span class="cnt">12</span></button><button role="tab" aria-selected="false">Tệp đính kèm</button><button role="tab" aria-selected="false">Lịch sử</button>
         </div>
-      </div>
     </div>
+  </div>
   </div></div>
   <div class="dt-wrap"><table class="dt">
     <thead><tr><th>Thành phần</th><th>Dùng khi</th></tr></thead>
     <tbody>
+      <tr><td>Menu nhóm chức năng (ngang)</td><td>Nằm trên thanh trên cùng, ngay sau tên phân hệ. Tối đa 7 nhóm; nhiều hơn thì gom các nhóm cuối vào mục "Thêm". Nhóm chỉ có một màn thì bấm đi thẳng, không mở danh sách. Mở bằng bấm hoặc Enter, đóng bằng Esc, di chuyển bằng mũi tên</td></tr>
       <tr><td>Breadcrumb</td><td>Màn cấp 2 trở xuống. Mọi mục trừ mục cuối đều bấm được</td></tr>
       <tr><td>Tabs</td><td>Các khía cạnh của cùng một bản ghi hoặc chế độ xem của cùng danh sách. Không dùng tab để chia bước của quy trình</td></tr>
       <tr><td>Stepper</td><td>Quy trình có thứ tự: giai đoạn bán hàng, quy trình duyệt, tạo chứng từ nhiều bước</td></tr>
@@ -2247,28 +2248,28 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
   </div>
   <div class="tpls" style="margin-top:1rem">
     <div class="tpl"><div class="tpl__h">Dashboard</div>
-      <div class="wf"><div class="wf__h"></div><div class="wf__s"><i class="on"></i><i></i><i></i><i></i></div>
+      <div class="wf"><div class="wf__h"></div>
         <div class="wf__m"><b class="t"></b><div class="r"><div class="bx" style="flex:2;height:2.75rem"></div><div class="bx" style="flex:1;height:2.75rem"></div></div>
         <div class="bx" style="height:.875rem"></div><div class="r" style="flex:1"><div class="bx" style="flex:1"></div><div class="bx" style="flex:1"></div></div></div></div>
       <p class="tpl__p">Một KPI chính có mục tiêu, dải cảnh báo, hàng chỉ số phụ, 2 biểu đồ <code>Card</code> <code>Alert</code> <code>Segmented</code></p></div>
     <div class="tpl"><div class="tpl__h">Danh sách</div>
-      <div class="wf"><div class="wf__h"></div><div class="wf__s"><i></i><i class="on"></i><i></i><i></i></div>
+      <div class="wf"><div class="wf__h"></div>
         <div class="wf__m"><div class="r"><b class="t"></b><span style="flex:1"></span><b class="pri" style="width:1.375rem;height:.375rem"></b></div>
         <div class="r"><b class="ln" style="width:20%"></b><b class="ln" style="width:12%"></b><b class="ln" style="width:12%"></b></div>
         <div class="bx" style="flex:1;display:flex;flex-direction:column;gap:.3125rem;padding:.3125rem"><b class="ln"></b><b class="ln"></b><b class="ln"></b><b class="ln"></b><b class="ln"></b><b class="ln"></b></div></div></div>
       <p class="tpl__p">Chế độ xem, tìm và lọc, bảng, phân trang, thao tác hàng loạt <code>Tabs</code> <code>Table</code> <code>Pagination</code></p></div>
     <div class="tpl"><div class="tpl__h">Chi tiết</div>
-      <div class="wf"><div class="wf__h"></div><div class="wf__s"><i></i><i class="on"></i><i></i><i></i></div>
+      <div class="wf"><div class="wf__h"></div>
         <div class="wf__m"><div class="r"><b class="t"></b><span style="flex:1"></span><b class="pri" style="width:1.375rem;height:.375rem"></b></div><b class="ln" style="width:70%"></b>
         <div class="r" style="flex:1"><div class="bx" style="flex:2"></div><div class="bx" style="flex:1"></div></div></div></div>
       <p class="tpl__p">Tiêu đề + trạng thái + hành động, stepper, tabs, cột phải là thông tin tóm tắt và hoạt động <code>Stepper</code> <code>Tabs</code> <code>Description list</code></p></div>
     <div class="tpl"><div class="tpl__h">Tạo / Sửa</div>
-      <div class="wf"><div class="wf__h"></div><div class="wf__s"><i></i><i class="on"></i><i></i><i></i></div>
+      <div class="wf"><div class="wf__h"></div>
         <div class="wf__m"><b class="t"></b><div class="bx" style="flex:1;padding:.375rem;display:grid;grid-template-columns:30% 1fr 1fr;gap:.3125rem"><b class="ln"></b><b class="ln"></b><b class="ln"></b><span></span><b class="ln"></b><b class="ln"></b><b class="ln"></b><b class="ln"></b><b class="ln"></b></div>
         <div class="r" style="justify-content:flex-end"><b class="ln" style="width:1rem;height:.375rem"></b><b class="pri" style="width:1.375rem;height:.375rem"></b></div></div></div>
       <p class="tpl__p">Nhóm trường có tiêu đề, tối đa 2 cột, tóm tắt lỗi, action bar dính đáy <code>Field</code> <code>Alert</code> <code>Action bar</code></p></div>
     <div class="tpl"><div class="tpl__h">Cài đặt</div>
-      <div class="wf"><div class="wf__h"></div><div class="wf__s"><i></i><i></i><i></i><i class="on"></i></div>
+      <div class="wf"><div class="wf__h"></div>
         <div class="wf__m"><b class="t"></b><div class="r" style="flex:1"><div style="width:26%;display:flex;flex-direction:column;gap:.25rem"><b class="ln"></b><b class="ln pri"></b><b class="ln"></b></div>
         <div class="bx" style="flex:1;padding:.375rem;display:flex;flex-direction:column;gap:.375rem"><b class="ln" style="width:60%"></b><b class="ln" style="width:40%"></b><b class="ln" style="width:55%"></b></div></div></div></div>
       <p class="tpl__p">Danh mục cài đặt bên trái, nội dung bên phải. Switch có hiệu lực ngay, nhóm có nút Lưu riêng <code>Switch</code> <code>Radio</code> <code>Card</code></p></div>
@@ -2404,7 +2405,7 @@ code,.code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg-sub
 <div class="drawer" id="drDetail" role="dialog" aria-modal="true" aria-labelledby="drT" hidden>
   <div class="drawer__h"><h3 id="drT">CH-2610-0142</h3><span class="tag tag--info tag--dot">Lập báo giá</span><button class="btn btn--ghost btn--icon btn--sm" data-close aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button></div>
   <div class="drawer__b stack" style="gap:1.25rem">
-    <div><div style="font-weight:600;font-size:.9375rem;line-height:1.375rem">Máy cắt laser fiber 3kW cho Tân Phát</div><div class="field__help">Tạo 01/10/2026 bởi Lê Thu Hà</div></div>
+    <div><div style="font-weight:700;font-size:.9375rem;line-height:1.375rem">Máy cắt laser fiber 3kW cho Tân Phát</div><div class="field__help">Tạo 01/10/2026 bởi Lê Thu Hà</div></div>
     <dl class="dl"><dt>Khách hàng</dt><dd><a href="#bang" style="color:var(--text-link)">Xưởng cơ khí Tân Phát</a></dd><dt>Giá trị dự kiến</dt><dd class="num">1.284.500.000 ₫</dd>
       <dt>Dự kiến chốt</dt><dd class="num">15/10/2026</dd><dt>Phụ trách</dt><dd class="cell-user"><span class="avatar avatar--a">LH</span>Lê Thu Hà</dd><dt>Nguồn</dt><dd>Quảng cáo CTKM tháng 10</dd></dl>
     <div><div class="field__label" style="margin-bottom:.5rem">Hoạt động gần đây</div>
@@ -2537,10 +2538,10 @@ function veContrast(){
 
 /* ---------- typography ---------- */
 var TYPE=[
- ["--type-display-*","28/36 · 600","KPI chính, tối đa 1 lần mỗi màn",28,36,600,"1,48 tỷ"],
- ["--type-h1-*","20/28 · 600","Tiêu đề trang",20,28,600,"Danh sách cơ hội bán hàng"],
- ["--type-h2-*","16/24 · 600","Tiêu đề vùng, tiêu đề modal",16,24,600,"Thông tin chung"],
- ["--type-h3-*","14/20 · 600","Tiêu đề thẻ, nhóm trường",14,20,600,"Chỉ tiêu theo đội"],
+ ["--type-display-*","28/36 · 700","KPI chính, tối đa 1 lần mỗi màn",28,36,700,"1,48 tỷ"],
+ ["--type-h1-*","20/28 · 700","Tiêu đề trang",20,28,700,"Danh sách cơ hội bán hàng"],
+ ["--type-h2-*","16/24 · 700","Tiêu đề vùng, tiêu đề modal",16,24,700,"Thông tin chung"],
+ ["--type-h3-*","14/20 · 700","Tiêu đề thẻ, nhóm trường",14,20,700,"Chỉ tiêu theo đội"],
  ["--type-body-lg-*","14/22 · 400","Văn bản dài, mô tả, ghi chú",14,22,400,"Khách cần demo máy cắt trước ngày 10/10, ưu tiên khung giờ chiều"],
  ["--type-body-*","13/20 · 400","Mặc định: bảng, trường, menu",13,20,400,"Xưởng cơ khí Tân Phát · Lập báo giá · 1.284.500.000"],
  ["--type-label-*","12/16 · 500","Nhãn trường, đầu cột bảng",12,16,500,"Giá trị dự kiến"],
@@ -2865,7 +2866,7 @@ setBrand("");
   var SL=[["Quảng cáo trả phí",38],["Website",24],["Giới thiệu",15],["Hội chợ",10],["Đối tác",8],["Khác",5]],acc=0,gap=.8,ds='<svg viewBox="0 0 42 42" role="img" aria-label="Tỷ trọng đơn theo nguồn"><g transform="rotate(-90 21 21)">';
   SL.forEach(function(s,i){var col="var(--"+(i===5?"data-other":"data-"+(i+1))+")";
     ds+='<circle cx="21" cy="21" r="15.9155" fill="none" stroke="'+col+'" stroke-width="6" stroke-dasharray="'+(s[1]-gap)+' '+(100-s[1]+gap)+'" stroke-dashoffset="'+(-acc)+'"><title>'+s[0]+': '+s[1]+'%</title></circle>';acc+=s[1]});
-  ds+='</g><text x="21" y="21.5" text-anchor="middle" style="font-size:6px;font-weight:600;fill:var(--text-primary)">1.284</text><text x="21" y="27" text-anchor="middle" style="font-size:3.4px">đơn</text></svg>';
+  ds+='</g><text x="21" y="21.5" text-anchor="middle" style="font-size:6px;font-weight:700;fill:var(--text-primary)">1.284</text><text x="21" y="27" text-anchor="middle" style="font-size:3.4px">đơn</text></svg>';
   $("vzDonut").innerHTML=ds;
   $("vzDonutLg").innerHTML=SL.map(function(s,i){return '<li><i style="background:var(--'+(i===5?"data-other":"data-"+(i+1))+')"></i>'+s[0]+' · <b class="num" style="color:var(--text-primary)">'+s[1]+'%</b></li>'}).join("");
   /* đường nhiều chuỗi */
