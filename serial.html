@@ -6,6 +6,7 @@
 <title>Datyso · Serial và tem máy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* =====================================================================
@@ -941,38 +942,52 @@ const tg=([c,t])=>`<span class="tag ${c?'tag--'+c:''} ${c==='outline'?'':'tag--d
 const serTag=k=>tg(SER_ST[k]);
 const liTag=k=>tg(LI_ST[k]);
 const kTag=k=>k==='lai'?'<span class="tag tag--violet">In lại</span>':'<span class="tag tag--outline">Lần đầu</span>';
-let TEM={w:60,h:30,l1:'sp',l2:'nhom',txt:true,dpi:203,ver:3};
+let TEM={w:60,h:30,l1:'ma',l2:'no',txt:true,dpi:203,ver:4};
 const VERS=[
-  {v:3,w:60,h:30,c1:'sp',c2:'nhom',txt:true,l1:'Tên sản phẩm',l2:'Nhóm máy',by:MAI,at:'20/10/2026',n:41,now:true},
+  {v:4,w:60,h:30,c1:'ma',c2:'no',txt:true,l1:'Mã sản phẩm',l2:'Không có',by:MAI,at:'29/10/2026',n:0,now:true},
+  {v:3,w:60,h:30,c1:'sp',c2:'nhom',txt:true,l1:'Tên sản phẩm',l2:'Nhóm máy',by:MAI,at:'20/10/2026',n:41},
   {v:2,w:50,h:25,c1:'sp',c2:'no',txt:true,l1:'Tên sản phẩm',l2:'Không có',by:MAI,at:'12/10/2026',n:19},
   {v:1,w:60,h:30,c1:'ma',c2:'no',txt:true,l1:'Mã sản phẩm',l2:'Không có',by:MAI,at:'05/10/2026',n:6}
 ];
 const verCfg=v=>VERS.find(x=>x.v===v)||{w:TEM.w,h:TEM.h,c1:TEM.l1,c2:TEM.l2,txt:TEM.txt};
 
-/* ---------- vạch mã Code 128 (hình minh hoạ) ---------- */
+/* ---------- mã QR trên tem ---------- */
 function rnd(seed){let t=seed+0x6D2B79F5;return()=>{t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
-function pat(v){const r=rnd(v*977+13),w=[1,1,1,1,1,1];let left=5;while(left>0){const i=Math.floor(r()*6);if(w[i]<4){w[i]++;left--}}return w}
-function c128(s){
-  const out=[2,1,1,2,1,4];let sum=104;
-  [...s].forEach((ch,i)=>{const v=ch.charCodeAt(0)-32;sum+=v*(i+1);out.push(...pat(v))});
-  out.push(...pat(sum%103));out.push(2,3,3,1,1,1,2);return out;
+function qrMatrix(str){
+  try{
+    if(window.qrcode){const q=qrcode(0,'M');q.addData(str);q.make();const n=q.getModuleCount(),m=[];for(let r=0;r<n;r++){m.push([]);for(let c=0;c<n;c++)m[r].push(q.isDark(r,c))}return m}
+  }catch(e){}
+  const n=21,m=Array.from({length:n},()=>Array(n).fill(false)),g=rnd([...str].reduce((a,c)=>a*31+c.charCodeAt(0),7));
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)m[r][c]=g()>.5;
+  [[0,0],[0,n-7],[n-7,0]].forEach(([r0,c0])=>{for(let r=-1;r<8;r++)for(let c=-1;c<8;c++){const y=r0+r,x=c0+c;if(y<0||x<0||y>=n||x>=n)continue;m[y][x]=r>=0&&r<7&&c>=0&&c<7&&(r===0||r===6||c===0||c===6||(r>=2&&r<=4&&c>=2&&c<=4))}});
+  return m;
 }
-const MODS=c128('MLN0000000000').reduce((a,b)=>a+b,0)+20;
+function wrapTxt(t,n,max){
+  const lines=[];let cur='';
+  t.split(' ').forEach(w=>{const x=(cur+' '+w).trim();if(x.length<=n)cur=x;else{if(cur)lines.push(cur);cur=w}});
+  if(cur)lines.push(cur);
+  if(lines.length>max){lines.length=max;lines[max-1]=lines[max-1].slice(0,Math.max(n-1,1))+'…'}
+  return lines;
+}
 function temSvg(o){
-  const w=o.w,h=o.h,S=6,W=w*S,H=h*S;
+  const w=o.w,h=o.h,S=6,W=w*S,H=h*S,pad=1.5*S;
   const l1=o.l1==='sp'?o.spName:o.l1==='ma'?o.spCode:'';
   const l2=o.l2==='nhom'?o.nhomName:'';
-  const widths=c128(o.serial),mod=(W-12)/MODS;
-  const top=6+(l1?15:0)+(l2?13:0),bot=o.txt?20:8;
-  const bh=Math.max(H-top-bot,2);
-  let x=6+10*mod,bars='',bar=true;
-  widths.forEach(u=>{if(bar)bars+=`<rect x="${x.toFixed(2)}" y="${top}" width="${(u*mod).toFixed(2)}" height="${bh}"/>`;x+=u*mod;bar=!bar});
-  const cut=(t,n)=>t.length>n?t.slice(0,n-1)+'…':t;
-  const n1=Math.floor(W/6.4),n2=Math.floor(W/5.4);
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tem ${o.serial}"><g fill="#16203a">${bars}</g>`+
-    (l1?`<text x="${W/2}" y="17" text-anchor="middle" font-family="Roboto,Arial" font-size="12" font-weight="700" fill="#16203a">${esc(cut(l1,n1))}</text>`:'')+
-    (l2?`<text x="${W/2}" y="${l1?30:17}" text-anchor="middle" font-family="Roboto,Arial" font-size="10" fill="#4d5560">${esc(cut(l2,n2))}</text>`:'')+
-    (o.txt?`<text x="${W/2}" y="${H-7}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="13" letter-spacing="1.5" fill="#16203a">${o.serial}</text>`:'')+`</svg>`;
+  const hasText=!!(l1||l2||o.txt);
+  const m=qrMatrix(o.serial),tot=m.length+8;
+  let side=H-2*pad;if(hasText)side=Math.min(side,W-2*pad-12*S);side=Math.max(side,24);
+  const qx=hasText?pad:(W-side)/2,qy=(H-side)/2,mod=side/tot,sz=(mod+.35).toFixed(2);
+  let d='';
+  m.forEach((row,r)=>row.forEach((v,c)=>{if(v)d+=`M${(qx+(c+4)*mod).toFixed(2)} ${(qy+(r+4)*mod).toFixed(2)}h${sz}v${sz}h-${sz}z`}));
+  let t='';
+  if(hasText){
+    const tx=qx+side+4,tw=W-tx-pad,n1=Math.max(6,Math.floor(tw/6.6)),n2=Math.max(6,Math.floor(tw/5.6));
+    let y=qy+side*0.18+10;
+    wrapTxt(l1,n1,2).forEach(x=>{t+=`<text x="${tx}" y="${y}" font-family="Roboto,Arial" font-size="12" font-weight="700" fill="#16203a">${esc(x)}</text>`;y+=15});
+    wrapTxt(l2,n2,2).forEach(x=>{t+=`<text x="${tx}" y="${y}" font-family="Roboto,Arial" font-size="10" fill="#4d5560">${esc(x)}</text>`;y+=13});
+    if(o.txt)t+=`<text x="${tx}" y="${qy+side-side*0.18}" font-family="Roboto,Arial" font-size="12" font-weight="700" letter-spacing=".4" fill="#16203a">${o.serial}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tem ${o.serial}"><path d="${d}" fill="#16203a"/>${t}</svg>`;
 }
 function temFor(pre,n,spc,ver){
   const sp=spOf(spc),g=nhomOf(pre),c=verCfg(ver);
@@ -1386,7 +1401,7 @@ function vCauHinh(){
       ${field('ct-l1','Dòng phụ thứ nhất',sel('ct-l1',[['sp','Tên sản phẩm'],['ma','Mã sản phẩm'],['no','Không có']],TEM.l1,`data-live="tem" ${ed?'':'disabled'}`))}
       ${field('ct-l2','Dòng phụ thứ hai',sel('ct-l2',[['nhom','Nhóm máy'],['no','Không có']],TEM.l2,`data-live="tem" ${ed?'':'disabled'}`))}
       ${field('ct-dpi','Độ phân giải máy in',sel('ct-dpi',[['203','203 DPI'],['300','300 DPI']],String(TEM.dpi),`data-live="tem" ${ed?'':'disabled'}`),{help:'Ghi trên thân máy in, thường là 203 hoặc 300 DPI'})}
-      <div class="field"><span class="field__label">Chữ serial dưới vạch mã</span><button class="sw" role="switch" id="ct-txt" aria-checked="${TEM.txt}" data-act="tem-txt" ${ed?'':'disabled'}><span class="sw__t"></span>Hiện chuỗi serial</button></div>
+      <div class="field"><span class="field__label">Chữ serial cạnh mã QR</span><button class="sw" role="switch" id="ct-txt" aria-checked="${TEM.txt}" data-act="tem-txt" ${ed?'':'disabled'}><span class="sw__t"></span>Hiện chuỗi serial</button></div>
     </div>
     <div id="ct-msg"></div>
   </div>${ed?`<div class="actbar"><span class="help-inline">Mỗi lần lưu tạo một phiên bản mới. Phiên bản cũ giữ nguyên cho các lệnh in đã dùng</span><span class="spacer"></span><button class="btn btn--primary" id="ct-save" data-act="tem-luu">Lưu phiên bản mới</button></div>`:''}</div>
@@ -1399,10 +1414,10 @@ function liveTem(){
   const sw=$('#ct-txt').getAttribute('aria-checked')==='true',errs=[];
   if(!(w>=30&&w<=120))errs.push('Chiều rộng cần từ 30 đến 120 mm');
   if(!(h>=15&&h<=60))errs.push('Chiều cao cần từ 15 đến 60 mm');
-  const okSize=errs.length===0,ww=okSize?w:60,hh=okSize?h:30,dots=(ww-2)/MODS*dpi/25.4,bh=hh-3-(l1!=='no'?4:0)-(l2!=='no'?3.5:0)-(sw?4:0);
-  if(okSize&&dots<2){const minW=Math.ceil(2*MODS*25.4/dpi+2);errs.push(`Vạch mã quá nhỏ nên đầu đọc khó quét. Tăng chiều rộng lên ít nhất ${minW} mm, hoặc chọn máy in 300 DPI nếu máy bạn dùng đang là loại này`)}
-  if(okSize&&bh<8)errs.push('Chiều cao còn lại cho vạch mã quá thấp. Tăng chiều cao hoặc bỏ bớt một dòng phụ');
-  $('#ct-msg').innerHTML=errs.length?`<div class="alert alert--danger" role="alert">${ic('err')}<div class="alert__b"><div class="alert__t">Chưa lưu được cấu hình này</div><ul>${errs.map(e=>`<li>${e}</li>`).join('')}</ul></div></div>`:`<div class="note" style="color:var(--status-success-fg);display:flex;gap:.375rem;align-items:center">${ic('ok','ic--sm')}Khổ tem này quét được</div>`;
+  const okSize=errs.length===0,ww=okSize?w:60,hh=okSize?h:30,hasText=l1!=='no'||l2!=='no'||sw,side=hh-3,dots=side/29*dpi/25.4,textW=ww-3-side-2;
+  if(okSize&&hasText&&textW<12)errs.push(`Tem quá hẹp nên không còn chỗ cho chữ bên cạnh mã QR. Tăng chiều rộng lên ít nhất ${hh+14} mm, giảm chiều cao hoặc bỏ các dòng phụ`);
+  if(okSize&&dots<3){const minH=Math.ceil(3*29*25.4/dpi+3);errs.push(`Mã QR quá nhỏ nên đầu đọc khó quét. Tăng chiều cao lên ít nhất ${minH} mm, hoặc chọn máy in 300 DPI nếu máy bạn dùng đang là loại này`)}
+  $('#ct-msg').innerHTML=errs.length?`<div class="alert alert--danger" role="alert">${ic('err')}<div class="alert__b"><div class="alert__t">Chưa lưu được cấu hình này</div><ul>${errs.map(e=>`<li>${e}</li>`).join('')}</ul></div></div>`:`<div class="note" style="color:var(--status-success-fg);display:flex;gap:.375rem;align-items:center">${ic('ok','ic--sm')}Mã QR trên khổ tem này quét được</div>`;
   const sv=$('#ct-save');if(sv)sv.disabled=errs.length>0;
   $('#ct-prev').innerHTML=temSvg({w:ww,h:hh,l1,l2,txt:sw,serial:ser('MLN',4772),spName:'Máy lọc nước RO Blue 200 nóng lạnh',spCode:'BW-RO-200',nhomName:'Máy lọc nước RO'});
   $('#ct-size').textContent=`${ww} × ${hh} mm`;
