@@ -934,7 +934,7 @@ function syncSer(){
 }
 
 const ACTIVE_ST=['chuanbi','guiin','motphan'];
-const activeLenhOf=(pre,n)=>LENH.find(x=>ACTIVE_ST.includes(x.st)&&x.pre===pre&&x.ns.includes(n));
+const activeLenhOf=(pre,n)=>LENH.find(x=>{if(!ACTIVE_ST.includes(x.st)||x.pre!==pre)return false;const i=x.ns.indexOf(n);return i>=0&&!x.done.has(i)});
 const freeIdx=l=>range(0,l.q-1).filter(i=>{if(l.out.has(i))return false;const s=SMAP.get(l.pre+(l.a+i));return !(s&&s.fixed&&(s.st==='huy'||s.st==='khoa'))});
 const SER_ST={moi:['info','Mới tạo'],in:['success','Đã in'],huy:['danger','Đã huỷ'],khoa:['warning','Tạm khoá']};
 const LI_ST={chuanbi:['','Đang chuẩn bị'],guiin:['info','Đã gửi in'],motphan:['warning','Thành công một phần'],ok:['success','Thành công'],dong:['outline','Đã đóng'],huy:['danger','Đã huỷ'],hethan:['outline','Hết hạn']};
@@ -1272,6 +1272,7 @@ function vSerial(){
 }
 function serDrawer(i){
   const s=SERIALS[i],code=s.code,sp=spOf(s.sp),L=s.st!=='khoa'?activeLenhOf(s.pre,s.n):null;
+  const L0=LENH.find(x=>x.k==='dau'&&x.pre===s.pre&&x.ns.includes(s.n)),tv=L0?L0.ver:(s.ts<parseAt('12/10/2026 00:00')?1:s.ts<parseAt('20/10/2026 00:00')?2:3),tc=verCfg(tv);
   const ev=[['ok','Tạo trong lô '+s.lo,`${s.by} · ${s.at}`]];
   if(s.pr>=1&&s.lenh)ev.push(['ok','In lần đầu thành công',`Lệnh ${s.lenh} · ${s.pr>=2?'':s.last}`]);
   else if(s.pr>=1)ev.push(['ok','In lần đầu thành công',s.last]);
@@ -1283,6 +1284,7 @@ function serDrawer(i){
   <div class="drawer__b stack">
     ${L?`<div class="alert alert--info">${ic('info')}<div class="alert__b"><div class="alert__d">Serial đang nằm trong lệnh in ${L.id}. Xác nhận kết quả hoặc huỷ lệnh này trước khi huỷ, khoá hoặc in lại</div></div></div>`:''}
     <dl class="dl"><dt>Sản phẩm</dt><dd>${sp.c} · ${sp.t}</dd><dt>Nhóm máy lúc tạo</dt><dd>${nhomOf(s.pre).t}</dd><dt>Nhóm máy hiện tại</dt><dd>${nhomLabel(s.now||sp.g)}</dd><dt>Lô</dt><dd>${s.lo}</dd><dt>Số lần in</dt><dd class="num">${s.pr}</dd><dt>Lần in gần nhất</dt><dd>${s.last||'Chưa in'}</dd><dt>Người tạo</dt><dd>${s.by}</dd><dt>Tạo lúc</dt><dd>${s.at}</dd></dl>
+    ${s.pr>=1?`<div><h4 class="h4" style="margin-bottom:.5rem">Tem gốc</h4><div class="tem-box">${temFor(s.pre,s.n,s.sp,tv)}</div><div class="tem-nav"><span>Phiên bản tem ${tv}</span><span>${tc.w} × ${tc.h} mm</span></div></div>`:''}
     <div><h4 class="h4" style="margin-bottom:.75rem">Lịch sử</h4><ol class="tl">${ev.map(e=>`<li><span class="tl__d tl__d--${e[0]}">${ic(e[0]==='no'?'x':e[0]==='wait'?'alert':'check')}</span><div><div class="tl__t">${e[1]}</div><div class="tl__m">${e[2]}</div>${e[3]?`<div class="tl__q">${e[3]}</div>`:''}</div></li>`).join('')}</ol></div>
   </div>${b.length?`<div class="drawer__f">${b.join('')}</div>`:''}`);
 }
@@ -1392,7 +1394,6 @@ function impModal(){
 /* ---------- cấu hình tem ---------- */
 function vCauHinh(){
   const ed=can('a');
-  const rows=VERS.map(v=>({s:v.now?'now':'old',t:`phiên bản ${v.v} ${v.l1} ${v.l2} ${v.by}`,a:v.now?'class="ver-now"':'',h:[`Phiên bản ${v.v}`,v.now?tg(['success','Đang dùng']):'<span class="muted">Đã thay</span>',`${v.w} × ${v.h} mm`,v.l1,v.l2,v.by,v.at,v.n+LENH.filter(x=>x.sess&&x.ver===v.v).length]}));
   return head([['In tem','lenh-in'],'Cấu hình tem'],'Cấu hình tem')+(ed?'':roBar())+
   `<div class="two"><div class="card"><div class="card__h"><h4>Khổ tem và nội dung</h4><span class="tag">Phiên bản đang dùng: ${TEM.ver}</span></div><div class="card__b stack">
     <div class="form-grid">
@@ -1405,9 +1406,7 @@ function vCauHinh(){
     </div>
     <div id="ct-msg"></div>
   </div>${ed?`<div class="actbar"><span class="help-inline">Mỗi lần lưu tạo một phiên bản mới. Phiên bản cũ giữ nguyên cho các lệnh in đã dùng</span><span class="spacer"></span><button class="btn btn--primary" id="ct-save" data-act="tem-luu">Lưu phiên bản mới</button></div>`:''}</div>
-  <div class="card"><div class="card__h"><h4>Xem trước</h4></div><div class="card__b"><div class="tem-box" id="ct-prev"></div><div class="tem-nav"><span>${ser('MLN',4772)}</span><span id="ct-size"></span></div></div></div></div>
-  <div><h4 class="h4" style="margin:.5rem 0">Lịch sử phiên bản</h4>${listView({key:'ver',ph:'Tìm theo phiên bản hoặc người lưu',rows,status:[['','Mọi trạng thái'],['now','Đang dùng'],['old','Đã thay']],
-    cols:[{h:'Phiên bản'},{h:'Trạng thái'},{h:'Khổ tem'},{h:'Dòng phụ thứ nhất'},{h:'Dòng phụ thứ hai'},{h:'Người lưu'},{h:'Ngày lưu'},{h:'Lệnh in đã dùng',c:'r'}]})}</div>`;
+  <div class="card"><div class="card__h"><h4>Xem trước</h4></div><div class="card__b"><div class="tem-box" id="ct-prev"></div><div class="tem-nav"><span>${ser('MLN',4772)}</span><span id="ct-size"></span></div></div></div></div>`;
 }
 function liveTem(){
   const w=Number($('#ct-w').value),h=Number($('#ct-h').value),l1=$('#ct-l1').value,l2=$('#ct-l2').value,dpi=Number($('#ct-dpi').value);
